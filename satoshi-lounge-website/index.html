@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Satoshi Lounge — Bitcoin. Verstanden.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-alt:#131316;
+    --surface:#151518;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(255,255,255,0.12);
+    --line-soft: rgba(255,255,255,0.08);
+
+    --orange:#F7931A;
+    --orange-deep:#ffab47;
+    --purple:#9b83ff;
+    --teal:#2adfc0;
+    --pink:#ff6fa8;
+    --gold:#f2c94c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+  }
+  .topbar, .hero, .chain, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3,.display{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(8,8,10,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px;
+    cursor:pointer; z-index:210;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{
+    font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; color:var(--ink);
+  }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
+
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--orange); color:#0a0a0d; border:none;
+    padding:10px 22px; border-radius:30px; cursor:pointer; text-decoration:none;
+    transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,26,0.35);
+    opacity:0; pointer-events:none; transition:.35s; z-index:150;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
+    background:#0d0d10;
+    border-right:1.5px solid var(--line);
+    transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1);
+    z-index:200;
+    display:flex; flex-direction:column;
+    padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    transition:.2s;
+  }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:nth-child(1):hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:nth-child(2):hover{ background:rgba(124,92,252,0.08); color:var(--purple); padding-left:38px; }
+  .drawer-nav a:nth-child(3):hover{ background:rgba(15,181,154,0.08); color:var(--teal); padding-left:38px; }
+  .drawer-nav a:nth-child(4):hover{ background:rgba(255,79,147,0.08); color:var(--pink); padding-left:38px; }
+  .drawer-nav a:nth-child(5):hover{ background:rgba(242,183,5,0.12); color:#a97e00; padding-left:38px; }
+  .drawer-nav a:nth-child(6):hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-socials{ margin-top:auto; padding:24px 32px 0; }
+  .drawer-socials a{
+    border-bottom:none; padding:10px 0; font-size:0.95rem; color:var(--gray); text-decoration:none; display:block;
+  }
+  .drawer-socials a:hover{ padding-left:6px; color:var(--orange-deep); }
+  .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
+
+  /* ===== HERO ===== */
+  .hero{
+    min-height:100svh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:140px 20px 80px;
+    position:relative;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(247,147,26,0.16), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(155,131,255,0.14), transparent 45%),
+      radial-gradient(circle at 50% 85%, rgba(42,223,192,0.10), transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(255,111,168,0.10), transparent 45%);
+    z-index:0;
+  }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(circle at 50% 30%, black, transparent 65%);
+    z-index:0;
+  }
+  .ticker{
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:8px 18px; border-radius:30px;
+    margin-bottom:28px; letter-spacing:0.05em; position:relative; z-index:1;
+  }
+  .hero h1{
+    font-size:clamp(2.6rem, 7vw, 5.2rem); line-height:1.02; font-weight:700;
+    max-width:16ch; position:relative; z-index:1;
+  }
+  .hero h1 .accent{ color:var(--orange); }
+  .hero h1 .accent2{ color:var(--purple); }
+  .hero p{
+    margin-top:24px; color:var(--gray); max-width:52ch; font-size:1.05rem; line-height:1.6;
+    position:relative; z-index:1;
+  }
+  .hero-cta{ display:flex; gap:14px; margin-top:38px; position:relative; z-index:1; flex-wrap:wrap; justify-content:center; }
+  .btn{
+    padding:14px 26px; border-radius:10px; font-weight:600; text-decoration:none;
+    font-size:0.95rem; transition:.25s; display:inline-block; border:1.5px solid transparent;
+  }
+  .btn-primary{ background:var(--orange); color:#0a0a0d; border-color:var(--orange); }
+  .btn-primary:hover{ background:var(--orange-deep); border-color:var(--orange-deep); }
+  .btn-ghost{ border:1.5px solid var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--purple); color:var(--purple); }
+
+  /* live price big display in hero */
+  .hero-price{
+    position:relative; z-index:1; margin-top:34px;
+    font-family:'Space Mono', monospace; font-size:0.85rem; color:var(--gray);
+  }
+  .hero-price .big{
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:2.1rem; color:var(--ink);
+    display:block; margin-top:4px;
+  }
+  .hero-price .big .cur{ color:var(--orange); }
+
+  /* ===== CHAIN / SECTIONS ===== */
+  .chain{ max-width:1180px; margin:0 auto; padding:60px 24px 140px; position:relative; }
+  .chain-line{
+    position:absolute; left:50%; top:0; bottom:0; width:2px;
+    background:linear-gradient(var(--orange), var(--purple), var(--teal), var(--pink), var(--gold), var(--orange));
+    transform:translateX(-50%);
+    opacity:0.5;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace; font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px; display:block;
+    color:var(--accent);
+  }
+  .block{
+    position:relative; scroll-margin-top:110px;
+    display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center;
+    padding:70px 0;
+  }
+  .block:nth-child(even) .block-text{ order:2; }
+  .block-num{
+    position:absolute; left:50%; top:70px; transform:translate(-50%,-50%);
+    width:46px; height:46px; border-radius:50%;
+    background:#0d0d10; border:2px solid var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--accent); font-weight:700;
+    z-index:2;
+  }
+  .block-text h2{ font-size:2rem; font-weight:600; margin-bottom:14px; }
+  .block-text p{ color:var(--gray); line-height:1.7; margin-bottom:22px; max-width:46ch; }
+  .block-visual{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:16px;
+    aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; text-decoration:none;
+  }
+  .block-visual::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%);
+    pointer-events:none;
+  }
+  .block-visual span{ font-family:'Space Mono', monospace; color:var(--gray); font-size:0.85rem; z-index:1; }
+  .block-visual img{
+    width:100%; height:100%; object-fit:cover; display:block; position:relative;
+    transition:transform .5s ease;
+  }
+  .block-visual:hover img{ transform:scale(1.04); }
+  .socials-visual{ display:flex; align-items:center; justify-content:center; gap:28px; text-decoration:none; }
+  .socials-visual .ic{
+    width:64px; height:64px; border-radius:50%; background:#0d0d10; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    border:1.5px solid var(--line); position:relative; z-index:1;
+    transition:transform .3s ease;
+  }
+  .socials-visual .ic:hover{ transform:translateY(-4px); }
+  .socials-visual .ic img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .tag-list{ display:flex; gap:10px; flex-wrap:wrap; }
+  .tag{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--accent);
+    border:1.5px solid var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent);
+    padding:6px 12px; border-radius:20px;
+  }
+
+  .c1{ --accent:var(--orange); }
+  .c2{ --accent:var(--purple); }
+  .c3{ --accent:var(--teal); }
+  .c4{ --accent:var(--pink); }
+  .c5{ --accent:#c99500; }
+  .c6{ --accent:var(--orange); }
+
+  @media(max-width:820px){
+    .block{ grid-template-columns:1fr; padding:50px 0 20px; }
+    .block:nth-child(even) .block-text{ order:0; }
+    .block-num{ top:22px; left:23px; transform:translate(0,-50%); }
+    .chain-line{ left:23px; }
+    .block-text, .block-visual{ padding-left:50px; }
+  }
+
+  /* ===== FOOTER ===== */
+  footer{
+    border-top:1.5px solid var(--line);
+    background:var(--bg-alt);
+    padding:60px 24px 30px;
+    position:relative; z-index:1;
+  }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:30px; padding-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.9rem; max-width:34ch; }
+  .footer-links{
+    display:grid; grid-template-columns:repeat(3, auto); gap:10px 40px;
+  }
+  .footer-links a{
+    color:var(--ink); text-decoration:none; font-size:0.88rem;
+    display:block; transition:.2s;
+  }
+  .footer-links a:hover{ color:var(--orange-deep); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding-top:24px;
+  }
+  .footer-bottom .copy{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; }
+  .footer-warn{
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .footer-warn span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:6px 12px; border-radius:20px;
+  }
+</style>
+</head>
+<body>
+  <canvas id="nodesCanvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+    <a href="#" class="login-btn">Anmelden</a>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-nav">
+      <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="analyse.html"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="wallets.html"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
+    </div>
+    <div class="drawer-socials">
+      <a href="https://x.com/Krypto_Cuervo" target="_blank" rel="noopener">X (Twitter) →</a>
+      <a href="https://www.youtube.com/@Krypto_Cuervo" target="_blank" rel="noopener">YouTube →</a>
+      <a href="https://www.tiktok.com/@krypto_cuervo" target="_blank" rel="noopener">TikTok →</a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com · Live-Kurs oben rechts</div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="ticker">◎ 21.000.000 BTC — HART BEGRENZT, KEINE AUSNAHME</div>
+    <h1>Bitcoin. <span class="accent">Verstanden.</span><br><span class="accent2">Verglichen.</span> Getragen.</h1>
+    <p>Satoshi Lounge bündelt alles, was du für deinen Bitcoin-Weg brauchst: Börsenvergleich, eigenes Analysetool, Wallet-Übersicht, Merchandise und Bücher — an einem Ort.</p>
+    <div class="hero-cta">
+      <a href="merchandise.html" class="btn btn-primary">Merch entdecken</a>
+      <a href="analyse.html" class="btn btn-ghost">Zum Analysetool</a>
+    </div>
+    <div class="hero-price">
+      Live BTC/USD
+      <span class="big" id="heroPrice"><span class="cur">$</span>—</span>
+    </div>
+  </header>
+
+  <!-- CHAIN OF SECTIONS -->
+  <main class="chain">
+    <div class="chain-line"></div>
+
+    <section class="block c1" id="boersen">
+      <div class="block-num">01</div>
+      <div class="block-text">
+        <span class="eyebrow">Kapitel 01</span>
+        <h2>Börsen</h2>
+        <p>Unser unabhängiger Börsenvergleich zeigt dir Gebühren, Sicherheit und Funktionsumfang der wichtigsten Bitcoin-Börsen — übersichtlich gegenübergestellt, damit du die passende für dich findest.</p>
+        <div class="tag-list"><span class="tag">Gebührenvergleich</span><span class="tag">Sicherheit</span><span class="tag">Ein-/Auszahlung</span></div>
+      </div>
+      <a href="boersen.html" class="block-visual"><img src="images/boersen.png" alt="Börsenvergleich"></a>
+    </section>
+
+    <section class="block c2" id="analyse">
+      <div class="block-num">02</div>
+      <div class="block-text">
+        <span class="eyebrow">Kapitel 02</span>
+        <h2>Analyse</h2>
+        <p>Unser eigenes Bitcoin-Analysetool wertet Zeit, On-Chain-Daten und weitere Faktoren aus — verständlich aufbereitet, ganz ohne überladene Charts oder versteckte Kosten.</p>
+        <div class="tag-list"><span class="tag">Zeitbasiert</span><span class="tag">On-Chain-Daten</span><span class="tag">Eigenentwicklung</span></div>
+      </div>
+      <a href="analyse.html" class="block-visual"><img src="images/analyse.png" alt="Bitcoin Analysetool"></a>
+    </section>
+
+    <section class="block c3" id="wallets">
+      <div class="block-num">03</div>
+      <div class="block-text">
+        <span class="eyebrow">Kapitel 03</span>
+        <h2>Wallets</h2>
+        <p>Hot oder Cold, Software oder Hardware — unser Wallet-Vergleich hilft dir, die Verwahrung zu wählen, die zu deinem Sicherheitsbedürfnis und deiner Bitcoin-Menge passt.</p>
+        <div class="tag-list"><span class="tag">Hardware</span><span class="tag">Software</span><span class="tag">Self-Custody</span></div>
+      </div>
+      <a href="wallets.html" class="block-visual"><img src="images/wallets.png" alt="Wallet Vergleich"></a>
+    </section>
+
+    <section class="block c4" id="merchandise">
+      <div class="block-num">04</div>
+      <div class="block-text">
+        <span class="eyebrow">Kapitel 04</span>
+        <h2>Merchandise</h2>
+        <p>Selbst entworfenes Bitcoin-Merchandise — Shirts, Hoodies und Accessoires für alle, die ihre Überzeugung sichtbar tragen wollen. Fair produziert, orange im Detail.</p>
+        <div class="tag-list"><span class="tag">Faire Preise</span><span class="tag">Premium-Qualität</span><span class="tag">Eigenes Design</span></div>
+      </div>
+      <a href="merchandise.html" class="block-visual"><img src="images/merchandise.png" alt="Cuervo Apparell Merchandise"></a>
+    </section>
+
+    <section class="block c5" id="bibliothek">
+      <div class="block-num">05</div>
+      <div class="block-text">
+        <span class="eyebrow">Kapitel 05</span>
+        <h2>Bibliothek</h2>
+        <p>Hier findest du meine eigenen Bücher rund um Bitcoin und Krypto sowie handverlesene Empfehlungen anderer Autoren, die mich selbst geprägt haben — alles an einem Ort für deine Reise ins Verständnis von Bitcoin.</p>
+        <div class="tag-list"><span class="tag">Eigene Bücher</span><span class="tag">Buchempfehlungen</span><span class="tag">Für Einsteiger</span></div>
+      </div>
+      <a href="bibliothek.html" class="block-visual"><img src="images/bibliothek.png" alt="Bitcoin Bibliothek"></a>
+    </section>
+
+    <section class="block c6" id="socials">
+      <div class="block-num">06</div>
+      <div class="block-text">
+        <span class="eyebrow">Kapitel 06</span>
+        <h2>Socials</h2>
+        <p>Folge Satoshi Lounge auf X, YouTube und TikTok für Neuigkeiten, Analysen und Merch-Drops.</p>
+        <div class="tag-list"><span class="tag">X</span><span class="tag">YouTube</span><span class="tag">TikTok</span></div>
+      </div>
+      <a href="socials.html" class="block-visual socials-visual">
+        <div class="ic" title="X"><img src="images/socials/x.png" alt="X Logo"></div>
+        <div class="ic" title="YouTube"><img src="images/socials/youtube.png" alt="YouTube Logo"></div>
+        <div class="ic" title="TikTok"><img src="images/socials/tiktok.png" alt="TikTok Logo"></div>
+      </a>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+          <a href="agb.html">AGB</a>
+          <a href="widerruf.html">Widerrufsbelehrung</a>
+          <a href="versand.html">Versand &amp; Lieferung</a>
+          <a href="zahlungsarten.html">Zahlungsarten</a>
+          <a href="disclaimer.html">Disclaimer</a>
+          <a href="affiliate.html">Affiliate-Hinweis</a>
+          <a href="ueber-mich.html">Über mich</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn">
+          <span>Keine Anlageberatung!</span>
+          <span>Ab 18 Jahren</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a, .drawer-socials a').forEach(a=>{
+    a.addEventListener('click', () => toggleDrawer(false));
+  });
+
+  // ===== LIVE BTC PRICE (CoinGecko, keine API-Key nötig) =====
+  async function loadPrice(){
+    try{
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+      const data = await res.json();
+      const price = data.bitcoin.usd;
+
+      const formatted = price.toLocaleString('de-DE', {maximumFractionDigits:0});
+      document.getElementById('heroPrice').innerHTML = '<span class="cur">$</span>' + formatted;
+    }catch(e){
+      document.getElementById('heroPrice').innerHTML = '<span class="cur">$</span>—';
+    }
+  }
+  loadPrice();
+  setInterval(loadPrice, 60000);
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35,
+        vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1,
+        pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize();
+    makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+
+      // Knoten bewegen
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+
+      // Verbindungslinien zwischen nahen Nodes
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Nodes zeichnen (mit leichtem Glow-Pulsieren)
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(247,147,26,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Widerrufsbelehrung — Satoshi Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-alt:#131316;
+    --surface:#151518;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(255,255,255,0.12);
+    --line-soft: rgba(255,255,255,0.08);
+    --orange:#F7931A;
+    --orange-deep:#ffab47;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+  }
+  .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR (identisch zur Startseite) ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(8,8,10,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px;
+    cursor:pointer; z-index:210;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{
+    font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
+  }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--orange); color:#0a0a0d; border:none;
+    padding:10px 22px; border-radius:30px; cursor:pointer; text-decoration:none;
+    transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,26,0.35);
+    opacity:0; pointer-events:none; transition:.35s; z-index:150;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
+    background:#0d0d10;
+    border-right:1.5px solid var(--line);
+    transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1);
+    z-index:200;
+    display:flex; flex-direction:column;
+    padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    transition:.2s;
+  }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-socials{ margin-top:auto; padding:24px 32px 0; }
+  .drawer-socials a{
+    border-bottom:none; padding:10px 0; font-size:0.95rem; color:var(--gray); text-decoration:none; display:block;
+  }
+  .drawer-socials a:hover{ padding-left:6px; color:var(--orange-deep); }
+  .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
+
+  /* ===== PAGE / LEGAL CONTENT ===== */
+  .page{
+    max-width:760px; margin:0 auto; padding:150px 24px 140px;
+  }
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
+    margin-bottom:32px; transition:.2s;
+  }
+  .back-link:hover{ color:var(--orange); }
+  .page .eyebrow{
+    font-family:'Space Mono', monospace; color:var(--orange); font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:14px; display:block;
+  }
+  .page h1{ font-size:clamp(2.2rem, 5vw, 3rem); font-weight:700; margin-bottom:44px; }
+  .legal-block{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:16px;
+    padding:32px 34px; margin-bottom:22px;
+  }
+  .legal-block h2{
+    font-size:1.15rem; color:var(--orange); margin-bottom:14px; font-weight:600;
+  }
+  .legal-block p{ color:#d8d7dc; line-height:1.75; font-size:0.98rem; margin-bottom:6px; }
+  .legal-block a{ color:var(--orange-deep); text-decoration:none; word-break:break-word; }
+  .legal-block a:hover{ text-decoration:underline; }
+  .legal-block .addr{ color:#d8d7dc; line-height:1.75; font-size:0.98rem; }
+  .legal-list{ list-style:none; margin-top:6px; }
+  .legal-list li{
+    color:#d8d7dc; line-height:1.7; font-size:0.98rem; padding-left:20px; position:relative; margin-bottom:8px;
+  }
+  .legal-list li::before{ content:"–"; position:absolute; left:0; color:var(--orange); }
+  .form-field{
+    display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap;
+  }
+  .form-field span:first-child{
+    color:var(--gray); font-size:0.85rem; font-family:'Space Mono', monospace; white-space:nowrap;
+  }
+  .form-field .fill-line{
+    flex:1; min-width:120px; border-bottom:1px dashed var(--line); height:1px; align-self:flex-end; margin-bottom:4px;
+  }
+
+  /* ===== FOOTER (identisch zur Startseite, gekürzt) ===== */
+  footer{
+    border-top:1.5px solid var(--line);
+    background:var(--bg-alt);
+    padding:60px 24px 30px;
+  }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:30px; padding-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.9rem; max-width:34ch; }
+  .footer-links{
+    display:grid; grid-template-columns:repeat(3, auto); gap:10px 40px;
+  }
+  .footer-links a{
+    color:var(--ink); text-decoration:none; font-size:0.88rem;
+    display:block; transition:.2s;
+  }
+  .footer-links a:hover{ color:var(--orange-deep); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding-top:24px;
+  }
+  .footer-bottom .copy{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; }
+  .footer-warn{
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .footer-warn span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:6px 12px; border-radius:20px;
+  }
+  @media(max-width:600px){
+    .footer-links{ grid-template-columns:repeat(2, auto); }
+    .footer-warn{ justify-content:flex-start; }
+  }
+
+  @media(max-width:600px){
+    .legal-block{ padding:24px 22px; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="nodesCanvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
+    <a href="#" class="login-btn">Anmelden</a>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-nav">
+      <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="analyse.html"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="wallets.html"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
+    </div>
+    <div class="drawer-socials">
+      <a href="https://x.com/Krypto_Cuervo" target="_blank" rel="noopener">X (Twitter) →</a>
+      <a href="https://www.youtube.com/@Krypto_Cuervo" target="_blank" rel="noopener">YouTube →</a>
+      <a href="https://www.tiktok.com/@krypto_cuervo" target="_blank" rel="noopener">TikTok →</a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com</div>
+  </nav>
+
+  <!-- LEGAL CONTENT -->
+  <main class="page">
+    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
+    <span class="eyebrow">Rechtliches</span>
+    <h1>Widerrufsbelehrung</h1>
+
+    <div class="legal-block">
+      <h2>Widerrufsrecht</h2>
+      <p>Verbraucher haben das Recht, binnen vierzehn (14) Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
+      <p style="margin-top:14px;">Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag,</p>
+      <ul class="legal-list">
+        <li>an dem Sie oder ein von Ihnen benannter Dritter, der nicht Beförderer ist, die Ware in Besitz genommen haben bzw. hat;</li>
+        <li>bei mehreren Waren einer einheitlichen Bestellung, die getrennt geliefert werden, an dem Tag, an dem Sie oder ein von Ihnen benannter Dritter die letzte Ware in Besitz genommen haben.</li>
+      </ul>
+      <p style="margin-top:14px;">Um Ihr Widerrufsrecht auszuüben, müssen Sie uns mittels einer eindeutigen Erklärung (z. B. per Brief oder E-Mail) über Ihren Entschluss informieren.</p>
+      <p class="addr" style="margin-top:14px;">
+        AscendingCuervo<br>
+        Max Emanuel Stock<br>
+        Emsdettener Straße 10<br>
+        48268 Greven<br>
+        Deutschland
+      </p>
+      <p style="margin-top:10px;">E-Mail: <a href="mailto:AscendingCuervo@T-online.de">AscendingCuervo@T-online.de</a></p>
+      <p style="margin-top:14px;">Sie können hierfür das unten beigefügte Muster-Widerrufsformular verwenden. Die Verwendung ist jedoch nicht vorgeschrieben.</p>
+      <p style="margin-top:14px;">Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>Folgen des Widerrufs</h2>
+      <p>Wenn Sie diesen Vertrag widerrufen, erstatten wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, einschließlich der Lieferkosten (mit Ausnahme der zusätzlichen Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die von uns angebotene günstigste Standardlieferung gewählt haben).</p>
+      <p style="margin-top:14px;">Die Rückzahlung erfolgt unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag, an dem die Mitteilung über Ihren Widerruf bei uns eingegangen ist.</p>
+      <p style="margin-top:14px;">Für die Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, sofern nicht ausdrücklich etwas anderes vereinbart wurde. Ihnen entstehen dadurch keine zusätzlichen Gebühren.</p>
+      <p style="margin-top:14px;">Wir können die Rückzahlung verweigern, bis wir die Waren wieder zurückerhalten haben oder bis Sie den Nachweis erbracht haben, dass Sie die Waren zurückgesandt haben – je nachdem, welches der frühere Zeitpunkt ist.</p>
+      <p style="margin-top:14px;">Sie haben die Waren unverzüglich und in jedem Fall spätestens binnen vierzehn Tagen ab dem Tag, an dem Sie uns über den Widerruf dieses Vertrages unterrichten, an uns zurückzusenden oder zu übergeben. Die Frist ist gewahrt, wenn Sie die Waren vor Ablauf der Frist absenden.</p>
+      <p style="margin-top:14px;">Die unmittelbaren Kosten der Rücksendung tragen Sie als Käufer.</p>
+      <p style="margin-top:14px;">Für einen Wertverlust der Waren müssen Sie nur aufkommen, wenn dieser auf einen zur Prüfung der Beschaffenheit, Eigenschaften und Funktionsweise der Waren nicht notwendigen Umgang mit ihnen zurückzuführen ist.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>Ausschluss bzw. vorzeitiges Erlöschen des Widerrufsrechts</h2>
+      <p>Das Widerrufsrecht besteht nicht bei Verträgen zur Lieferung von Waren, die nicht vorgefertigt sind und für deren Herstellung eine individuelle Auswahl oder Bestimmung durch den Verbraucher maßgeblich ist oder die eindeutig auf die persönlichen Bedürfnisse des Verbrauchers zugeschnitten sind (§ 312g Abs. 2 Nr. 1 BGB).</p>
+      <p style="margin-top:10px; color:var(--gray); font-size:0.88rem;">(Dies trifft derzeit auf unseren Shop nicht zu, da wir keine personalisierten Produkte anbieten.)</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>Hinweis zu Print-on-Demand</h2>
+      <p>Die Produkte werden erst nach Eingang der Bestellung individuell für den Kunden produziert (Print-on-Demand).</p>
+      <p style="margin-top:14px;">Das gesetzliche Widerrufsrecht bleibt hiervon grundsätzlich unberührt, sofern keine Personalisierung oder gesetzliche Ausnahme vorliegt.</p>
+      <p style="margin-top:14px;">Bitte behandeln Sie die Ware sorgfältig. Eine Rücksendung ist nur in einem Zustand möglich, der eine Prüfung der Ware erlaubt. Übermäßige Gebrauchsspuren oder Beschädigungen können zu einem Wertersatzanspruch führen.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>Muster-Widerrufsformular</h2>
+      <p style="color:var(--gray); font-size:0.9rem;">(Wenn Sie den Vertrag widerrufen möchten, dann füllen Sie bitte dieses Formular aus und senden Sie es an uns zurück.)</p>
+
+      <p style="margin-top:20px;">An:</p>
+      <p class="addr" style="margin-top:6px;">
+        AscendingCuervo<br>
+        Max Emanuel Stock<br>
+        Emsdettener Straße 10<br>
+        48268 Greven<br>
+        Deutschland
+      </p>
+      <p style="margin-top:10px;">E-Mail: <a href="mailto:AscendingCuervo@T-online.de">AscendingCuervo@T-online.de</a></p>
+
+      <p style="margin-top:22px;">Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden Waren:</p>
+
+      <div class="form-field">
+        <span>Bestellt am (*)</span>
+        <span class="fill-line"></span>
+      </div>
+      <div class="form-field">
+        <span>Erhalten am (*)</span>
+        <span class="fill-line"></span>
+      </div>
+      <div class="form-field">
+        <span>Name des/der Verbraucher(s)</span>
+        <span class="fill-line"></span>
+      </div>
+      <div class="form-field">
+        <span>Anschrift des/der Verbraucher(s)</span>
+        <span class="fill-line"></span>
+      </div>
+      <div class="form-field">
+        <span>Unterschrift des/der Verbraucher(s)</span>
+        <span class="fill-line"></span>
+      </div>
+      <p style="margin-top:6px; color:var(--gray); font-size:0.8rem;">(nur bei Mitteilung auf Papier)</p>
+      <div class="form-field">
+        <span>Datum</span>
+        <span class="fill-line"></span>
+      </div>
+
+      <p style="margin-top:22px; color:var(--gray); font-size:0.8rem;">(*) Unzutreffendes streichen.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+          <a href="agb.html">AGB</a>
+          <a href="widerruf.html">Widerrufsbelehrung</a>
+          <a href="versand.html">Versand &amp; Lieferung</a>
+          <a href="zahlungsarten.html">Zahlungsarten</a>
+          <a href="disclaimer.html">Disclaimer</a>
+          <a href="affiliate.html">Affiliate-Hinweis</a>
+          <a href="ueber-mich.html">Über mich</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn">
+          <span>Keine Anlageberatung!</span>
+          <span>Ab 18 Jahren</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a, .drawer-socials a').forEach(a=>{
+    a.addEventListener('click', () => toggleDrawer(false));
+  });
+
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35,
+        vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1,
+        pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize();
+    makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(247,147,26,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+</body>
+</html>

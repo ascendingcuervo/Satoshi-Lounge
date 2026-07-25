@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet-Vergleich — Satoshi Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-alt:#131316;
+    --surface:#151518;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(255,255,255,0.12);
+    --line-soft: rgba(255,255,255,0.08);
+    --orange:#F7931A;
+    --orange-deep:#ffab47;
+    --purple:#9b83ff;
+    --teal:#2adfc0;
+    --pink:#ff6fa8;
+    --gold:#f2c94c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+  }
+  .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(8,8,10,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px;
+    cursor:pointer; z-index:210;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{
+    font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
+  }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--orange); color:#0a0a0d; border:none;
+    padding:10px 22px; border-radius:30px; cursor:pointer; text-decoration:none;
+    transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,26,0.35);
+    opacity:0; pointer-events:none; transition:.35s; z-index:150;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
+    background:#0d0d10;
+    border-right:1.5px solid var(--line);
+    transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1);
+    z-index:200;
+    display:flex; flex-direction:column;
+    padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    transition:.2s;
+  }
+  .drawer-nav a.active{ color:var(--orange); background:rgba(247,147,26,0.06); }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-socials{ margin-top:auto; padding:24px 32px 0; }
+  .drawer-socials a{
+    border-bottom:none; padding:10px 0; font-size:0.95rem; color:var(--gray); text-decoration:none; display:block;
+  }
+  .drawer-socials a:hover{ padding-left:6px; color:var(--orange-deep); }
+  .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
+
+  /* ===== PAGE HEADER ===== */
+  .page{ max-width:1180px; margin:0 auto; padding:150px 24px 140px; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
+    margin-bottom:32px; transition:.2s;
+  }
+  .back-link:hover{ color:var(--orange); }
+  .page .eyebrow{
+    font-family:'Space Mono', monospace; color:var(--orange); font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:14px; display:block;
+  }
+  .page h1{ font-size:clamp(2.2rem, 5vw, 3.2rem); font-weight:700; margin-bottom:18px; max-width:16ch; }
+  .page > .lead{ color:var(--gray); max-width:62ch; font-size:1.05rem; line-height:1.7; margin-bottom:30px; }
+
+  .affiliate-note{
+    background:rgba(247,147,26,0.06); border:1.5px solid var(--line);
+    border-left:3px solid var(--orange);
+    border-radius:10px; padding:16px 20px; margin-bottom:56px;
+    color:#d8d7dc; font-size:0.88rem; line-height:1.6; max-width:74ch;
+  }
+  .affiliate-note strong{ color:var(--orange-deep); }
+
+  /* ===== EXCHANGE GRID ===== */
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+    gap:26px;
+  }
+  .card{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:18px;
+    padding:28px 26px 26px; position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .card::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 55%);
+    pointer-events:none;
+  }
+  .card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; position:relative; }
+  .card-id{
+    width:46px; height:46px; border-radius:50%; background:#fff;
+    border:2px solid var(--accent); overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card-id img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .rank{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--accent);
+    border:1.5px solid var(--accent); padding:4px 11px; border-radius:20px;
+    background:color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+  .card h2{ font-size:1.5rem; font-weight:700; margin:14px 0 18px; position:relative; }
+
+  .list-label{
+    font-family:'Space Mono', monospace; font-size:0.72rem; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--gray); margin-bottom:8px; display:block;
+  }
+  .pros, .cons{ list-style:none; margin-bottom:20px; position:relative; }
+  .pros li, .cons li{
+    font-size:0.9rem; line-height:1.55; color:#d8d7dc; padding-left:20px; position:relative; margin-bottom:6px;
+  }
+  .pros li::before{
+    content:"+"; position:absolute; left:0; color:var(--teal); font-weight:700;
+  }
+  .cons li::before{
+    content:"–"; position:absolute; left:0; color:var(--pink); font-weight:700;
+  }
+
+  .register-btn{
+    margin-top:auto; text-align:center; text-decoration:none;
+    font-weight:700; font-family:'Inter', sans-serif; font-size:0.95rem;
+    padding:13px 20px; border-radius:10px; position:relative;
+    background:var(--accent); color:#0a0a0d; transition:.2s;
+  }
+  .register-btn:hover{ filter:brightness(1.12); transform:translateY(-1px); }
+  .aff-star{
+    display:block; text-align:center; font-family:'Space Mono', monospace;
+    font-size:0.66rem; color:var(--gray); margin-top:8px;
+  }
+
+  .c1{ --accent:var(--orange); }
+  .c2{ --accent:var(--purple); }
+  .c3{ --accent:var(--teal); }
+  .c4{ --accent:var(--pink); }
+  .c5{ --accent:#e0b83a; }
+  .c6{ --accent:var(--purple); }
+  .c7{ --accent:var(--gold); }
+
+  /* ===== FOOTER (kompakt) ===== */
+  footer{
+    border-top:1.5px solid var(--line);
+    background:var(--bg-alt);
+    padding:60px 24px 30px;
+  }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:30px; padding-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.9rem; max-width:34ch; }
+  .footer-links{
+    display:grid; grid-template-columns:repeat(3, auto); gap:10px 40px;
+  }
+  .footer-links a{
+    color:var(--ink); text-decoration:none; font-size:0.88rem;
+    display:block; transition:.2s;
+  }
+  .footer-links a:hover{ color:var(--orange-deep); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding-top:24px;
+  }
+  .footer-bottom .copy{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; }
+  .footer-warn{
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .footer-warn span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:6px 12px; border-radius:20px;
+  }
+  @media(max-width:600px){
+    .footer-links{ grid-template-columns:repeat(2, auto); }
+    .footer-warn{ justify-content:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="nodesCanvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
+    <a href="#" class="login-btn">Anmelden</a>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-nav">
+      <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="analyse.html"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="wallets.html" class="active"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
+    </div>
+    <div class="drawer-socials">
+      <a href="https://x.com/Krypto_Cuervo" target="_blank" rel="noopener">X (Twitter) →</a>
+      <a href="https://www.youtube.com/@Krypto_Cuervo" target="_blank" rel="noopener">YouTube →</a>
+      <a href="https://www.tiktok.com/@krypto_cuervo" target="_blank" rel="noopener">TikTok →</a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com</div>
+  </nav>
+
+  <!-- PAGE -->
+  <main class="page">
+    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
+    <span class="eyebrow">Kapitel 03</span>
+    <h1>Wallet-Vergleich</h1>
+    <p class="lead">Fünf Hardware-Wallets im direkten Vergleich — Vorteile, Nachteile und wofür sie sich jeweils eignen. So findest du die Verwahrung, die zu deinem Sicherheitsbedürfnis und deiner Bitcoin-Menge passt.</p>
+
+    <div class="affiliate-note">
+      <strong>Affiliate-Hinweis:</strong> Die "Kaufen"-Buttons unten sind Affiliate-Links. Wenn du darüber bestellst, erhalte ich ggf. eine Provision — für dich entstehen dabei keine zusätzlichen Kosten. Das ändert nichts an meiner Einschätzung der Vor- und Nachteile.
+    </div>
+
+    <div class="grid">
+
+      <div class="card c1">
+        <div class="card-head">
+          <div class="card-id"><img src="images/wallets/trezor.png" alt="Trezor Logo"></div>
+          <span class="rank">Platz 1</span>
+        </div>
+        <h2>Trezor</h2>
+        <span class="list-label">Vorteile</span>
+        <ul class="pros">
+          <li>Vollständig open-source — komplett öffentlich einsehbar, maximale Transparenz</li>
+          <li>Hohe Sicherheit durch regelmäßige, unabhängige Audits</li>
+          <li>Quantum-ready in neuen Modellen (Safe 7)</li>
+          <li>Shamir Backup möglich — sicher bei verteilter Aufbewahrung</li>
+          <li>Große Coin-Unterstützung — über 8.000–9.000 Assets</li>
+          <li>Benutzerfreundliche Desktop- & Web-App</li>
+        </ul>
+        <span class="list-label">Nachteile</span>
+        <ul class="cons">
+          <li>Kein Bluetooth/NFC — Verbindung nur per USB-Kabel</li>
+          <li>Die meisten Modelle ohne Touchscreen</li>
+        </ul>
+        <a class="register-btn" href="https://trezor.io/?gclsrc=aw.ds&&utm_source=google&gad_source=1&gad_campaignid=21722969262&gclid=CjwKCAjw1tLOBhAMEiwAiPkRHrtfpCrAGyT9eR8R0WJcbmqH6SPrw2zCOuDs0rizR1G1YTOshIZpYBoCLVgQAvD_BwE" target="_blank" rel="sponsored noopener">Kaufen</a>
+        <span class="aff-star">* Affiliate-Link</span>
+      </div>
+
+      <div class="card c2">
+        <div class="card-head">
+          <div class="card-id"><img src="images/wallets/tangem.png" alt="Tangem Logo"></div>
+          <span class="rank">Platz 2</span>
+        </div>
+        <h2>Tangem</h2>
+        <span class="list-label">Vorteile</span>
+        <ul class="pros">
+          <li>Seedless-Design — privater Schlüssel bleibt nur auf der Karte</li>
+          <li>Extrem einfach: Karte ans NFC-Handy halten, fertig</li>
+          <li>Physische Backup-Karten im Set statt Seed-Phrase</li>
+          <li>Kreditkarten-Format — wasserdicht, stoßfest, super portabel</li>
+          <li>Keine Seed-Phishing-Gefahr, da es keinen Seed gibt</li>
+          <li>Sehr günstig & skalierbar — Set oft für 50–90€</li>
+        </ul>
+        <span class="list-label">Nachteile</span>
+        <ul class="cons">
+          <li>Kein fortgeschrittener Multisig- oder Shamir-Support</li>
+          <li>Nur über NFC nutzbar — Abhängigkeit vom Smartphone</li>
+        </ul>
+        <a class="register-btn" href="http://tangem.com/?utm_source=google&utm_medium=cpc&utm_campaign=network:google|plt:search|sem:brand|lngg:eng|geo:ww&utm_term=tangem|kwd-1168514846331&utm_content=cid:22682020212|adid:759006595837|gid:185016398350|tgid:kwd-1168514846331|src:|dev:c|pn:|keyword:tangem|mt:e|expansion:|site:|csite:|devmod:|lockw:|locphy:9060717|nw:g&gad_source=1&gad_campaignid=22682020212&gclid=CjwKCAjw1tLOBhAMEiwAiPkRHmMrzZulQf00YUOejeZdvKKvO_DVHd8lMW7jGQSrnPDMIsLABV7X6BoCYfAQAvD_BwE" target="_blank" rel="sponsored noopener">Kaufen</a>
+        <span class="aff-star">* Affiliate-Link</span>
+      </div>
+
+      <div class="card c3">
+        <div class="card-head">
+          <div class="card-id"><img src="images/wallets/bitbox.png" alt="Bitbox Logo"></div>
+          <span class="rank">Platz 3</span>
+        </div>
+        <h2>Bitbox</h2>
+        <span class="list-label">Vorteile</span>
+        <ul class="pros">
+          <li>Schweizer Qualität & strenger Datenschutz</li>
+          <li>Dual-Chip-Design für maximale Sicherheit</li>
+          <li>Vollständig open-source — Firmware bis Hardware-Design</li>
+          <li>Bitcoin-only-Edition speziell für BTC-Maximalisten</li>
+          <li>Verschlüsseltes MicroSD-Karten-Backup möglich</li>
+          <li>Gutes Preis-Leistungs-Verhältnis (ca. 149–169€)</li>
+        </ul>
+        <span class="list-label">Nachteile</span>
+        <ul class="cons">
+          <li>Begrenzte Coin-Auswahl — ca. 1.500–2.000 Assets</li>
+          <li>Kein Bluetooth/NFC, nur USB-C</li>
+        </ul>
+        <a class="register-btn" href="https://shop.bitbox.swiss/?ref=qozqnkkx" target="_blank" rel="sponsored noopener">Kaufen</a>
+        <span class="aff-star">* Affiliate-Link</span>
+      </div>
+
+      <div class="card c4">
+        <div class="card-head">
+          <div class="card-id"><img src="images/wallets/ledger.png" alt="Ledger Logo"></div>
+          <span class="rank">Platz 4</span>
+        </div>
+        <h2>Ledger</h2>
+        <span class="list-label">Vorteile</span>
+        <ul class="pros">
+          <li>Größte Coin-Unterstützung der Branche — 5.500–6.000+ Assets</li>
+          <li>Ledger Live App — eine der intuitivsten am Markt</li>
+          <li>Bluetooth & NFC in Premium-Modellen (Flex, Stax)</li>
+          <li>Größte Community & bestes Tutorial-Angebot</li>
+          <li>Günstiger Einstieg ab ca. 79€ (Nano S Plus)</li>
+        </ul>
+        <span class="list-label">Nachteile</span>
+        <ul class="cons">
+          <li>Closed-Source-Firmware & Secure Element</li>
+          <li>Vergangene Datenleaks & Recover-Service-Kontroverse</li>
+        </ul>
+        <a class="register-btn" href="https://shop.ledger.com/?r=c85c42e53378" target="_blank" rel="sponsored noopener">Kaufen</a>
+        <span class="aff-star">* Affiliate-Link</span>
+      </div>
+
+      <div class="card c5">
+        <div class="card-head">
+          <div class="card-id"><img src="images/wallets/onekey.png" alt="OneKey Logo"></div>
+          <span class="rank">Platz 5</span>
+        </div>
+        <h2>OneKey</h2>
+        <span class="list-label">Vorteile</span>
+        <ul class="pros">
+          <li>Sehr starkes Preis-Leistungs-Verhältnis</li>
+          <li>Touchscreen & modernes, farbiges Design</li>
+          <li>Air-gapped-Option per QR-Code für maximale Offline-Sicherheit</li>
+          <li>Shamir Backup & Multisig-Support</li>
+          <li>Breite Multi-Chain-Unterstützung — über 10.000 Assets</li>
+        </ul>
+        <span class="list-label">Nachteile</span>
+        <ul class="cons">
+          <li>Noch relativ jung, weniger etabliertes Vertrauen</li>
+          <li>App/Software teils weniger intuitiv, wenige DE-Tutorials</li>
+        </ul>
+        <a class="register-btn" href="https://onekey.so/r/XYQE47" target="_blank" rel="sponsored noopener">Kaufen</a>
+        <span class="aff-star">* Affiliate-Link</span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+          <a href="agb.html">AGB</a>
+          <a href="widerruf.html">Widerrufsbelehrung</a>
+          <a href="versand.html">Versand &amp; Lieferung</a>
+          <a href="zahlungsarten.html">Zahlungsarten</a>
+          <a href="disclaimer.html">Disclaimer</a>
+          <a href="affiliate.html">Affiliate-Hinweis</a>
+          <a href="ueber-mich.html">Über mich</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn">
+          <span>Keine Anlageberatung!</span>
+          <span>Ab 18 Jahren</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a, .drawer-socials a').forEach(a=>{
+    a.addEventListener('click', () => toggleDrawer(false));
+  });
+
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35,
+        vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1,
+        pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize();
+    makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(247,147,26,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+</body>
+</html>

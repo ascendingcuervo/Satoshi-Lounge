@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datenschutzerklärung — Satoshi Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-alt:#131316;
+    --surface:#151518;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(255,255,255,0.12);
+    --line-soft: rgba(255,255,255,0.08);
+    --orange:#F7931A;
+    --orange-deep:#ffab47;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+  }
+  .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR (identisch zur Startseite) ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(8,8,10,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px;
+    cursor:pointer; z-index:210;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{
+    font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
+  }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--orange); color:#0a0a0d; border:none;
+    padding:10px 22px; border-radius:30px; cursor:pointer; text-decoration:none;
+    transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,26,0.35);
+    opacity:0; pointer-events:none; transition:.35s; z-index:150;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
+    background:#0d0d10;
+    border-right:1.5px solid var(--line);
+    transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1);
+    z-index:200;
+    display:flex; flex-direction:column;
+    padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    transition:.2s;
+  }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-socials{ margin-top:auto; padding:24px 32px 0; }
+  .drawer-socials a{
+    border-bottom:none; padding:10px 0; font-size:0.95rem; color:var(--gray); text-decoration:none; display:block;
+  }
+  .drawer-socials a:hover{ padding-left:6px; color:var(--orange-deep); }
+  .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
+
+  /* ===== PAGE / LEGAL CONTENT ===== */
+  .page{
+    max-width:760px; margin:0 auto; padding:150px 24px 140px;
+  }
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
+    margin-bottom:32px; transition:.2s;
+  }
+  .back-link:hover{ color:var(--orange); }
+  .page .eyebrow{
+    font-family:'Space Mono', monospace; color:var(--orange); font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:14px; display:block;
+  }
+  .page h1{ font-size:clamp(2.2rem, 5vw, 3rem); font-weight:700; margin-bottom:44px; }
+  .page .lead{ color:var(--gray); max-width:64ch; font-size:1.02rem; line-height:1.7; margin-bottom:44px; }
+  .legal-block{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:16px;
+    padding:32px 34px; margin-bottom:22px;
+  }
+  .legal-block h2{
+    font-size:1.15rem; color:var(--orange); margin-bottom:14px; font-weight:600;
+  }
+  .legal-block p{ color:#d8d7dc; line-height:1.75; font-size:0.98rem; margin-bottom:6px; }
+  .legal-block a{ color:var(--orange-deep); text-decoration:none; word-break:break-word; }
+  .legal-block a:hover{ text-decoration:underline; }
+  .legal-block .addr{ color:#d8d7dc; line-height:1.75; font-size:0.98rem; }
+  .legal-list{ list-style:none; margin-top:6px; }
+  .legal-list li{
+    color:#d8d7dc; line-height:1.7; font-size:0.98rem; padding-left:20px; position:relative; margin-bottom:8px;
+  }
+  .legal-list li::before{ content:"–"; position:absolute; left:0; color:var(--orange); }
+  .legal-list.two-col{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:0 20px;
+  }
+  @media(max-width:480px){ .legal-list.two-col{ grid-template-columns:1fr; } }
+  .form-field{
+    display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap;
+  }
+  .form-field span:first-child{
+    color:var(--gray); font-size:0.85rem; font-family:'Space Mono', monospace; white-space:nowrap;
+  }
+  .form-field .fill-line{
+    flex:1; min-width:120px; border-bottom:1px dashed var(--line); height:1px; align-self:flex-end; margin-bottom:4px;
+  }
+
+  /* ===== FOOTER (identisch zur Startseite, gekürzt) ===== */
+  footer{
+    border-top:1.5px solid var(--line);
+    background:var(--bg-alt);
+    padding:60px 24px 30px;
+  }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:30px; padding-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.9rem; max-width:34ch; }
+  .footer-links{
+    display:grid; grid-template-columns:repeat(3, auto); gap:10px 40px;
+  }
+  .footer-links a{
+    color:var(--ink); text-decoration:none; font-size:0.88rem;
+    display:block; transition:.2s;
+  }
+  .footer-links a:hover{ color:var(--orange-deep); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding-top:24px;
+  }
+  .footer-bottom .copy{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; }
+  .footer-warn{
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .footer-warn span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:6px 12px; border-radius:20px;
+  }
+  @media(max-width:600px){
+    .footer-links{ grid-template-columns:repeat(2, auto); }
+    .footer-warn{ justify-content:flex-start; }
+  }
+
+  @media(max-width:600px){
+    .legal-block{ padding:24px 22px; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="nodesCanvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
+    <a href="#" class="login-btn">Anmelden</a>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-nav">
+      <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="analyse.html"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="wallets.html"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
+    </div>
+    <div class="drawer-socials">
+      <a href="https://x.com/Krypto_Cuervo" target="_blank" rel="noopener">X (Twitter) →</a>
+      <a href="https://www.youtube.com/@Krypto_Cuervo" target="_blank" rel="noopener">YouTube →</a>
+      <a href="https://www.tiktok.com/@krypto_cuervo" target="_blank" rel="noopener">TikTok →</a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com</div>
+  </nav>
+
+  <!-- LEGAL CONTENT -->
+  <main class="page">
+    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
+    <span class="eyebrow">Rechtliches</span>
+    <h1>Datenschutzerklärung</h1>
+    <p class="lead">Stand: 25. Juli 2026 — wir freuen uns über Ihren Besuch auf satoshi-lounge.com. Der Schutz Ihrer personenbezogenen Daten ist uns wichtig. Nachfolgend informieren wir Sie, welche Daten wir erheben, wie wir diese verarbeiten und welche Rechte Ihnen nach der DSGVO zustehen.</p>
+
+    <div class="legal-block">
+      <h2>1. Verantwortlicher</h2>
+      <p>Verantwortlich für die Datenverarbeitung auf dieser Website ist:</p>
+      <p class="addr" style="margin-top:14px;">
+        Satoshi Lounge<br>
+        betrieben von Max Emanuel Stock<br>
+        Emsdettener Straße 10<br>
+        48268 Greven<br>
+        Deutschland
+      </p>
+      <p style="margin-top:10px;">E-Mail: <a href="mailto:AscendingCuervo@t-online.de">AscendingCuervo@t-online.de</a></p>
+    </div>
+
+    <div class="legal-block">
+      <h2>2. Allgemeine Hinweise zur Datenverarbeitung</h2>
+      <p>Personenbezogene Daten sind alle Informationen, mit denen Sie persönlich identifiziert werden können.</p>
+      <p style="margin-top:14px;">Die Verarbeitung Ihrer personenbezogenen Daten erfolgt ausschließlich im Rahmen der gesetzlichen Vorschriften der Datenschutz-Grundverordnung (DSGVO), des Bundesdatenschutzgesetzes (BDSG) sowie weiterer anwendbarer Datenschutzbestimmungen.</p>
+      <p style="margin-top:14px;">Wir verarbeiten personenbezogene Daten nur, soweit dies zur Bereitstellung einer funktionsfähigen Website, unserer Inhalte sowie unserer Dienstleistungen erforderlich ist.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>3. Hosting</h2>
+      <p>Diese Website wird über Vercel Inc. gehostet.</p>
+      <p style="margin-top:14px;">Beim Besuch unserer Website werden automatisch technische Informationen verarbeitet, die zur Bereitstellung der Website erforderlich sind. Hierzu gehören insbesondere:</p>
+      <ul class="legal-list">
+        <li>IP-Adresse</li>
+        <li>Datum und Uhrzeit des Zugriffs</li>
+        <li>Browsertyp und Browserversion</li>
+        <li>Betriebssystem</li>
+        <li>Referrer-URL</li>
+        <li>aufgerufene Seiten</li>
+        <li>technische Geräteinformationen</li>
+      </ul>
+      <p style="margin-top:14px;">Diese Daten werden ausschließlich zur Gewährleistung eines sicheren und stabilen Betriebs der Website verarbeitet.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage hierfür ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem sicheren und zuverlässigen Betrieb der Website).</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>4. Server-Logfiles</h2>
+      <p>Der Hosting-Anbieter speichert automatisch sogenannte Server-Logfiles. Diese können insbesondere folgende Informationen enthalten:</p>
+      <ul class="legal-list">
+        <li>IP-Adresse</li>
+        <li>Zeitpunkt des Zugriffs</li>
+        <li>Browser</li>
+        <li>Betriebssystem</li>
+        <li>HTTP-Statuscodes</li>
+        <li>aufgerufene Dateien</li>
+        <li>übertragene Datenmenge</li>
+      </ul>
+      <p style="margin-top:14px;">Die Verarbeitung erfolgt ausschließlich zur Fehleranalyse, Missbrauchserkennung und Gewährleistung der Systemsicherheit.</p>
+      <p style="margin-top:14px;">Eine Zusammenführung dieser Daten mit anderen Datenquellen erfolgt nicht.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>5. SSL- bzw. TLS-Verschlüsselung</h2>
+      <p>Diese Website verwendet aus Sicherheitsgründen eine SSL-/TLS-Verschlüsselung.</p>
+      <p style="margin-top:14px;">Dadurch werden sämtliche Daten, die zwischen Ihrem Browser und unserer Website übertragen werden, verschlüsselt.</p>
+      <p style="margin-top:14px;">Sie erkennen eine verschlüsselte Verbindung unter anderem an dem Präfix „https://" sowie am Schloss-Symbol Ihres Browsers.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>6. Kontaktaufnahme per E-Mail</h2>
+      <p>Wenn Sie uns per E-Mail kontaktieren, werden die von Ihnen übermittelten personenbezogenen Daten ausschließlich zur Bearbeitung Ihrer Anfrage verarbeitet. Hierzu gehören insbesondere:</p>
+      <ul class="legal-list">
+        <li>Name</li>
+        <li>E-Mail-Adresse</li>
+        <li>Inhalt Ihrer Nachricht</li>
+      </ul>
+      <p style="margin-top:14px;">Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) bzw. Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Bearbeitung von Anfragen).</p>
+      <p style="margin-top:14px;">Die Daten werden gelöscht, sobald sie für die Bearbeitung nicht mehr erforderlich sind und keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>7. Benutzerkonto</h2>
+      <p>Auf unserer Website besteht die Möglichkeit, ein Benutzerkonto anzulegen. Hierbei können personenbezogene Daten verarbeitet werden, insbesondere:</p>
+      <ul class="legal-list">
+        <li>Benutzername</li>
+        <li>Passwort</li>
+        <li>gegebenenfalls weitere freiwillig angegebene Daten</li>
+      </ul>
+      <p style="margin-top:14px;">Die Verarbeitung erfolgt ausschließlich zum Zweck der Bereitstellung des Benutzerkontos und der Nutzung unserer Dienste.</p>
+      <p style="margin-top:14px;">Passwörter werden nicht im Klartext gespeichert, sondern nach dem Stand der Technik verschlüsselt bzw. gehasht.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>8. Anmeldung</h2>
+      <p>Die Anmeldung erfolgt mittels Benutzername und Passwort.</p>
+      <p style="margin-top:14px;">Der Zugang dient insbesondere der Nutzung kostenpflichtiger Inhalte, sobald diese verfügbar sind.</p>
+      <p style="margin-top:14px;">Eine Weitergabe der Zugangsdaten an Dritte erfolgt nicht.</p>
+      <p style="margin-top:14px;">Nutzer sind verpflichtet, ihre Zugangsdaten vertraulich aufzubewahren.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>9. Cookies</h2>
+      <p>Unsere Website setzt derzeit keine selbst implementierten Cookies zu Werbe- oder Marketingzwecken ein.</p>
+      <p style="margin-top:14px;">Es kann jedoch technisch erforderlich sein, dass durch den Hosting-Anbieter oder künftig eingebundene Dienste technisch notwendige Cookies oder vergleichbare Technologien verwendet werden, um den sicheren Betrieb der Website zu gewährleisten.</p>
+      <p style="margin-top:14px;">Sollten zukünftig weitere Cookies oder Tracking-Technologien eingesetzt werden, werden wir diese Datenschutzerklärung entsprechend aktualisieren und – soweit gesetzlich erforderlich – Ihre Einwilligung einholen.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>10. Datensicherheit</h2>
+      <p>Wir treffen angemessene technische und organisatorische Maßnahmen, um Ihre personenbezogenen Daten gegen Verlust, Manipulation, unbefugten Zugriff oder sonstige unberechtigte Verarbeitung zu schützen.</p>
+      <p style="margin-top:14px;">Unsere Sicherheitsmaßnahmen werden entsprechend der technologischen Entwicklung fortlaufend angepasst.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>11. Print-on-Demand und Versanddienstleister</h2>
+      <p>Sobald über unsere Website physische Produkte bestellt werden können, erfolgt die Produktion und der Versand über unseren Fulfillment-Partner Printful.</p>
+      <p style="margin-top:14px;">Zur Abwicklung Ihrer Bestellung können insbesondere folgende personenbezogene Daten an Printful übermittelt werden:</p>
+      <ul class="legal-list">
+        <li>Vor- und Nachname</li>
+        <li>Lieferadresse</li>
+        <li>Rechnungsadresse</li>
+        <li>E-Mail-Adresse</li>
+        <li>Bestelldaten</li>
+      </ul>
+      <p style="margin-top:14px;">Die Übermittlung erfolgt ausschließlich zum Zweck der Vertragsabwicklung und Lieferung der bestellten Waren.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+      <p style="margin-top:14px;">Weitere Informationen zum Datenschutz bei Printful finden Sie unter: <a href="https://www.printful.com/privacy-policy" target="_blank" rel="noopener">printful.com/privacy-policy</a></p>
+    </div>
+
+    <div class="legal-block">
+      <h2>12. Zahlungsabwicklung</h2>
+      <p>Derzeit werden über diese Website keine Zahlungen abgewickelt.</p>
+      <p style="margin-top:14px;">Sobald kostenpflichtige Produkte oder Dienstleistungen angeboten werden, erfolgt die Verarbeitung personenbezogener Daten ausschließlich zur Vertragsabwicklung.</p>
+      <p style="margin-top:14px;">Die jeweils eingesetzten Zahlungsdienstleister werden rechtzeitig vor Aufnahme des Verkaufs in dieser Datenschutzerklärung ergänzt.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>13. Bitcoin-Analysetool</h2>
+      <p>Auf unserer Website wird künftig ein kostenpflichtiges Bitcoin-Analysetool angeboten.</p>
+      <p style="margin-top:14px;">Zur Bereitstellung des Zugangs können insbesondere folgende Daten verarbeitet werden:</p>
+      <ul class="legal-list">
+        <li>Benutzername</li>
+        <li>E-Mail-Adresse</li>
+        <li>Login-Daten</li>
+        <li>Informationen zum bestehenden Abonnement</li>
+        <li>technische Nutzungsdaten, soweit dies zur Bereitstellung des Dienstes erforderlich ist</li>
+      </ul>
+      <p style="margin-top:14px;">Die Verarbeitung erfolgt ausschließlich zur Vertragserfüllung gemäß Art. 6 Abs. 1 lit. b DSGVO.</p>
+      <p style="margin-top:14px;">Eine automatisierte Entscheidungsfindung oder Profilbildung findet nicht statt.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>14. Affiliate-Programme</h2>
+      <p>Auf unserer Website befinden sich Affiliate-Links zu ausgewählten Partnerunternehmen. Hierzu gehören unter anderem:</p>
+      <ul class="legal-list two-col">
+        <li>Bitvavo</li>
+        <li>Kraken</li>
+        <li>Bitpanda</li>
+        <li>Binance</li>
+        <li>Bitget</li>
+        <li>Bitunix</li>
+        <li>Ledger</li>
+        <li>BitBox</li>
+        <li>OneKey</li>
+        <li>Trezor</li>
+        <li>Tangem</li>
+      </ul>
+      <p style="margin-top:14px;">Beim Anklicken eines Affiliate-Links kann der jeweilige Anbieter erkennen, dass der Nutzer über unsere Website auf dessen Angebot weitergeleitet wurde. Hierzu können technische Informationen wie IP-Adresse, Zeitpunkt des Klicks oder eine Affiliate-ID verarbeitet werden.</p>
+      <p style="margin-top:14px;">Die eigentliche Datenverarbeitung erfolgt ausschließlich durch den jeweiligen Anbieter nach dessen eigener Datenschutzerklärung.</p>
+      <p style="margin-top:14px;">Wir erhalten keine Informationen über einzelne Konten, Identitäten oder Transaktionen unserer Nutzer.</p>
+      <p style="margin-top:14px;">Affiliate-Links dienen ausschließlich der Finanzierung und Weiterentwicklung unserer Website.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der wirtschaftlichen Finanzierung unseres Angebots).</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>15. Externe Links</h2>
+      <p>Unsere Website enthält Verlinkungen auf externe Webseiten Dritter.</p>
+      <p style="margin-top:14px;">Für die Inhalte sowie die Datenschutzbestimmungen dieser externen Websites sind ausschließlich deren jeweilige Betreiber verantwortlich.</p>
+      <p style="margin-top:14px;">Zum Zeitpunkt der Verlinkung waren keine rechtswidrigen Inhalte erkennbar.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>16. Speicherdauer</h2>
+      <p>Personenbezogene Daten werden nur so lange gespeichert, wie dies zur Erfüllung der jeweiligen Zwecke erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen.</p>
+      <p style="margin-top:14px;">Nach Wegfall des jeweiligen Verarbeitungszwecks werden die Daten gelöscht, sofern keine gesetzlichen Verpflichtungen einer Löschung entgegenstehen.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>17. Ihre Rechte nach der DSGVO</h2>
+      <p>Sie haben jederzeit das Recht auf:</p>
+      <ul class="legal-list">
+        <li>Auskunft über Ihre gespeicherten personenbezogenen Daten (Art. 15 DSGVO)</li>
+        <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
+        <li>Löschung Ihrer personenbezogenen Daten (Art. 17 DSGVO)</li>
+        <li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+        <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+        <li>Widerspruch gegen die Verarbeitung nach Art. 21 DSGVO</li>
+        <li>Widerruf einer erteilten Einwilligung mit Wirkung für die Zukunft</li>
+      </ul>
+      <p style="margin-top:14px;">Zur Ausübung Ihrer Rechte genügt eine formlose Mitteilung an: <a href="mailto:AscendingCuervo@t-online.de">AscendingCuervo@t-online.de</a></p>
+    </div>
+
+    <div class="legal-block">
+      <h2>18. Beschwerderecht</h2>
+      <p>Sie haben das Recht, sich bei einer Datenschutzaufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten zu beschweren.</p>
+      <p style="margin-top:14px;">Zuständig ist insbesondere die Datenschutzaufsichtsbehörde Ihres gewöhnlichen Aufenthaltsortes, Ihres Arbeitsplatzes oder des Ortes des mutmaßlichen Verstoßes.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>19. Änderungen dieser Datenschutzerklärung</h2>
+      <p>Wir behalten uns vor, diese Datenschutzerklärung anzupassen, wenn dies aufgrund technischer Entwicklungen, gesetzlicher Änderungen oder neuer Angebote erforderlich wird.</p>
+      <p style="margin-top:14px;">Die jeweils aktuelle Version ist jederzeit auf unserer Website abrufbar.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+          <a href="agb.html">AGB</a>
+          <a href="widerruf.html">Widerrufsbelehrung</a>
+          <a href="versand.html">Versand &amp; Lieferung</a>
+          <a href="zahlungsarten.html">Zahlungsarten</a>
+          <a href="disclaimer.html">Disclaimer</a>
+          <a href="affiliate.html">Affiliate-Hinweis</a>
+          <a href="ueber-mich.html">Über mich</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn">
+          <span>Keine Anlageberatung!</span>
+          <span>Ab 18 Jahren</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a, .drawer-socials a').forEach(a=>{
+    a.addEventListener('click', () => toggleDrawer(false));
+  });
+
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35,
+        vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1,
+        pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize();
+    makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(247,147,26,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyse — Satoshi Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-alt:#131316;
+    --surface:#151518;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(255,255,255,0.12);
+    --line-soft: rgba(255,255,255,0.08);
+    --orange:#F7931A;
+    --orange-deep:#ffab47;
+    --purple:#9b83ff;
+    --teal:#2adfc0;
+    --pink:#ff6fa8;
+    --gold:#f2c94c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+  }
+  .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(8,8,10,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px;
+    cursor:pointer; z-index:210;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{
+    font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
+  }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--orange); color:#0a0a0d; border:none;
+    padding:10px 22px; border-radius:30px; cursor:pointer; text-decoration:none;
+    transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,26,0.35);
+    opacity:0; pointer-events:none; transition:.35s; z-index:150;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
+    background:#0d0d10;
+    border-right:1.5px solid var(--line);
+    transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1);
+    z-index:200;
+    display:flex; flex-direction:column;
+    padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    transition:.2s;
+  }
+  .drawer-nav a.active{ color:var(--purple); background:rgba(155,131,255,0.08); }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-socials{ margin-top:auto; padding:24px 32px 0; }
+  .drawer-socials a{
+    border-bottom:none; padding:10px 0; font-size:0.95rem; color:var(--gray); text-decoration:none; display:block;
+  }
+  .drawer-socials a:hover{ padding-left:6px; color:var(--orange-deep); }
+  .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
+
+  /* ===== PAGE ===== */
+  .page{ max-width:1000px; margin:0 auto; padding:150px 24px 140px; position:relative; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
+    margin-bottom:32px; transition:.2s;
+  }
+  .back-link:hover{ color:var(--orange); }
+
+  .hero-center{ text-align:center; margin-bottom:70px; }
+  .soon-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.78rem; letter-spacing:0.08em;
+    color:var(--purple); border:1.5px solid var(--purple); background:rgba(155,131,255,0.08);
+    padding:8px 18px; border-radius:30px; margin-bottom:26px;
+  }
+  .soon-badge .pulse{
+    width:8px; height:8px; border-radius:50%; background:var(--purple);
+    box-shadow:0 0 10px var(--purple);
+    animation:pulse 1.6s infinite ease-in-out;
+  }
+  @keyframes pulse{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:.4; transform:scale(0.7); } }
+
+  .page h1{ font-size:clamp(2.4rem, 6vw, 4rem); font-weight:700; margin-bottom:22px; }
+  .page h1 .accent{ color:var(--purple); }
+  .hero-center p{ color:var(--gray); max-width:56ch; margin:0 auto; font-size:1.05rem; line-height:1.75; }
+
+  .join-wrap{ text-align:center; margin:44px 0 90px; }
+  .join-btn{
+    display:inline-block; text-decoration:none; font-weight:700; font-size:1.05rem;
+    padding:18px 44px; border-radius:12px; background:var(--orange); color:#0a0a0d;
+    transition:.25s; box-shadow:0 0 0 rgba(247,147,26,0);
+  }
+  .join-btn:hover{ background:var(--orange-deep); transform:translateY(-2px); box-shadow:0 10px 30px rgba(247,147,26,0.25); }
+  .join-sub{ margin-top:14px; color:var(--gray); font-size:0.82rem; font-family:'Space Mono', monospace; }
+
+  /* ===== FEATURE PREVIEW ===== */
+  .section-label{
+    text-align:center; font-family:'Space Mono', monospace; font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--gray); margin-bottom:36px;
+  }
+  .features{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:22px; margin-bottom:90px;
+  }
+  .feature{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:16px;
+    padding:28px 24px; position:relative; overflow:hidden;
+  }
+  .feature::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%);
+    pointer-events:none;
+  }
+  .feature .num{
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--accent);
+    border:1.5px solid var(--accent); width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; margin-bottom:16px; position:relative;
+  }
+  .feature h3{ font-size:1.15rem; margin-bottom:10px; position:relative; }
+  .feature p{ color:var(--gray); font-size:0.9rem; line-height:1.6; position:relative; }
+  .f1{ --accent:var(--purple); }
+  .f2{ --accent:var(--teal); }
+  .f3{ --accent:var(--orange); }
+  .f4{ --accent:var(--pink); }
+
+  /* ===== ONLY-BTC STRIP ===== */
+  .strip{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    flex-wrap:wrap; margin-bottom:20px;
+  }
+  .strip span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray);
+    border:1px solid var(--line-soft); padding:6px 14px; border-radius:20px;
+  }
+
+  /* ===== FOOTER ===== */
+  footer{
+    border-top:1.5px solid var(--line);
+    background:var(--bg-alt);
+    padding:60px 24px 30px;
+  }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:30px; padding-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.9rem; max-width:34ch; }
+  .footer-links{
+    display:grid; grid-template-columns:repeat(3, auto); gap:10px 40px;
+  }
+  .footer-links a{
+    color:var(--ink); text-decoration:none; font-size:0.88rem;
+    display:block; transition:.2s;
+  }
+  .footer-links a:hover{ color:var(--orange-deep); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding-top:24px;
+  }
+  .footer-bottom .copy{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; }
+  .footer-warn{
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .footer-warn span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:6px 12px; border-radius:20px;
+  }
+  @media(max-width:600px){
+    .footer-links{ grid-template-columns:repeat(2, auto); }
+    .footer-warn{ justify-content:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="nodesCanvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
+    <a href="#" class="login-btn">Anmelden</a>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-nav">
+      <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="analyse.html" class="active"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="wallets.html"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
+    </div>
+    <div class="drawer-socials">
+      <a href="https://x.com/Krypto_Cuervo" target="_blank" rel="noopener">X (Twitter) →</a>
+      <a href="https://www.youtube.com/@Krypto_Cuervo" target="_blank" rel="noopener">YouTube →</a>
+      <a href="https://www.tiktok.com/@krypto_cuervo" target="_blank" rel="noopener">TikTok →</a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com</div>
+  </nav>
+
+  <!-- PAGE -->
+  <main class="page">
+    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
+
+    <div class="hero-center">
+      <span class="soon-badge"><span class="pulse"></span>Coming Soon</span>
+      <h1>Das Bitcoin-<span class="accent">Analysetool</span></h1>
+      <p>Ein Analysetool, das sich ausschließlich auf Bitcoin konzentriert — keine 500 Altcoins, keine Ablenkung. Im Zentrum stehen Zeit und historische Daten: Wie hat sich Bitcoin in vergangenen Zyklen verhalten, welche Muster wiederholen sich, und welche Indikatoren haben sich über die Zeit als verlässlich erwiesen. Verständlich aufbereitet statt überladen.</p>
+    </div>
+
+    <div class="join-wrap">
+      <a href="#" class="join-btn">Mitglied werden</a>
+      <div class="join-sub">Früher Zugang, sobald das Tool startet</div>
+    </div>
+
+    <div class="strip">
+      <span>Nur Bitcoin</span>
+      <span>Zeitbasiert</span>
+      <span>Historische Zyklen</span>
+      <span>Eigene Indikatoren</span>
+    </div>
+
+    <div class="section-label">Woran gearbeitet wird</div>
+    <div class="features">
+      <div class="feature f1">
+        <div class="num">01</div>
+        <h3>Zeit & Zyklen</h3>
+        <p>Bitcoins Kursverlauf im zeitlichen Kontext — vergangene Zyklen und wiederkehrende Muster auf einen Blick.</p>
+      </div>
+      <div class="feature f2">
+        <div class="num">02</div>
+        <h3>Historische Daten</h3>
+        <p>On-Chain- und Preisdaten aus der Vergangenheit, aufbereitet, um Entwicklungen besser einordnen zu können.</p>
+      </div>
+      <div class="feature f3">
+        <div class="num">03</div>
+        <h3>Indikatoren</h3>
+        <p>Ausgewählte Indikatoren, die sich über verschiedene Marktphasen hinweg bewährt haben — kombinierbar statt isoliert.</p>
+      </div>
+      <div class="feature f4">
+        <div class="num">04</div>
+        <h3>Nur Bitcoin</h3>
+        <p>Kein Rauschen durch tausende Altcoins — der volle Fokus liegt auf einem einzigen Asset.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+          <a href="agb.html">AGB</a>
+          <a href="widerruf.html">Widerrufsbelehrung</a>
+          <a href="versand.html">Versand &amp; Lieferung</a>
+          <a href="zahlungsarten.html">Zahlungsarten</a>
+          <a href="disclaimer.html">Disclaimer</a>
+          <a href="affiliate.html">Affiliate-Hinweis</a>
+          <a href="ueber-mich.html">Über mich</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn">
+          <span>Keine Anlageberatung!</span>
+          <span>Ab 18 Jahren</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a, .drawer-socials a').forEach(a=>{
+    a.addEventListener('click', () => toggleDrawer(false));
+  });
+
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35,
+        vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1,
+        pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize();
+    makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(247,147,26,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+</body>
+</html>
