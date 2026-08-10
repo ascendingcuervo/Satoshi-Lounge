@@ -62,6 +62,10 @@
     font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
     display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
   }
+  .topbar .brand{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    white-space:nowrap;
+  }
   .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
   .login-btn{
     font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
@@ -117,6 +121,10 @@
   .back-link:hover{ color:var(--orange); }
 
   .page-intro{ margin-bottom:44px; }
+  .page-intro .eyebrow{
+    font-family:'Space Mono', monospace; color:var(--orange); font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:14px; display:block;
+  }
   .page h1{ font-size:clamp(2.2rem, 5.5vw, 3.4rem); font-weight:700; margin-bottom:18px; }
   .page h1 .accent{ color:var(--purple); }
   .page-intro p{ color:var(--gray); max-width:70ch; font-size:1.02rem; line-height:1.75; }
@@ -319,6 +327,10 @@
   @media(max-width:600px){
     .footer-links{ grid-template-columns:repeat(2, auto); }
     .footer-warn{ justify-content:flex-start; }
+    .topbar .brand{ font-size:0.68rem; letter-spacing:0.02em; gap:5px; }
+    .brand .dot{ width:6px; height:6px; }
+    .login-btn{ padding:8px 14px; font-size:0.78rem; }
+    .topbar{ padding:16px 16px; }
   }
 </style>
 </head>
@@ -356,7 +368,6 @@
 
   <!-- PAGE -->
   <main class="page">
-    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
 
     <div class="page-intro">
       <span class="eyebrow">Kapitel 02</span>

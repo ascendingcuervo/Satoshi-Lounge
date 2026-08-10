@@ -58,6 +58,10 @@
     font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
     display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
   }
+  .topbar .brand{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    white-space:nowrap;
+  }
   .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
   .login-btn{
     font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
@@ -185,6 +189,10 @@
   @media(max-width:600px){
     .footer-links{ grid-template-columns:repeat(2, auto); }
     .footer-warn{ justify-content:flex-start; }
+    .topbar .brand{ font-size:0.68rem; letter-spacing:0.02em; gap:5px; }
+    .brand .dot{ width:6px; height:6px; }
+    .login-btn{ padding:8px 14px; font-size:0.78rem; }
+    .topbar{ padding:16px 16px; }
   }
 
   @media(max-width:600px){
@@ -226,7 +234,6 @@
 
   <!-- LEGAL CONTENT -->
   <main class="page">
-    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
     <span class="eyebrow">Rechtliches</span>
     <h1>Datenschutzerklärung</h1>
     <p class="lead">Stand: 25. Juli 2026 — wir freuen uns über Ihren Besuch auf satoshi-lounge.com. Der Schutz Ihrer personenbezogenen Daten ist uns wichtig. Nachfolgend informieren wir Sie, welche Daten wir erheben, wie wir diese verarbeiten und welche Rechte Ihnen nach der DSGVO zustehen.</p>

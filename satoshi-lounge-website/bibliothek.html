@@ -62,6 +62,10 @@
     font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
     display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
   }
+  .topbar .brand{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    white-space:nowrap;
+  }
   .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
   .login-btn{
     font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
@@ -196,7 +200,7 @@
 
   /* ===== EDITION HEADER ===== */
   .edition-head{
-    display:flex; align-items:baseline; gap:16px; margin:70px 0 30px;
+    display:flex; align-items:center; gap:16px; margin:70px 0 30px;
     padding-bottom:16px; border-bottom:1px solid var(--line);
   }
   .edition-head .edition-eyebrow{
@@ -300,6 +304,10 @@
   @media(max-width:600px){
     .footer-links{ grid-template-columns:repeat(2, auto); }
     .footer-warn{ justify-content:flex-start; }
+    .topbar .brand{ font-size:0.68rem; letter-spacing:0.02em; gap:5px; }
+    .brand .dot{ width:6px; height:6px; }
+    .login-btn{ padding:8px 14px; font-size:0.78rem; }
+    .topbar{ padding:16px 16px; }
   }
 </style>
 </head>
@@ -337,7 +345,6 @@
 
   <!-- PAGE -->
   <main class="page">
-    <a href="index.html" class="back-link">← Zurück zur Startseite</a>
     <span class="eyebrow">Kapitel 05</span>
     <h1>Bibliothek</h1>
     <p class="lead">Bücher, die mir selbst beim Verstehen von Bitcoin geholfen haben — plus, sobald sie fertig sind, meine eigenen. Alle unten gelisteten Titel sind reine Empfehlungen ohne Affiliate-Links, ich verdiene daran nichts.</p>
