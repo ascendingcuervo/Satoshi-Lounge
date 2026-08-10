@@ -108,7 +108,7 @@
   .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
 
   /* ===== PAGE ===== */
-  .page{ max-width:1000px; margin:0 auto; padding:150px 24px 140px; position:relative; }
+  .page{ max-width:1100px; margin:0 auto; padding:150px 24px 140px; position:relative; }
   .back-link{
     display:inline-flex; align-items:center; gap:8px;
     color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
@@ -116,71 +116,170 @@
   }
   .back-link:hover{ color:var(--orange); }
 
-  .hero-center{ text-align:center; margin-bottom:70px; }
-  .soon-badge{
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:'Space Mono', monospace; font-size:0.78rem; letter-spacing:0.08em;
-    color:var(--purple); border:1.5px solid var(--purple); background:rgba(155,131,255,0.08);
-    padding:8px 18px; border-radius:30px; margin-bottom:26px;
+  .page-intro{ margin-bottom:44px; }
+  .page h1{ font-size:clamp(2.2rem, 5.5vw, 3.4rem); font-weight:700; margin-bottom:18px; }
+  .page h1 .accent{ color:var(--purple); }
+  .page-intro p{ color:var(--gray); max-width:70ch; font-size:1.02rem; line-height:1.75; }
+
+  /* ===== TOOL SHELL ===== */
+  .tool-shell{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:20px;
+    overflow:hidden; position:relative;
   }
-  .soon-badge .pulse{
-    width:8px; height:8px; border-radius:50%; background:var(--purple);
-    box-shadow:0 0 10px var(--purple);
-    animation:pulse 1.6s infinite ease-in-out;
+  .tool-shell::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--purple) 50%, transparent);
   }
+  .tool-topline{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    padding:22px 26px; border-bottom:1px solid var(--line-soft);
+  }
+  .price-label{
+    font-family:'Space Mono', monospace; font-size:0.7rem; letter-spacing:0.12em; color:var(--gray);
+    text-transform:uppercase; display:block; margin-bottom:6px;
+  }
+  .price-row{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .price-value{ font-family:'Space Grotesk', sans-serif; font-size:1.9rem; font-weight:700; color:var(--ink); }
+  .price-change{
+    font-family:'Space Mono', monospace; font-size:0.85rem; font-weight:600;
+    padding:3px 10px; border-radius:20px;
+  }
+  .price-change.up{ color:var(--teal); background:rgba(42,223,192,0.12); }
+  .price-change.down{ color:var(--pink); background:rgba(255,111,168,0.12); }
+  .live-status{
+    display:flex; align-items:center; gap:7px; font-family:'Space Mono', monospace;
+    font-size:0.75rem; color:var(--gray);
+  }
+  .live-status .live-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--gray);
+  }
+  .live-status.is-live .live-dot{ background:var(--teal); box-shadow:0 0 8px var(--teal); animation:pulse 1.6s infinite ease-in-out; }
+  .live-status.is-live{ color:var(--teal); }
+  .refresh-btn{
+    background:transparent; border:1.5px solid var(--line); border-radius:8px;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    color:var(--gray); cursor:pointer; transition:.2s; font-size:0.9rem;
+  }
+  .refresh-btn:hover{ border-color:var(--orange); color:var(--orange); }
   @keyframes pulse{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:.4; transform:scale(0.7); } }
 
-  .page h1{ font-size:clamp(2.4rem, 6vw, 4rem); font-weight:700; margin-bottom:22px; }
-  .page h1 .accent{ color:var(--purple); }
-  .hero-center p{ color:var(--gray); max-width:56ch; margin:0 auto; font-size:1.05rem; line-height:1.75; }
+  /* Sektionen (untereinander statt Tabs) */
+  .tool-section{ padding:26px; border-top:1px solid var(--line-soft); }
+  .tool-section:first-of-type{ border-top:none; }
+  .tool-section-head{
+    display:flex; align-items:center; gap:10px; margin-bottom:20px;
+  }
+  .tool-section-num{
+    width:30px; height:30px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace; font-size:0.78rem; font-weight:700;
+    border:1.5px solid var(--sc); color:var(--sc);
+  }
+  .tool-section-head h2{ font-size:1.2rem; font-weight:700; color:var(--ink); }
+  .s-overview{ --sc: var(--orange); }
+  .s-dca{ --sc: var(--teal); }
+  .s-portfolio{ --sc: var(--purple); }
+  .s-bibliothek{ --sc: var(--gold); }
 
-  .join-wrap{ text-align:center; margin:44px 0 90px; }
-  .join-btn{
-    display:inline-block; text-decoration:none; font-weight:700; font-size:1.05rem;
-    padding:18px 44px; border-radius:12px; background:var(--orange); color:#0a0a0d;
-    transition:.25s; box-shadow:0 0 0 rgba(247,147,26,0);
+  /* Timeframe + indicators */
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .pill-btn{
+    font-family:'Space Mono', monospace; font-size:0.78rem; padding:7px 14px; border-radius:20px;
+    border:1.5px solid var(--line); background:transparent; color:var(--gray); cursor:pointer; transition:.2s;
+    display:flex; align-items:center; gap:6px;
   }
-  .join-btn:hover{ background:var(--orange-deep); transform:translateY(-2px); box-shadow:0 10px 30px rgba(247,147,26,0.25); }
-  .join-sub{ margin-top:14px; color:var(--gray); font-size:0.82rem; font-family:'Space Mono', monospace; }
+  .pill-btn .sw{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .pill-btn.active{ border-color:var(--pc); color:var(--pc); background:color-mix(in srgb, var(--pc) 12%, transparent); }
+  .timeframe-row .pill-btn{ flex:1; justify-content:center; min-width:56px; }
 
-  /* ===== FEATURE PREVIEW ===== */
-  .section-label{
-    text-align:center; font-family:'Space Mono', monospace; font-size:0.75rem;
-    letter-spacing:0.1em; text-transform:uppercase; color:var(--gray); margin-bottom:36px;
+  .chart-wrap{ position:relative; height:280px; margin-bottom:6px; }
+  .chart-wrap svg{ width:100%; height:100%; display:block; }
+  .chart-loading{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--gray); font-family:'Space Mono', monospace; font-size:0.8rem;
   }
-  .features{
-    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-    gap:22px; margin-bottom:90px;
-  }
-  .feature{
-    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:16px;
-    padding:28px 24px; position:relative; overflow:hidden;
-  }
-  .feature::before{
-    content:""; position:absolute; inset:0;
-    background:radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%);
-    pointer-events:none;
-  }
-  .feature .num{
-    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--accent);
-    border:1.5px solid var(--accent); width:34px; height:34px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center; margin-bottom:16px; position:relative;
-  }
-  .feature h3{ font-size:1.15rem; margin-bottom:10px; position:relative; }
-  .feature p{ color:var(--gray); font-size:0.9rem; line-height:1.6; position:relative; }
-  .f1{ --accent:var(--purple); }
-  .f2{ --accent:var(--teal); }
-  .f3{ --accent:var(--orange); }
-  .f4{ --accent:var(--pink); }
+  .rsi-wrap{ height:80px; margin-bottom:18px; }
+  .rsi-wrap svg{ width:100%; height:100%; display:block; }
 
-  /* ===== ONLY-BTC STRIP ===== */
-  .strip{
-    display:flex; align-items:center; justify-content:center; gap:14px;
-    flex-wrap:wrap; margin-bottom:20px;
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+  .stat-card{
+    background:#0d0d10; border:1.5px solid var(--line-soft); border-radius:12px; padding:16px 18px;
+    display:flex; flex-direction:column; gap:4px;
   }
-  .strip span{
-    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray);
-    border:1px solid var(--line-soft); padding:6px 14px; border-radius:20px;
+  .stat-card.wide{ grid-column:1 / -1; }
+  .stat-label{ font-family:'Space Mono', monospace; font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--gray); }
+  .stat-value{ font-family:'Space Mono', monospace; font-size:1.1rem; font-weight:700; color:var(--ink); }
+  .stat-value.neg{ color:var(--pink); }
+  .stat-sub{ font-size:0.78rem; color:var(--gray); margin-top:2px; line-height:1.5; }
+
+  /* DCA / inputs */
+  .field-label{
+    font-family:'Space Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--gray); display:block; margin-bottom:8px;
+  }
+  .tool-input{
+    width:100%; background:#0d0d10; border:1.5px solid var(--line); border-radius:9px;
+    padding:11px 12px; color:var(--ink); font-family:'Space Mono', monospace; font-size:0.95rem;
+    box-sizing:border-box; margin-bottom:16px;
+  }
+  .tool-input:focus{ outline:none; border-color:var(--purple); }
+  .dca-card{
+    background:#0d0d10; border:1.5px solid var(--line-soft); border-radius:14px; padding:20px; margin-bottom:18px;
+    max-width:420px;
+  }
+  .dca-card .tool-input{ margin-bottom:14px; }
+  .dca-card .tool-input:last-child{ margin-bottom:0; }
+  .result-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px 12px; }
+  .result-note{ font-size:0.78rem; color:var(--gray); margin-top:14px; line-height:1.5; }
+  .empty-note{ color:var(--gray); font-size:0.9rem; }
+
+  /* Portfolio */
+  .add-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+  .add-row .tool-input{ margin-bottom:0; }
+  .add-row input[type="date"]{ flex:2; min-width:150px; }
+  .add-row input[type="number"]{ flex:1; min-width:90px; }
+  .add-btn{
+    background:var(--orange); border:none; border-radius:9px; width:42px; color:#0a0a0d;
+    font-size:1.2rem; font-weight:700; cursor:pointer; transition:.2s;
+  }
+  .add-btn:hover{ background:var(--orange-deep); }
+  .entry-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 4px; border-bottom:1px solid var(--line-soft); font-family:'Space Mono', monospace; font-size:0.85rem;
+  }
+  .entry-row:last-child{ border-bottom:none; }
+  .entry-row .del-btn{
+    background:none; border:none; color:var(--gray); cursor:pointer; font-size:1rem; padding:2px 6px;
+  }
+  .entry-row .del-btn:hover{ color:var(--pink); }
+
+  /* Bibliothek */
+  .lib-categories{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .lib-article{
+    background:#0d0d10; border:1.5px solid var(--line-soft); border-radius:12px; margin-bottom:10px; overflow:hidden;
+  }
+  .lib-article-head{
+    width:100%; display:flex; justify-content:space-between; align-items:center;
+    background:none; border:none; padding:14px 16px; cursor:pointer; text-align:left;
+    color:var(--ink); font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:0.92rem;
+  }
+  .lib-article-head .chev{ color:var(--gray); transition:transform .2s; font-family:monospace; }
+  .lib-article.open .lib-article-head .chev{ transform:rotate(180deg); }
+  .lib-article-body{
+    display:none; padding:0 16px 16px; color:var(--gray); font-size:0.88rem; line-height:1.6;
+  }
+  .lib-article.open .lib-article-body{ display:block; }
+
+  .disclaimer-note{
+    text-align:center; font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray);
+    margin-top:24px;
+  }
+
+  @media(max-width:640px){
+    .tool-topline{ flex-direction:column; align-items:flex-start; }
+    .stat-grid{ grid-template-columns:1fr; }
+    .add-row{ flex-direction:column; }
+    .add-row .tool-input{ width:100%; }
   }
 
   /* ===== FOOTER ===== */
@@ -259,47 +358,100 @@
   <main class="page">
     <a href="index.html" class="back-link">← Zurück zur Startseite</a>
 
-    <div class="hero-center">
-      <span class="soon-badge"><span class="pulse"></span>Coming Soon</span>
+    <div class="page-intro">
+      <span class="eyebrow">Kapitel 02</span>
       <h1>Das Bitcoin-<span class="accent">Analysetool</span></h1>
-      <p>Ein Analysetool, das sich ausschließlich auf Bitcoin konzentriert — keine 500 Altcoins, keine Ablenkung. Im Zentrum stehen Zeit und historische Daten: Wie hat sich Bitcoin in vergangenen Zyklen verhalten, welche Muster wiederholen sich, und welche Indikatoren haben sich über die Zeit als verlässlich erwiesen. Verständlich aufbereitet statt überladen.</p>
+      <p>Ausschließlich auf Bitcoin fokussiert — keine 500 Altcoins, keine Ablenkung. Live-Chart mit Indikatoren, ein DCA-Rechner, dein eigenes Portfolio und eine Bibliothek mit allem Wichtigen rund um Bitcoin.</p>
     </div>
 
-    <div class="join-wrap">
-      <a href="#" class="join-btn">Mitglied werden</a>
-      <div class="join-sub">Früher Zugang, sobald das Tool startet</div>
+    <div class="tool-shell">
+      <div class="tool-topline">
+        <div>
+          <span class="price-label">BTC / USD</span>
+          <div class="price-row">
+            <span class="price-value" id="priceValue">--</span>
+            <span class="price-change" id="priceChange" style="display:none;"></span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div class="live-status" id="liveStatus"><span class="live-dot"></span><span id="liveStatusText">Lädt…</span></div>
+          <button class="refresh-btn" id="refreshBtn" title="Aktualisieren">↻</button>
+        </div>
+      </div>
+
+      <!-- ÜBERSICHT -->
+      <div class="tool-section s-overview" id="panel-overview">
+        <div class="tool-section-head">
+          <span class="tool-section-num">01</span>
+          <h2>Live-Chart & Indikatoren</h2>
+        </div>
+        <div class="pill-row timeframe-row" id="timeframeRow"></div>
+        <div class="pill-row" id="indicatorRow"></div>
+
+        <div class="chart-wrap" id="chartWrap">
+          <div class="chart-loading" id="chartLoading">Lädt Chart…</div>
+        </div>
+        <div class="rsi-wrap" id="rsiWrap" style="display:none;"></div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-label">Allzeithoch (ATH)</span>
+            <span class="stat-value" id="athValue">--</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Abstand zum ATH</span>
+            <span class="stat-value neg" id="athPctValue">--</span>
+          </div>
+          <div class="stat-card wide">
+            <span class="stat-label">Nächstes Halving</span>
+            <span class="stat-value" id="halvingValue">--</span>
+            <span class="stat-sub">Geschätzt (~April 2028) · reine Datumsrechnung, keine Live-Blockhöhe.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DCA RECHNER -->
+      <div class="tool-section s-dca" id="panel-dca">
+        <div class="tool-section-head">
+          <span class="tool-section-num">02</span>
+          <h2>DCA-Rechner</h2>
+        </div>
+        <div class="dca-card">
+          <span class="field-label">Monatlicher Betrag (USD)</span>
+          <input type="number" class="tool-input" id="dcaAmount" value="100" min="1">
+          <span class="field-label">Start-Datum</span>
+          <input type="date" class="tool-input" id="dcaStart" value="2021-01-01" min="2013-01-01">
+        </div>
+        <div id="dcaResults"></div>
+      </div>
+
+      <!-- PORTFOLIO -->
+      <div class="tool-section s-portfolio" id="panel-portfolio">
+        <div class="tool-section-head">
+          <span class="tool-section-num">03</span>
+          <h2>Dein Portfolio</h2>
+        </div>
+        <div class="stat-grid" id="portfolioSummary" style="margin-bottom:20px;"></div>
+        <div class="add-row">
+          <input type="date" class="tool-input" id="entryDate">
+          <input type="number" class="tool-input" id="entryAmount" placeholder="USD" min="1">
+          <button class="add-btn" id="addEntryBtn">+</button>
+        </div>
+        <div id="portfolioList"></div>
+      </div>
+
+      <!-- BIBLIOTHEK -->
+      <div class="tool-section s-bibliothek" id="panel-bibliothek">
+        <div class="tool-section-head">
+          <span class="tool-section-num">04</span>
+          <h2>Bibliothek</h2>
+        </div>
+        <div class="lib-categories" id="libCategories"></div>
+        <div id="libArticles"></div>
+      </div>
     </div>
 
-    <div class="strip">
-      <span>Nur Bitcoin</span>
-      <span>Zeitbasiert</span>
-      <span>Historische Zyklen</span>
-      <span>Eigene Indikatoren</span>
-    </div>
-
-    <div class="section-label">Woran gearbeitet wird</div>
-    <div class="features">
-      <div class="feature f1">
-        <div class="num">01</div>
-        <h3>Zeit & Zyklen</h3>
-        <p>Bitcoins Kursverlauf im zeitlichen Kontext — vergangene Zyklen und wiederkehrende Muster auf einen Blick.</p>
-      </div>
-      <div class="feature f2">
-        <div class="num">02</div>
-        <h3>Historische Daten</h3>
-        <p>On-Chain- und Preisdaten aus der Vergangenheit, aufbereitet, um Entwicklungen besser einordnen zu können.</p>
-      </div>
-      <div class="feature f3">
-        <div class="num">03</div>
-        <h3>Indikatoren</h3>
-        <p>Ausgewählte Indikatoren, die sich über verschiedene Marktphasen hinweg bewährt haben — kombinierbar statt isoliert.</p>
-      </div>
-      <div class="feature f4">
-        <div class="num">04</div>
-        <h3>Nur Bitcoin</h3>
-        <p>Kein Rauschen durch tausende Altcoins — der volle Fokus liegt auf einem einzigen Asset.</p>
-      </div>
-    </div>
+    <p class="disclaimer-note">Keine Anlageberatung — alle Daten und Berechnungen dienen ausschließlich Informationszwecken.</p>
   </main>
 
   <!-- FOOTER -->
@@ -408,6 +560,506 @@
       requestAnimationFrame(step);
     }
     step();
+  })();
+
+  // ===== BITCOIN ANALYSETOOL =====
+  (function(){
+    const ORANGE = "#F7931A", TEAL = "#2adfc0", PINK = "#ff6fa8", PURPLE = "#9b83ff", GOLD = "#f2c94c", GRAY = "#9b9aa4";
+
+    // Echte, recherchierte Jahres-Kerzen als Fallback, falls kein Live-Zugriff möglich ist. Stand: 8. August 2026.
+    const FALLBACK_CANDLES = [
+      { t: new Date("2013-12-31").getTime(), open: 13, high: 1150, low: 13, close: 757 },
+      { t: new Date("2014-12-31").getTime(), open: 757, high: 950, low: 315, close: 320 },
+      { t: new Date("2015-12-31").getTime(), open: 320, high: 500, low: 150, close: 430 },
+      { t: new Date("2016-12-31").getTime(), open: 430, high: 980, low: 365, close: 960 },
+      { t: new Date("2017-12-31").getTime(), open: 960, high: 19850, low: 775, close: 13850 },
+      { t: new Date("2018-12-31").getTime(), open: 13850, high: 17000, low: 3190, close: 3740 },
+      { t: new Date("2019-12-31").getTime(), open: 3740, high: 13880, low: 3400, close: 7200 },
+      { t: new Date("2020-12-31").getTime(), open: 7200, high: 29000, low: 3850, close: 29000 },
+      { t: new Date("2021-12-31").getTime(), open: 29000, high: 69000, low: 28800, close: 46200 },
+      { t: new Date("2022-12-31").getTime(), open: 46200, high: 48000, low: 15480, close: 16540 },
+      { t: new Date("2023-12-31").getTime(), open: 16540, high: 44700, low: 16500, close: 42280 },
+      { t: new Date("2024-12-31").getTime(), open: 42280, high: 108000, low: 38500, close: 93430 },
+      { t: new Date("2025-10-04").getTime(), open: 93430, high: 126080, low: 93430, close: 126080 },
+      { t: new Date("2025-12-31").getTime(), open: 126080, high: 126080, low: 82611, close: 87510 },
+      { t: new Date("2026-08-08").getTime(), open: 87510, high: 96500, low: 59500, close: 65000 },
+    ];
+    const ATH_FALLBACK = 126080;
+    const HALVING_TARGET = new Date("2028-04-20T00:00:00Z").getTime();
+    const TIMEFRAMES = [
+      { key: "7", label: "7T" }, { key: "30", label: "30T" },
+      { key: "90", label: "90T" }, { key: "365", label: "1J" },
+    ];
+    const INDICATORS = [
+      { key: "sma", label: "SMA", color: ORANGE, on: true },
+      { key: "ema", label: "EMA", color: PURPLE, on: false },
+      { key: "boll", label: "Bollinger", color: GOLD, on: false },
+      { key: "rsi", label: "RSI", color: PINK, on: false },
+    ];
+    const CATEGORIES = [
+      { key: "geschichte", label: "Geschichte" },
+      { key: "grundlagen", label: "Grundlagen" },
+      { key: "investieren", label: "Investieren" },
+      { key: "sicherheit", label: "Sicherheit" },
+      { key: "indikatoren", label: "Indikatoren" },
+      { key: "glossar", label: "Glossar" },
+    ];
+    const ARTICLES = [
+      { cat: "geschichte", title: "Das Whitepaper (2008)", text: "Am 31. Oktober 2008 veröffentlichte eine Person oder Gruppe unter dem Pseudonym Satoshi Nakamoto das Bitcoin-Whitepaper 'Bitcoin: A Peer-to-Peer Electronic Cash System'. Es beschrieb ein digitales Zahlungssystem ohne Banken oder zentrale Instanz." },
+      { cat: "geschichte", title: "Der Genesis Block (2009)", text: "Am 3. Januar 2009 wurde der erste Bitcoin-Block geschürft. Satoshi hinterließ darin eine Zeitungsschlagzeile über eine drohende zweite Bankenrettung — ein Hinweis auf den Auslöser hinter der Idee." },
+      { cat: "geschichte", title: "Erste Transaktion", text: "Am 12. Januar 2009 sendete Satoshi Nakamoto die erste Bitcoin-Transaktion an den Entwickler Hal Finney." },
+      { cat: "geschichte", title: "Bitcoin Pizza Day (2010)", text: "Am 22. Mai 2010 bezahlte ein Programmierer 10.000 BTC für zwei Pizzen — der erste dokumentierte Kauf eines realen Produkts mit Bitcoin." },
+      { cat: "geschichte", title: "Mt. Gox", text: "Mt. Gox war jahrelang die größte Bitcoin-Börse der Welt, bis sie 2014 nach dem Verlust hunderttausender BTC zusammenbrach." },
+      { cat: "geschichte", title: "Halvings im Rückblick", text: "2012, 2016, 2020 und 2024 halbierte sich die Miner-Belohnung jeweils. Nach den ersten drei Halvings folgten historisch (nicht garantiert) mittelfristig deutliche Kursbewegungen." },
+      { cat: "geschichte", title: "Spot-Bitcoin-ETFs (2024)", text: "Im Januar 2024 ließ die US-Börsenaufsicht SEC erstmals Spot-Bitcoin-ETFs zu — von vielen als Meilenstein für die institutionelle Akzeptanz gewertet." },
+      { cat: "geschichte", title: "Neues Allzeithoch (2025)", text: "Am 4. Oktober 2025 erreichte Bitcoin mit rund 126.080 USD ein neues Allzeithoch, bevor der Kurs bis Jahresende wieder deutlich zurückging." },
+      { cat: "grundlagen", title: "Was ist Bitcoin?", text: "Bitcoin ist eine digitale Währung ohne zentrale Bank oder Kontrollinstanz. Transaktionen werden von einem weltweiten Netzwerk aus Computern (Nodes) bestätigt und in der Blockchain gespeichert." },
+      { cat: "grundlagen", title: "Die Blockchain", text: "Eine Blockchain ist ein öffentliches, praktisch unveränderliches Kassenbuch. Jeder neue Block enthält Transaktionen und ist kryptografisch mit dem vorherigen verkettet." },
+      { cat: "grundlagen", title: "Mining", text: "Miner stellen Rechenleistung bereit, um neue Blöcke zu bestätigen, und erhalten dafür neu geschaffene Bitcoin plus Transaktionsgebühren als Belohnung." },
+      { cat: "grundlagen", title: "Blockzeit", text: "Im Schnitt entsteht alle 10 Minuten ein neuer Bitcoin-Block — das Netzwerk passt die Mining-Schwierigkeit automatisch an, um das ungefähr konstant zu halten." },
+      { cat: "grundlagen", title: "Die 21-Millionen-Grenze", text: "Es wird niemals mehr als 21 Millionen Bitcoin geben. Diese feste Obergrenze ist im Code verankert." },
+      { cat: "grundlagen", title: "Dezentralität", text: "Kein einzelnes Unternehmen oder Staat kontrolliert Bitcoin. Tausende unabhängige Nodes weltweit halten das Netzwerk gemeinsam am Laufen." },
+      { cat: "investieren", title: "DCA — regelmäßig statt auf einmal", text: "Dollar-Cost-Average bedeutet, in festen Abständen einen gleichbleibenden Betrag zu investieren, unabhängig vom aktuellen Kurs." },
+      { cat: "investieren", title: "HODL", text: "Der Begriff (ursprünglich ein Tippfehler für 'hold') steht für die Strategie, Bitcoin langfristig zu halten statt kurzfristig zu handeln." },
+      { cat: "investieren", title: "Volatilität verstehen", text: "Bitcoin schwankt historisch deutlich stärker als klassische Anlageklassen wie Aktien oder Anleihen." },
+      { cat: "investieren", title: "Marktzyklen", text: "Bitcoin durchlief historisch mehrjährige Auf- und Abschwungphasen, die oft (nicht zwingend) mit den Halvings in Verbindung gebracht werden." },
+      { cat: "sicherheit", title: "Hot Wallet vs. Cold Wallet", text: "Eine Hot Wallet ist mit dem Internet verbunden und praktisch für den Alltag. Eine Cold Wallet (z. B. Hardware-Wallet) ist offline und gilt als deutlich sicherer für größere Beträge." },
+      { cat: "sicherheit", title: "Private Keys", text: "Der private Schlüssel ist der eigentliche Beweis des Eigentums an Bitcoin — 'Not your keys, not your coins'." },
+      { cat: "sicherheit", title: "Seed-Phrase", text: "Die meisten Wallets erzeugen eine 12- oder 24-Wörter-Wiederherstellungsphrase. Sie sollte offline und niemals digital gespeichert werden." },
+      { cat: "sicherheit", title: "Scams erkennen", text: "Warnsignale sind u. a. garantierte Gewinne, künstlicher Zeitdruck oder Aufforderungen zur Herausgabe der Seed-Phrase." },
+      { cat: "indikatoren", title: "SMA (gleitender Durchschnitt)", text: "Durchschnittspreis der letzten Perioden. Preis über dem SMA = eher Aufwärtstrend. Im Chart als Trendlinie einblendbar." },
+      { cat: "indikatoren", title: "EMA (exponentieller Durchschnitt)", text: "Wie der SMA, gewichtet aber jüngere Preise stärker — reagiert dadurch schneller auf aktuelle Kursbewegungen." },
+      { cat: "indikatoren", title: "Bollinger-Bänder", text: "Ein Band um den gleitenden Durchschnitt, dessen Breite die Volatilität widerspiegelt. Preis nahe am oberen Band = eher überhitzt, nahe am unteren = eher überverkauft." },
+      { cat: "indikatoren", title: "RSI (Relative Strength Index)", text: "Misst, wie stark und wie schnell sich der Preis zuletzt bewegt hat. Über 70 = 'überkauft', unter 30 = 'überverkauft'." },
+      { cat: "indikatoren", title: "Wal-Bewegungen (On-Chain)", text: "Große Wallets ('Wale') zu beobachten erfordert spezialisierte, meist kostenpflichtige On-Chain-Dienste (z. B. Whale Alert, Arkham) — hier bewusst nicht simuliert." },
+      { cat: "indikatoren", title: "ATH (All-Time High)", text: "Der bisher höchste je erreichte Preis." },
+      { cat: "indikatoren", title: "Halving", text: "Alle ~4 Jahre halbiert sich die Belohnung für Bitcoin-Miner. Historisch oft (nicht garantiert) ein Auslöser für neue Marktzyklen." },
+      { cat: "indikatoren", title: "MVRV / SOPR", text: "Echte On-Chain-Metriken, die Marktwert mit tatsächlichen Kaufpreisen aller Coins vergleichen. Brauchen einen kostenpflichtigen Datenanbieter — hier bewusst nicht simuliert." },
+      { cat: "glossar", title: "Satoshi", text: "Die kleinste Einheit von Bitcoin: 1 BTC = 100.000.000 Satoshi." },
+      { cat: "glossar", title: "Node", text: "Ein Computer, der die vollständige Blockchain speichert und Transaktionen eigenständig überprüft." },
+      { cat: "glossar", title: "Fork", text: "Eine Abspaltung oder Änderung der Software-Regeln eines Netzwerks." },
+      { cat: "glossar", title: "Whale", text: "Umgangssprachlich ein Wallet bzw. Investor mit sehr großen Bitcoin-Beständen." },
+      { cat: "glossar", title: "Exchange", text: "Eine Handelsplattform (Börse) zum Kauf und Verkauf von Bitcoin." },
+      { cat: "glossar", title: "Self-Custody", text: "Die eigene Verwahrung von Bitcoin ohne einen Drittanbieter dazwischen." },
+    ];
+
+    // ---- Helpers ----
+    function formatUSD(n){
+      if(n == null || isNaN(n)) return "--";
+      return n.toLocaleString("en-US", { style:"currency", currency:"USD", maximumFractionDigits: n < 100 ? 2 : 0 });
+    }
+    function formatBTC(n){
+      if(n == null || isNaN(n)) return "--";
+      return n.toFixed(6) + " BTC";
+    }
+    async function fetchWithTimeout(url, ms){
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms || 9000);
+      try{
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if(!res.ok) throw new Error("http " + res.status);
+        return await res.json();
+      }catch(e){ clearTimeout(timer); throw e; }
+    }
+    function interpolatePrice(candles, ts){
+      if(ts <= candles[0].t) return candles[0].close;
+      if(ts >= candles[candles.length-1].t) return candles[candles.length-1].close;
+      for(let i=0; i<candles.length-1; i++){
+        if(ts >= candles[i].t && ts <= candles[i+1].t){
+          const frac = (ts - candles[i].t) / (candles[i+1].t - candles[i].t);
+          return candles[i].close + (candles[i+1].close - candles[i].close) * frac;
+        }
+      }
+      return candles[candles.length-1].close;
+    }
+    function calcDCA(candles, monthlyAmount, startDate, currentPrice){
+      if(!monthlyAmount || !startDate) return null;
+      const now = Date.now();
+      let cursor = new Date(startDate);
+      if(isNaN(cursor.getTime()) || cursor.getTime() > now) return null;
+      let totalBTC = 0, totalInvested = 0, months = 0;
+      while(cursor.getTime() <= now && months < 600){
+        const price = interpolatePrice(candles, cursor.getTime());
+        totalBTC += monthlyAmount / price;
+        totalInvested += monthlyAmount;
+        months++;
+        cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, cursor.getDate());
+      }
+      const currentValue = totalBTC * currentPrice;
+      return { totalBTC, totalInvested, currentValue, months, profitPct: totalInvested > 0 ? ((currentValue-totalInvested)/totalInvested)*100 : 0 };
+    }
+    function avg(arr){ return arr.reduce((a,b)=>a+b,0) / arr.length; }
+    function smaSeries(values, period){
+      return values.map((_, i) => i < period-1 ? null : avg(values.slice(i-period+1, i+1)));
+    }
+    function emaSeries(values, period){
+      const k = 2/(period+1); let prev = null;
+      return values.map((v, i) => {
+        if(i < period-1) return null;
+        if(prev == null){ prev = avg(values.slice(0, period)); return prev; }
+        prev = v*k + prev*(1-k);
+        return prev;
+      });
+    }
+    function bollingerSeries(values, period, mult){
+      mult = mult || 2;
+      return values.map((_, i) => {
+        if(i < period-1) return { upper:null, lower:null };
+        const slice = values.slice(i-period+1, i+1);
+        const m = avg(slice);
+        const variance = slice.reduce((a,b) => a + Math.pow(b-m,2), 0) / slice.length;
+        const sd = Math.sqrt(variance);
+        return { upper: m+mult*sd, lower: m-mult*sd };
+      });
+    }
+    function rsiSeries(values, period){
+      period = period || 14;
+      const out = new Array(values.length).fill(null);
+      for(let i=period; i<values.length; i++){
+        let gains=0, losses=0;
+        for(let j=i-period+1; j<=i; j++){
+          const diff = values[j]-values[j-1];
+          if(diff >= 0) gains += diff; else losses -= diff;
+        }
+        const avgGain = gains/period, avgLoss = losses/period;
+        out[i] = avgLoss === 0 ? 100 : 100 - 100/(1+avgGain/avgLoss);
+      }
+      return out;
+    }
+
+    // ---- State ----
+    let isLive = false;
+    let candles = FALLBACK_CANDLES;
+    let currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
+    let change24h = null;
+    let ath = ATH_FALLBACK;
+    let timeframe = "90";
+    let entries = [];
+
+    try{
+      const saved = localStorage.getItem("satoshi-lounge-portfolio");
+      if(saved) entries = JSON.parse(saved);
+    }catch(e){}
+    function persistEntries(){
+      try{ localStorage.setItem("satoshi-lounge-portfolio", JSON.stringify(entries)); }catch(e){}
+    }
+
+    // ---- DOM refs ----
+    const priceValueEl = document.getElementById("priceValue");
+    const priceChangeEl = document.getElementById("priceChange");
+    const liveStatusEl = document.getElementById("liveStatus");
+    const liveStatusTextEl = document.getElementById("liveStatusText");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const timeframeRow = document.getElementById("timeframeRow");
+    const indicatorRow = document.getElementById("indicatorRow");
+    const chartWrap = document.getElementById("chartWrap");
+    const chartLoading = document.getElementById("chartLoading");
+    const rsiWrap = document.getElementById("rsiWrap");
+    const athValueEl = document.getElementById("athValue");
+    const athPctValueEl = document.getElementById("athPctValue");
+    const halvingValueEl = document.getElementById("halvingValue");
+
+    // ---- Timeframe pills ----
+    TIMEFRAMES.forEach(tf => {
+      const b = document.createElement("button");
+      b.className = "pill-btn" + (tf.key === timeframe ? " active" : "");
+      b.textContent = tf.label;
+      b.style.setProperty("--pc", ORANGE);
+      b.addEventListener("click", () => {
+        timeframe = tf.key;
+        timeframeRow.querySelectorAll(".pill-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        loadLive(timeframe);
+      });
+      timeframeRow.appendChild(b);
+    });
+
+    // ---- Indicator pills ----
+    INDICATORS.forEach(ind => {
+      const b = document.createElement("button");
+      b.className = "pill-btn" + (ind.on ? " active" : "");
+      b.style.setProperty("--pc", ind.color);
+      b.innerHTML = '<span class="sw" style="background:' + ind.color + '"></span>' + ind.label;
+      b.addEventListener("click", () => {
+        ind.on = !ind.on;
+        b.classList.toggle("active", ind.on);
+        renderChart();
+      });
+      indicatorRow.appendChild(b);
+    });
+    function indOn(key){ return INDICATORS.find(i => i.key === key).on; }
+
+    // ---- Live fetch ----
+    async function loadLive(days){
+      chartLoading.style.display = "flex";
+      chartLoading.textContent = "Lädt Chart…";
+      try{
+        const [ohlc, market] = await Promise.all([
+          fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=" + days),
+          fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"),
+        ]);
+        if(!Array.isArray(ohlc) || !ohlc.length) throw new Error("empty");
+        candles = ohlc.map(function(c){ return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] }; });
+        currentPrice = market.market_data.current_price.usd;
+        change24h = market.market_data.price_change_percentage_24h;
+        ath = market.market_data.ath.usd;
+        isLive = true;
+      }catch(e){
+        candles = FALLBACK_CANDLES;
+        currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
+        change24h = null;
+        ath = ATH_FALLBACK;
+        isLive = false;
+      }
+      chartLoading.style.display = "none";
+      updateHeader();
+      renderChart();
+      renderStats();
+      renderPortfolio();
+      renderDCA();
+    }
+
+    function updateHeader(){
+      priceValueEl.textContent = formatUSD(currentPrice);
+      if(change24h != null){
+        const up = change24h >= 0;
+        priceChangeEl.style.display = "inline-block";
+        priceChangeEl.className = "price-change " + (up ? "up" : "down");
+        priceChangeEl.textContent = (up ? "+" : "") + change24h.toFixed(2) + "%";
+      }else{
+        priceChangeEl.style.display = "none";
+      }
+      liveStatusEl.classList.toggle("is-live", isLive);
+      liveStatusTextEl.textContent = isLive ? "LIVE" : "Fallback-Daten";
+    }
+
+    // ---- Chart rendering (SVG) ----
+    function renderChart(){
+      const closes = candles.map(c => c.close);
+      const period = Math.max(3, Math.min(20, Math.floor(closes.length/3)));
+      const smaArr = smaSeries(closes, period);
+      const emaArr = emaSeries(closes, period);
+      const bollArr = bollingerSeries(closes, period);
+      const rsiArr = rsiSeries(closes, Math.min(14, period));
+
+      const W = 900, H = 280, padL = 46, padR = 10, padT = 14, padB = 26;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const n = candles.length;
+      const slotW = plotW / n;
+
+      let vMin = Infinity, vMax = -Infinity;
+      candles.forEach(c => { vMin = Math.min(vMin, c.low); vMax = Math.max(vMax, c.high); });
+      if(indOn("boll")){
+        bollArr.forEach(b => { if(b.upper != null){ vMax = Math.max(vMax, b.upper); vMin = Math.min(vMin, b.lower); } });
+      }
+      const pad = (vMax - vMin) * 0.06 || 1;
+      vMin -= pad; vMax += pad;
+      const yFor = v => padT + plotH * (1 - (v - vMin) / (vMax - vMin));
+      const xFor = i => padL + slotW * i + slotW / 2;
+
+      function pathFor(arr){
+        let d = "", started = false;
+        arr.forEach((v, i) => {
+          if(v == null){ started = false; return; }
+          const x = xFor(i), y = yFor(v);
+          d += (started ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+          started = true;
+        });
+        return d.trim();
+      }
+
+      let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
+
+      // gridlines + y labels
+      for(let g = 0; g <= 3; g++){
+        const v = vMin + (vMax - vMin) * (g / 3);
+        const y = yFor(v);
+        svg += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + y.toFixed(1) + '" stroke="#1c1c1c" stroke-width="1"/>';
+        svg += '<text x="4" y="' + (y+3).toFixed(1) + '" fill="#666" font-size="9" font-family="monospace">$' + Math.round(v/1000) + 'k</text>';
+      }
+
+      // candles
+      candles.forEach((c, i) => {
+        const x = xFor(i);
+        const up = c.close >= c.open;
+        const color = up ? TEAL : PINK;
+        const bw = Math.max(slotW * 0.55, 1.5);
+        const yOpen = yFor(c.open), yClose = yFor(c.close), yHigh = yFor(c.high), yLow = yFor(c.low);
+        const bodyTop = Math.min(yOpen, yClose);
+        const bodyH = Math.max(Math.abs(yClose - yOpen), 1.2);
+        svg += '<line x1="' + x.toFixed(1) + '" y1="' + yHigh.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + yLow.toFixed(1) + '" stroke="' + color + '" stroke-width="1.2"/>';
+        svg += '<rect x="' + (x-bw/2).toFixed(1) + '" y="' + bodyTop.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bodyH.toFixed(1) + '" fill="' + color + '" opacity="0.9"/>';
+      });
+
+      if(indOn("boll")){
+        svg += '<path d="' + pathFor(bollArr.map(b => b.upper)) + '" fill="none" stroke="' + GOLD + '" stroke-width="1" stroke-dasharray="3 3"/>';
+        svg += '<path d="' + pathFor(bollArr.map(b => b.lower)) + '" fill="none" stroke="' + GOLD + '" stroke-width="1" stroke-dasharray="3 3"/>';
+      }
+      if(indOn("sma")) svg += '<path d="' + pathFor(smaArr) + '" fill="none" stroke="' + ORANGE + '" stroke-width="1.6"/>';
+      if(indOn("ema")) svg += '<path d="' + pathFor(emaArr) + '" fill="none" stroke="' + PURPLE + '" stroke-width="1.6"/>';
+
+      // x labels (subset)
+      const labelStep = Math.max(1, Math.ceil(n / 6));
+      candles.forEach((c, i) => {
+        if(i % labelStep !== 0 && i !== n-1) return;
+        const label = isLive
+          ? new Date(c.t).toLocaleDateString("de-DE", { day:"2-digit", month:"short" })
+          : new Date(c.t).getFullYear().toString();
+        svg += '<text x="' + xFor(i).toFixed(1) + '" y="' + (H-8) + '" fill="#666" font-size="9" font-family="monospace" text-anchor="middle">' + label + '</text>';
+      });
+
+      svg += '</svg>';
+      chartWrap.innerHTML = '<div class="chart-loading" id="chartLoading" style="display:none;">Lädt Chart…</div>' + svg;
+
+      // RSI subplot
+      if(indOn("rsi")){
+        rsiWrap.style.display = "block";
+        const rH = 80, rPadT = 8, rPadB = 4, rPlotH = rH - rPadT - rPadB;
+        const ry = v => rPadT + rPlotH * (1 - v/100);
+        let rsvg = '<svg viewBox="0 0 ' + W + ' ' + rH + '" preserveAspectRatio="none">';
+        [30,70].forEach(v => {
+          const y = ry(v);
+          rsvg += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + y.toFixed(1) + '" stroke="#262626" stroke-width="1" stroke-dasharray="3 3"/>';
+          rsvg += '<text x="4" y="' + (y+3).toFixed(1) + '" fill="#666" font-size="8" font-family="monospace">' + v + '</text>';
+        });
+        let rd = "", started = false;
+        rsiArr.forEach((v, i) => {
+          if(v == null){ started = false; return; }
+          const x = xFor(i), y = ry(v);
+          rd += (started ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+          started = true;
+        });
+        rsvg += '<path d="' + rd.trim() + '" fill="none" stroke="' + PINK + '" stroke-width="1.5"/>';
+        rsvg += '</svg>';
+        rsiWrap.innerHTML = rsvg;
+      }else{
+        rsiWrap.style.display = "none";
+        rsiWrap.innerHTML = "";
+      }
+    }
+
+    function renderStats(){
+      athValueEl.textContent = formatUSD(ath);
+      const athPct = ath ? ((currentPrice - ath) / ath) * 100 : null;
+      athPctValueEl.textContent = athPct != null ? athPct.toFixed(1) + "%" : "--";
+      const daysToHalving = Math.max(0, Math.ceil((HALVING_TARGET - Date.now()) / 86400000));
+      halvingValueEl.textContent = "in ca. " + daysToHalving.toLocaleString("de-DE") + " Tagen";
+    }
+
+    // ---- DCA ----
+    const dcaAmountInput = document.getElementById("dcaAmount");
+    const dcaStartInput = document.getElementById("dcaStart");
+    const dcaResultsEl = document.getElementById("dcaResults");
+    dcaAmountInput.addEventListener("input", renderDCA);
+    dcaStartInput.addEventListener("input", renderDCA);
+    function renderDCA(){
+      const amount = parseFloat(dcaAmountInput.value) || 0;
+      const start = dcaStartInput.value;
+      const result = calcDCA(FALLBACK_CANDLES, amount, start, currentPrice);
+      if(!result){
+        dcaResultsEl.innerHTML = '<p class="empty-note">Bitte gültigen Betrag und Startdatum angeben.</p>';
+        return;
+      }
+      dcaResultsEl.innerHTML =
+        '<div class="dca-card" style="max-width:520px;">' +
+          '<div class="result-grid">' +
+            '<div><span class="field-label">Investiert</span><span class="stat-value">' + formatUSD(result.totalInvested) + '</span></div>' +
+            '<div><span class="field-label">Heute wert</span><span class="stat-value">' + formatUSD(result.currentValue) + '</span></div>' +
+            '<div><span class="field-label">BTC gesammelt</span><span class="stat-value" style="font-size:0.95rem;">' + formatBTC(result.totalBTC) + '</span></div>' +
+            '<div><span class="field-label">Rendite</span><span class="stat-value" style="color:' + (result.profitPct >= 0 ? TEAL : PINK) + '">' + (result.profitPct >= 0 ? "+" : "") + result.profitPct.toFixed(1) + '%</span></div>' +
+          '</div>' +
+          '<div class="result-note">' + result.months + ' Monatskäufe · aus Jahres-Schlusskursen linear interpoliert — Näherung, kein Tageskurs.</div>' +
+        '</div>';
+    }
+
+    // ---- Portfolio ----
+    const entryDateInput = document.getElementById("entryDate");
+    const entryAmountInput = document.getElementById("entryAmount");
+    const addEntryBtn = document.getElementById("addEntryBtn");
+    const portfolioListEl = document.getElementById("portfolioList");
+    const portfolioSummaryEl = document.getElementById("portfolioSummary");
+
+    addEntryBtn.addEventListener("click", () => {
+      const date = entryDateInput.value, amount = parseFloat(entryAmountInput.value);
+      if(!date || !amount || amount <= 0) return;
+      entries.push({ id: Date.now(), date, amount });
+      entries.sort((a,b) => a.date.localeCompare(b.date));
+      persistEntries();
+      entryDateInput.value = ""; entryAmountInput.value = "";
+      renderPortfolio();
+    });
+
+    function renderPortfolio(){
+      let invested = 0, btc = 0;
+      entries.forEach(e => {
+        const price = interpolatePrice(FALLBACK_CANDLES, new Date(e.date).getTime());
+        invested += e.amount; btc += e.amount / price;
+      });
+      const value = btc * currentPrice;
+      const profitPct = invested > 0 ? ((value - invested) / invested) * 100 : 0;
+
+      portfolioSummaryEl.innerHTML =
+        '<div class="stat-card"><span class="stat-label">Investiert</span><span class="stat-value">' + formatUSD(invested) + '</span></div>' +
+        '<div class="stat-card"><span class="stat-label">Heute wert</span><span class="stat-value">' + formatUSD(value) + '</span></div>' +
+        '<div class="stat-card"><span class="stat-label">BTC gesamt</span><span class="stat-value" style="font-size:0.95rem;">' + formatBTC(btc) + '</span></div>' +
+        '<div class="stat-card"><span class="stat-label">Rendite</span><span class="stat-value" style="color:' + (profitPct >= 0 ? TEAL : PINK) + '">' + (invested > 0 ? (profitPct >= 0 ? "+" : "") + profitPct.toFixed(1) + "%" : "--") + '</span></div>';
+
+      if(entries.length === 0){
+        portfolioListEl.innerHTML = '<p class="empty-note">Noch keine Einträge.</p>';
+        return;
+      }
+      portfolioListEl.innerHTML = entries.map(e =>
+        '<div class="entry-row"><span>' + e.date + ' · ' + formatUSD(e.amount) + '</span><button class="del-btn" data-id="' + e.id + '">✕</button></div>'
+      ).join("");
+      portfolioListEl.querySelectorAll(".del-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          entries = entries.filter(e => e.id !== parseInt(btn.dataset.id));
+          persistEntries();
+          renderPortfolio();
+        });
+      });
+    }
+
+    // ---- Bibliothek ----
+    const libCategoriesEl = document.getElementById("libCategories");
+    const libArticlesEl = document.getElementById("libArticles");
+    let libCategory = "geschichte";
+
+    CATEGORIES.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "pill-btn" + (c.key === libCategory ? " active" : "");
+      b.style.setProperty("--pc", ORANGE);
+      b.textContent = c.label;
+      b.addEventListener("click", () => {
+        libCategory = c.key;
+        libCategoriesEl.querySelectorAll(".pill-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        renderLibrary();
+      });
+      libCategoriesEl.appendChild(b);
+    });
+
+    function renderLibrary(){
+      const items = ARTICLES.filter(a => a.cat === libCategory);
+      libArticlesEl.innerHTML = items.map((a, i) =>
+        '<div class="lib-article" data-idx="' + i + '">' +
+          '<button class="lib-article-head"><span>' + a.title + '</span><span class="chev">⌄</span></button>' +
+          '<div class="lib-article-body">' + a.text + '</div>' +
+        '</div>'
+      ).join("");
+      libArticlesEl.querySelectorAll(".lib-article-head").forEach(head => {
+        head.addEventListener("click", () => {
+          head.parentElement.classList.toggle("open");
+        });
+      });
+    }
+
+    // ---- Init ----
+    refreshBtn.addEventListener("click", () => loadLive(timeframe));
+    renderLibrary();
+    renderPortfolio();
+    loadLive(timeframe);
   })();
 </script>
 
