@@ -108,7 +108,7 @@
 
   /* ===== PAGE / LEGAL CONTENT ===== */
   .page{
-    max-width:760px; margin:0 auto; padding:150px 24px 140px;
+    max-width:760px; margin:0 auto; padding:150px 24px 70px;
   }
   .back-link{
     display:inline-flex; align-items:center; gap:8px;
@@ -137,7 +137,7 @@
   footer{
     border-top:1.5px solid var(--line);
     background:var(--bg-alt);
-    padding:60px 24px 30px;
+    padding:44px 24px 30px;
   }
   .footer-inner{ max-width:1180px; margin:0 auto; }
   .footer-top{
@@ -170,7 +170,7 @@
   @media(max-width:600px){
     .footer-links{ grid-template-columns:repeat(2, auto); }
     .footer-warn{ justify-content:flex-start; }
-    .topbar .brand{ font-size:0.68rem; letter-spacing:0.02em; gap:5px; }
+    .topbar .brand{ font-size:0.88rem; letter-spacing:0.04em; gap:7px; }
     .brand .dot{ width:6px; height:6px; }
     .login-btn{ padding:8px 14px; font-size:0.78rem; }
     .topbar{ padding:16px 16px; }
@@ -179,6 +179,14 @@
   @media(max-width:600px){
     .legal-block{ padding:24px 22px; }
   }
+  .home-return{ display:flex; justify-content:flex-end; margin-top:36px; }
+  .home-return a{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
 </style>
 </head>
 <body>
@@ -253,6 +261,9 @@
     <div class="legal-block">
       <h2>Barrierefreiheit</h2>
       <p>Unser Unternehmen ist gemäß den gesetzlichen Bestimmungen vom Anwendungsbereich der Barrierefreiheitsanforderungen ausgenommen und somit von der Pflicht zur Erstellung und Bereitstellung einer Barrierefreiheitserklärung ausgenommen.</p>
+    </div>
+    <div class="home-return">
+      <a href="index.html">Zur Startseite →</a>
     </div>
   </main>
 
