@@ -1255,10 +1255,12 @@
       return candles[candles.length-1].close;
     }
     // Wählt die genaueste verfügbare Preisquelle für einen Zeitpunkt: Live-Preis (< 2 Tage alt),
-    // sonst feine 4h-Kerzen (letzte 30 Tage), sonst die gröberen ~4-Tage-Kerzen der kompletten Historie.
+    // sonst feine 4h-Kerzen (letzte 60 Tage, Binance), sonst Tageskerzen (letzte ~1.000 Tage, Binance),
+    // sonst die gröberen ~4-Tage-Kerzen der kompletten CoinGecko-Historie (für sehr alte Käufe).
     function bestPriceAt(ts){
       if(Date.now() - ts < 2*86400000) return currentPrice;
       if(recentCandles.length && ts >= recentCandles[0].t) return interpolatePrice(recentCandles, ts);
+      if(midCandles.length && ts >= midCandles[0].t) return interpolatePrice(midCandles, ts);
       return interpolatePrice(dailyCandles, ts);
     }
     function calcDCA(monthlyAmount, startDate){
@@ -1338,7 +1340,8 @@
     let isLive = false;
     let candles = FALLBACK_CANDLES;
     let dailyCandles = FALLBACK_CANDLES; // gröbere Auflösung (~4 Tage/Punkt bei CoinGecko für große Zeiträume)
-    let recentCandles = []; // feine Auflösung (4h/Punkt) für die letzten 30 Tage — präzise für aktuelle Portfolio-Käufe
+    let recentCandles = []; // feine Auflösung (4h/Punkt) für die letzten 60 Tage
+    let midCandles = []; // Binance-Tagesauflösung für die letzten ~1.000 Tage (2,7 Jahre)
     let currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
     let change24h = null;
     let ath = ATH_FALLBACK;
@@ -1457,6 +1460,29 @@
       indicatorToggleBtn.classList.toggle("open", !open);
     });
 
+    // Zwei Stufen feinerer, zuverlässigerer Auflösung von Binance statt CoinGecko (das bei uns wiederholt am
+    // Rate-Limit gescheitert ist) — wichtig für präzise Portfolio-/DCA-Preise:
+    //  - recentCandles: 4h-Auflösung, letzte 60 Tage (ganz aktuelle Käufe)
+    //  - midCandles: 1d-Auflösung, letzte ~1.000 Tage / 2,7 Jahre (alles andere bis auf sehr alte Käufe)
+    async function loadRecentCandlesFromBinance(){
+      try{
+        const kl = await fetchWithTimeout("https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=360", 12000);
+        if(Array.isArray(kl) && kl.length){
+          recentCandles = kl.map(function(k){
+            return { t:k[0], open:parseFloat(k[1]), high:parseFloat(k[2]), low:parseFloat(k[3]), close:parseFloat(k[4]) };
+          });
+        }
+      }catch(e){ /* recentCandles bleibt leer, bestPriceAt() fällt weiter zurück */ }
+      try{
+        const kl2 = await fetchWithTimeout("https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000", 12000);
+        if(Array.isArray(kl2) && kl2.length){
+          midCandles = kl2.map(function(k){
+            return { t:k[0], open:parseFloat(k[1]), high:parseFloat(k[2]), low:parseFloat(k[3]), close:parseFloat(k[4]) };
+          });
+        }
+      }catch(e){ /* midCandles bleibt leer, bestPriceAt() fällt auf dailyCandles zurück */ }
+    }
+
     async function loadLive(){
       const chartLoading = document.getElementById("chartLoading");
       if(chartLoading){ chartLoading.style.display = "flex"; chartLoading.textContent = "Lädt komplette Historie…"; }
@@ -1479,23 +1505,14 @@
         change24h = null;
         ath = ATH_FALLBACK;
         isLive = false;
+        await loadRecentCandlesFromBinance();
       }else{
         const rawCandles = ohlc.map(function(c){
           return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
         });
         candles = resampleWeeklyOHLC(rawCandles);
         dailyCandles = rawCandles;
-
-        // Feinere Auflösung (4h/Punkt) speziell für die letzten 30 Tage nachladen — die "große" Historie oben
-        // liefert bei CoinGecko nur ~alle 4 Tage einen Punkt, das ist für ganz aktuelle Portfolio-Käufe zu grob.
-        try{
-          const fineOhlc = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30", 12000);
-          if(Array.isArray(fineOhlc) && fineOhlc.length){
-            recentCandles = fineOhlc.map(function(c){
-              return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
-            });
-          }
-        }catch(e){ /* recentCandles bleibt leer, Portfolio fällt dann auf dailyCandles zurück */ }
+        await loadRecentCandlesFromBinance();
 
         try{
           const market = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false", 15000);
