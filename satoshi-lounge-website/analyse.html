@@ -330,7 +330,8 @@
   .cycle-bar-wrap{ margin-top:22px; }
   .cycle-bar{ height:12px; border-radius:8px; background:#0d0d10; border:1px solid var(--line-soft); overflow:hidden; }
   .cycle-bar-fill{ height:100%; background:linear-gradient(90deg, var(--orange), var(--gold)); border-radius:8px; transition:width .8s ease; width:0%; }
-  .cycle-bar-labels{ display:flex; justify-content:space-between; margin-top:8px; font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray); }
+  .cycle-bar-day{ text-align:center; margin-top:8px; font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray); }
+  .cycle-bar-labels{ display:flex; justify-content:space-between; margin-top:4px; font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray); }
 
   /* Fear & Greed */
   .fng-wrap{ text-align:center; padding:10px 0 6px; }
@@ -344,7 +345,13 @@
   }
   .fng-scale-labels{
     display:flex; justify-content:space-between; max-width:520px; margin:0 auto;
-    font-family:'Space Mono', monospace; font-size:0.65rem; color:var(--gray);
+    font-family:'Space Mono', monospace; font-size:0.65rem; color:var(--gray); gap:4px;
+  }
+  .fng-scale-labels span{ flex:1; text-align:center; }
+  .fng-scale-labels span:first-child{ text-align:left; }
+  .fng-scale-labels span:last-child{ text-align:right; }
+  @media (max-width:480px){
+    .fng-scale-labels .fng-lbl-mid{ display:none; }
   }
 
   /* Timeframe + indicators */
@@ -623,7 +630,8 @@
             <div class="stat-grid" id="cycleStats"></div>
             <div class="cycle-bar-wrap">
               <div class="cycle-bar"><div class="cycle-bar-fill" id="cycleBarFill"></div></div>
-              <div class="cycle-bar-labels"><span id="cycleBarLeft">--</span><span id="cycleBarPct">--</span><span id="cycleBarRight">--</span></div>
+              <div class="cycle-bar-day" id="cycleBarPct">--</div>
+              <div class="cycle-bar-labels"><span id="cycleBarLeft">--</span><span id="cycleBarRight">--</span></div>
             </div>
           </div>
 
@@ -634,7 +642,7 @@
               <div class="fng-label" id="fngLabel">Lädt…</div>
               <div class="fng-track"><div class="fng-marker" id="fngMarker"></div></div>
               <div class="fng-scale-labels">
-                <span>Extreme Angst</span><span>Angst</span><span>Neutral</span><span>Gier</span><span>Extreme Gier</span>
+                <span>Extreme Angst</span><span class="fng-lbl-mid">Angst</span><span class="fng-lbl-mid">Neutral</span><span class="fng-lbl-mid">Gier</span><span>Extreme Gier</span>
               </div>
             </div>
           </div>
@@ -1378,7 +1386,7 @@
         '<div class="stat-card wide"><span class="stat-label">Modell (Richtwert)</span><span class="stat-value" style="font-size:0.95rem;">1064 / 383 Tage</span><span class="stat-sub">Ø-Bulle ' + Math.round(avgPhaseLen("bull")) + ' Tage, Ø-Bär ' + Math.round(avgPhaseLen("bear")) + ' Tage (historisch)</span></div>';
 
       document.getElementById("cycleBarFill").style.width = phasePct + "%";
-      document.getElementById("cycleBarPct").textContent = phase + " · Tag " + phaseDay + " von ø " + phaseLen;
+      document.getElementById("cycleBarPct").textContent = "Tag " + phaseDay + " von ø " + phaseLen;
       document.getElementById("cycleBarLeft").textContent = phase;
       document.getElementById("cycleBarRight").textContent = nextPhase;
     }
