@@ -680,7 +680,6 @@
             <div class="liq-wrap" id="liqWrap">
               <div class="chart-loading" id="liqLoading">Lädt Heatmap…</div>
             </div>
-            <p class="indicator-note">Geschätztes Modell aus Open Interest, Funding Rate und Long/Short-Ratio (öffentliche Binance-Futures-Daten) — keine exakten Liquidationsdaten einzelner Positionen.</p>
           </div>
         </div>
 
@@ -1903,18 +1902,23 @@
         }
       }
 
-      // Echten Kursverlauf der letzten Tage oben drüber legen
+      // Echten Live-Bitcoin-Chart der letzten Tage als Candlesticks über die Heatmap legen
       if(recentCandles.length > 1){
         const tMin = recentCandles[0].t, tMax = recentCandles[recentCandles.length-1].t;
         const xForT = t => padL + plotW * ((t-tMin)/((tMax-tMin) || 1));
-        let linePath = "", started = false;
+        const clamp = p => Math.min(currentPrice*(1+pct), Math.max(currentPrice*(1-pct), p));
+        const candleW = Math.max((plotW / recentCandles.length) * 0.55, 1.2);
         recentCandles.forEach(c => {
-          const yLo = Math.min(currentPrice*(1+pct), Math.max(currentPrice*(1-pct), c.close));
-          const x = xForT(c.t), y = priceToY(yLo);
-          linePath += (started ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
-          started = true;
+          const x = xForT(c.t);
+          const up = c.close >= c.open;
+          const color = up ? TEAL : PINK;
+          const yOpen = priceToY(clamp(c.open)), yClose = priceToY(clamp(c.close));
+          const yHigh = priceToY(clamp(c.high)), yLow = priceToY(clamp(c.low));
+          const bodyTop = Math.min(yOpen, yClose);
+          const bodyH = Math.max(Math.abs(yClose - yOpen), 1.1);
+          svg += '<line x1="' + x.toFixed(1) + '" y1="' + yHigh.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + yLow.toFixed(1) + '" stroke="' + color + '" stroke-width="1" opacity="0.95"/>';
+          svg += '<rect x="' + (x-candleW/2).toFixed(1) + '" y="' + bodyTop.toFixed(1) + '" width="' + candleW.toFixed(1) + '" height="' + bodyH.toFixed(1) + '" fill="' + color + '" opacity="0.95"/>';
         });
-        svg += '<path d="' + linePath.trim() + '" fill="none" stroke="#ffffff" stroke-width="1.6" opacity="0.9"/>';
       }
 
       const midY = priceToY(currentPrice);
@@ -1926,13 +1930,12 @@
       liqWrap.innerHTML = svg;
     }
 
-    refreshBtn.addEventListener("click", () => { loadLive(); loadLiquidationHeatmap(); });
+    refreshBtn.addEventListener("click", () => { loadLive().then(loadLiquidationHeatmap); });
     renderCycle();
     loadFearGreed();
-    loadLiquidationHeatmap();
     renderLibrary();
     renderPortfolio();
-    loadLive();
+    loadLive().then(loadLiquidationHeatmap);
   }
 </script>
 
