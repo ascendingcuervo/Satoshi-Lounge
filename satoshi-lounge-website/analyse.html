@@ -383,6 +383,16 @@
 
   .chart-wrap{ position:relative; height:280px; margin-bottom:6px; }
   .chart-wrap svg{ width:100%; height:100%; display:block; }
+  .chart-zoom-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .chart-zoom-hint{ font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); }
+  .chart-zoom-btns{ display:flex; gap:6px; }
+  .chart-zoom-btns button{
+    width:26px; height:26px; border-radius:6px; border:1.5px solid var(--line); background:transparent;
+    color:var(--ink); font-family:'Space Mono', monospace; font-size:0.85rem; cursor:pointer; line-height:1;
+  }
+  .chart-zoom-btns button:hover{ border-color:var(--purple); color:var(--purple); }
+  .chart-zoom-area{ cursor:grab; touch-action:pan-y; user-select:none; }
+  .chart-zoom-area.dragging{ cursor:grabbing; }
   .chart-loading{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     color:var(--gray); font-family:'Space Mono', monospace; font-size:0.8rem;
@@ -657,11 +667,22 @@
               <span><i style="background:var(--pink)"></i>Bärenmarkt</span>
               <span class="phase-legend-note">Zonen nach echten historischen Bullen-/Bärenmärkten seit 2012</span>
             </div>
-            <div class="chart-wrap" id="chartWrap">
-              <div class="chart-loading" id="chartLoading">Lädt Chart…</div>
+            <div class="chart-zoom-bar">
+              <span class="chart-zoom-hint">Scrollen zum Zoomen · Ziehen zum Verschieben</span>
+              <div class="chart-zoom-btns">
+                <button type="button" id="zoomOutBtn" title="Rauszoomen">−</button>
+                <button type="button" id="zoomResetBtn" title="Zoom zurücksetzen">⟲</button>
+                <button type="button" id="zoomInBtn" title="Reinzoomen">+</button>
+              </div>
             </div>
-            <div class="rsi-wrap" id="rsiWrap" style="display:none;"></div>
-            <div class="rsi-wrap" id="volumeWrap" style="display:none;"></div>
+            <div class="chart-zoom-area" id="chartZoomArea">
+              <div class="chart-wrap" id="chartWrap">
+                <div class="chart-loading" id="chartLoading">Lädt Chart…</div>
+              </div>
+              <div class="rsi-wrap" id="rsiWrap" style="display:none;"></div>
+              <div class="rsi-wrap" id="macdWrap" style="display:none;"></div>
+              <div class="rsi-wrap" id="volumeWrap" style="display:none;"></div>
+            </div>
             <div class="stat-grid">
               <div class="stat-card">
                 <span class="stat-label">Allzeithoch (ATH)</span>
@@ -1151,6 +1172,7 @@
       { key: "sma150", label: "SMA 150", color: "#c9760f", on: false, type:"sma", period:150 },
       { key: "bmsb", label: "Bull Market Support Band", color: GOLD, on: false, type:"bmsb" },
       { key: "rsi", label: "RSI", color: PINK, on: true, type:"rsi" },
+      { key: "macd", label: "MACD", color: "#4fd1ff", on: false, type:"macd" },
       { key: "volume", label: "Volumen", color: TEAL, on: false, type:"volume" },
     ];
     const CATEGORIES = [
@@ -1197,6 +1219,13 @@
       if(n == null || isNaN(n)) return "--";
       return n.toLocaleString("en-US", { style:"currency", currency:"USD", maximumFractionDigits: n < 100 ? 2 : 0 });
     }
+    function formatUSDCompact(n){
+      if(n == null || isNaN(n)) return "--";
+      if(n >= 1e9) return "$" + (n/1e9).toFixed(2) + "B";
+      if(n >= 1e6) return "$" + (n/1e6).toFixed(1) + "M";
+      if(n >= 1e3) return "$" + (n/1e3).toFixed(0) + "k";
+      return "$" + n.toFixed(0);
+    }
     function formatBTC(n){ if(n == null || isNaN(n)) return "--"; return n.toFixed(6) + " BTC"; }
     async function fetchWithTimeout(url, ms){
       const controller = new AbortController();
@@ -1240,13 +1269,29 @@
       return values.map((_, i) => i < period-1 ? null : avg(values.slice(i-period+1, i+1)));
     }
     function emaSeries(values, period){
-      const k = 2/(period+1); let prev = null;
+      // Fällt bei zu wenig Datenpunkten (z.B. Fallback-Daten) auf die maximal verfügbare Länge zurück,
+      // statt komplett zu verschwinden — sonst zeigt z.B. EMA 200 bei <200 Kerzen gar nichts an.
+      const effPeriod = Math.min(period, values.length);
+      if(effPeriod < 2) return values.map(() => null);
+      const k = 2/(effPeriod+1); let prev = null;
       return values.map((v, i) => {
-        if(i < period-1) return null;
-        if(prev == null){ prev = avg(values.slice(0, period)); return prev; }
+        if(i < effPeriod-1) return null;
+        if(prev == null){ prev = avg(values.slice(0, effPeriod)); return prev; }
         prev = v*k + prev*(1-k);
         return prev;
       });
+    }
+    function macdSeries(values, fast, slow, signalPeriod){
+      fast = fast || 12; slow = slow || 26; signalPeriod = signalPeriod || 9;
+      const emaFast = emaSeries(values, fast);
+      const emaSlow = emaSeries(values, slow);
+      const macdLine = values.map((_, i) => (emaFast[i] != null && emaSlow[i] != null) ? emaFast[i]-emaSlow[i] : null);
+      const macdValsOnly = macdLine.filter(v => v != null);
+      const signalOnMacd = emaSeries(macdValsOnly, signalPeriod);
+      let j = 0;
+      const signalLine = macdLine.map(v => v == null ? null : signalOnMacd[j++]);
+      const histogram = macdLine.map((v, i) => (v != null && signalLine[i] != null) ? v - signalLine[i] : null);
+      return { macdLine, signalLine, histogram };
     }
     function bollingerSeries(values, period, mult){
       mult = mult || 2;
@@ -1280,6 +1325,7 @@
     let change24h = null;
     let ath = ATH_FALLBACK;
     let entries = [];
+    let viewStart = 0, viewEnd = null; // Zoom-/Pan-Fenster über die Kerzen (null = komplette Historie)
 
     try{ const saved = localStorage.getItem("satoshi-lounge-portfolio"); if(saved) entries = JSON.parse(saved); }catch(e){}
     function persistEntries(){ try{ localStorage.setItem("satoshi-lounge-portfolio", JSON.stringify(entries)); }catch(e){} }
@@ -1294,6 +1340,7 @@
     const indicatorRowOther = document.getElementById("indicatorRowOther");
     const chartWrap = document.getElementById("chartWrap");
     const rsiWrap = document.getElementById("rsiWrap");
+    const macdWrap = document.getElementById("macdWrap");
     const athValueEl = document.getElementById("athValue");
     const athPctValueEl = document.getElementById("athPctValue");
 
@@ -1452,6 +1499,7 @@
       }
       const cl = document.getElementById("chartLoading");
       if(cl) cl.style.display = "none";
+      viewStart = 0; viewEnd = candles.length; // Zoom auf frische Daten zurücksetzen
       updateHeader();
       renderChart();
       renderStats();
@@ -1509,28 +1557,144 @@
       return found || PHASES_HISTORY[PHASES_HISTORY.length-1];
     }
 
-    function renderChart(){
-      const closes = candles.map(c => c.close);
-      const rsiArr = rsiSeries(closes, 14);
+    // ---- Chart Zoom & Pan ----
+    function zoomAt(factor, centerFrac){
+      const total = candles.length;
+      const curEnd = viewEnd == null ? total : viewEnd;
+      const curLen = curEnd - viewStart;
+      const centerIdx = viewStart + curLen * centerFrac;
+      let newLen = Math.max(10, Math.min(total, curLen * factor));
+      let newStart = centerIdx - newLen * centerFrac;
+      let newEnd = newStart + newLen;
+      if(newStart < 0){ newEnd -= newStart; newStart = 0; }
+      if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
+      viewStart = Math.round(Math.max(0, newStart));
+      viewEnd = Math.round(newEnd);
+      renderChart();
+    }
+    function panByCandles(deltaCandles){
+      const total = candles.length;
+      const curEnd = viewEnd == null ? total : viewEnd;
+      const len = curEnd - viewStart;
+      let newStart = viewStart + deltaCandles;
+      let newEnd = newStart + len;
+      if(newStart < 0){ newEnd -= newStart; newStart = 0; }
+      if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
+      viewStart = Math.round(Math.max(0, newStart));
+      viewEnd = Math.round(newEnd);
+      renderChart();
+    }
+    function resetZoom(){ viewStart = 0; viewEnd = candles.length; renderChart(); }
 
-      const W = 900, H = 280, padL = 46, padR = 10, padT = 14, padB = 26;
+    const chartZoomArea = document.getElementById("chartZoomArea");
+    chartZoomArea.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const rect = chartZoomArea.getBoundingClientRect();
+      const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      zoomAt(e.deltaY > 0 ? 1.15 : 0.87, frac);
+    }, { passive:false });
+
+    let isDragging = false, dragStartX = 0, dragStartView = 0;
+    chartZoomArea.addEventListener("mousedown", (e) => {
+      isDragging = true; dragStartX = e.clientX; dragStartView = viewStart;
+      chartZoomArea.classList.add("dragging");
+    });
+    window.addEventListener("mousemove", (e) => {
+      if(!isDragging) return;
+      const rect = chartZoomArea.getBoundingClientRect();
+      const total = candles.length;
+      const len = (viewEnd == null ? total : viewEnd) - viewStart;
+      const deltaCandles = -((e.clientX - dragStartX) / rect.width) * len;
+      let newStart = dragStartView + deltaCandles, newEnd = newStart + len;
+      if(newStart < 0){ newEnd -= newStart; newStart = 0; }
+      if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
+      viewStart = Math.round(Math.max(0, newStart));
+      viewEnd = Math.round(newEnd);
+      renderChart();
+    });
+    window.addEventListener("mouseup", () => { isDragging = false; chartZoomArea.classList.remove("dragging"); });
+
+    let touchStartX = null, touchStartView = 0, pinchStartDist = null, pinchStartLen = null;
+    chartZoomArea.addEventListener("touchstart", (e) => {
+      if(e.touches.length === 1){ touchStartX = e.touches[0].clientX; touchStartView = viewStart; }
+      else if(e.touches.length === 2){
+        pinchStartDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+        pinchStartLen = (viewEnd == null ? candles.length : viewEnd) - viewStart;
+      }
+    }, { passive:true });
+    chartZoomArea.addEventListener("touchmove", (e) => {
+      const rect = chartZoomArea.getBoundingClientRect();
+      const total = candles.length;
+      if(e.touches.length === 1 && touchStartX != null){
+        const len = (viewEnd == null ? total : viewEnd) - viewStart;
+        const deltaCandles = -((e.touches[0].clientX - touchStartX) / rect.width) * len;
+        let newStart = touchStartView + deltaCandles, newEnd = newStart + len;
+        if(newStart < 0){ newEnd -= newStart; newStart = 0; }
+        if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
+        viewStart = Math.round(Math.max(0, newStart));
+        viewEnd = Math.round(newEnd);
+        renderChart();
+      }else if(e.touches.length === 2 && pinchStartDist){
+        e.preventDefault();
+        const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+        const factor = pinchStartDist / dist;
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const frac = Math.min(1, Math.max(0, (midX - rect.left) / rect.width));
+        const curEnd = viewEnd == null ? total : viewEnd;
+        const centerIdx = viewStart + (curEnd - viewStart) * frac;
+        let newLen = Math.max(10, Math.min(total, pinchStartLen * factor));
+        let newStart = centerIdx - newLen * frac, newEnd = newStart + newLen;
+        if(newStart < 0){ newEnd -= newStart; newStart = 0; }
+        if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
+        viewStart = Math.round(Math.max(0, newStart));
+        viewEnd = Math.round(newEnd);
+        renderChart();
+      }
+    }, { passive:false });
+    chartZoomArea.addEventListener("touchend", (e) => {
+      if(e.touches.length === 0){ touchStartX = null; pinchStartDist = null; }
+    });
+    chartZoomArea.addEventListener("dblclick", resetZoom);
+    document.getElementById("zoomInBtn").addEventListener("click", () => zoomAt(0.8, 0.5));
+    document.getElementById("zoomOutBtn").addEventListener("click", () => zoomAt(1.25, 0.5));
+    document.getElementById("zoomResetBtn").addEventListener("click", resetZoom);
+
+    function renderChart(){
+      const total = candles.length;
+      if(viewEnd == null || viewEnd > total) viewEnd = total;
+      if(viewStart < 0) viewStart = 0;
+      const minWindow = Math.min(10, total);
+      if(viewEnd - viewStart < minWindow){
+        viewEnd = Math.min(total, viewStart + minWindow);
+        viewStart = Math.max(0, viewEnd - minWindow);
+      }
+      const viewCandles = candles.slice(viewStart, viewEnd);
+      const fullCloses = candles.map(c => c.close);
+      const closes = viewCandles.map(c => c.close);
+      const rsiArr = rsiSeries(fullCloses, 14).slice(viewStart, viewEnd);
+
+      const W = 900, H = 280, padL = 46, padR = 16, padT = 14, padB = 26;
       const plotW = W - padL - padR, plotH = H - padT - padB;
-      const n = candles.length;
+      const n = viewCandles.length;
       const slotW = plotW / n;
 
       // Bull Market Support Band: 20-Wochen-SMA + 21-Wochen-EMA — candles sind jetzt bereits Wochenkerzen
+      // (Indikatoren werden immer über die komplette Historie berechnet, nur die Anzeige folgt dem Zoom-Fenster)
       let bmsbByIndex = null;
       if(indOn("bmsb")){
-        const wSma = smaSeries(closes, 20);
-        const wEma = emaSeries(closes, 21);
-        bmsbByIndex = closes.map((_, i) => ({ sma: wSma[i] ?? null, ema: wEma[i] ?? null }));
+        const wSmaFull = smaSeries(fullCloses, 20);
+        const wEmaFull = emaSeries(fullCloses, 21);
+        bmsbByIndex = viewCandles.map((_, i) => ({ sma: wSmaFull[viewStart+i] ?? null, ema: wEmaFull[viewStart+i] ?? null }));
       }
 
       const activeLines = INDICATORS.filter(ind => (ind.type === "ema" || ind.type === "sma") && ind.on)
-        .map(ind => ({ ind, series: ind.type === "ema" ? emaSeries(closes, ind.period) : smaSeries(closes, ind.period) }));
+        .map(ind => {
+          const fullSeries = ind.type === "ema" ? emaSeries(fullCloses, ind.period) : smaSeries(fullCloses, ind.period);
+          return { ind, series: fullSeries.slice(viewStart, viewEnd) };
+        });
 
       let vMin = Infinity, vMax = -Infinity;
-      candles.forEach(c => { vMin = Math.min(vMin, c.low); vMax = Math.max(vMax, c.high); });
+      viewCandles.forEach(c => { vMin = Math.min(vMin, c.low); vMax = Math.max(vMax, c.high); });
       activeLines.forEach(l => l.series.forEach(v => { if(v != null){ vMin = Math.min(vMin, v); vMax = Math.max(vMax, v); } }));
       if(bmsbByIndex){
         bmsbByIndex.forEach(b => { if(b.sma!=null){ vMin=Math.min(vMin,b.sma); vMax=Math.max(vMax,b.sma); } if(b.ema!=null){ vMin=Math.min(vMin,b.ema); vMax=Math.max(vMax,b.ema); } });
@@ -1558,8 +1722,8 @@
       phases.forEach(ph => {
         let x0 = null, x1 = null;
         for(let i=0;i<n;i++){
-          if(candles[i].t >= ph.start && x0 == null) x0 = xFor(i) - slotW/2;
-          if(candles[i].t <= ph.end) x1 = xFor(i) + slotW/2;
+          if(viewCandles[i].t >= ph.start && x0 == null) x0 = xFor(i) - slotW/2;
+          if(viewCandles[i].t <= ph.end) x1 = xFor(i) + slotW/2;
         }
         if(x0 == null || x1 == null || x1 <= x0) return;
         const col = ph.type === "bull" ? TEAL : PINK;
@@ -1594,7 +1758,7 @@
         svg += '<path d="' + pathFor(bmsbByIndex.map(b=>b.ema)) + '" fill="none" stroke="' + GOLD + '" stroke-width="1.3" stroke-dasharray="3 2" opacity="0.85"/>';
       }
 
-      candles.forEach((c, i) => {
+      viewCandles.forEach((c, i) => {
         const x = xFor(i);
         const up = c.close >= c.open;
         const color = up ? TEAL : PINK;
@@ -1610,9 +1774,9 @@
         svg += '<path d="' + pathFor(l.series) + '" fill="none" stroke="' + l.ind.color + '" stroke-width="1.5"/>';
       });
 
-      // X-Achse: Jahr + Monat (durchgehend, da Chart die komplette Historie zeigt)
+      // X-Achse: Jahr + Monat (folgt dem sichtbaren Zoom-Fenster)
       const labelStep = Math.max(1, Math.ceil(n / 7));
-      candles.forEach((c, i) => {
+      viewCandles.forEach((c, i) => {
         if(i % labelStep !== 0 && i !== n-1) return;
         const d = new Date(c.t);
         const label = d.toLocaleDateString("de-DE", { month:"short", year:"2-digit" });
@@ -1647,16 +1811,57 @@
         rsiWrap.innerHTML = rsvg;
       }else{ rsiWrap.style.display = "none"; rsiWrap.innerHTML = ""; }
 
+      // MACD-Subplot
+      if(indOn("macd")){
+        macdWrap.style.display = "block";
+        const fullMacd = macdSeries(fullCloses, 12, 26, 9);
+        const macdLine = fullMacd.macdLine.slice(viewStart, viewEnd);
+        const signalLine = fullMacd.signalLine.slice(viewStart, viewEnd);
+        const histogram = fullMacd.histogram.slice(viewStart, viewEnd);
+        const mH = 90, mPadT = 8, mPadB = 4, mPlotH = mH - mPadT - mPadB;
+        let mMin = Infinity, mMax = -Infinity;
+        macdLine.forEach(v => { if(v!=null){ mMin=Math.min(mMin,v); mMax=Math.max(mMax,v); } });
+        signalLine.forEach(v => { if(v!=null){ mMin=Math.min(mMin,v); mMax=Math.max(mMax,v); } });
+        histogram.forEach(v => { if(v!=null){ mMin=Math.min(mMin,v); mMax=Math.max(mMax,v); } });
+        if(!isFinite(mMin) || !isFinite(mMax)){ mMin=-1; mMax=1; }
+        const mPad = (mMax-mMin)*0.1 || 1; mMin -= mPad; mMax += mPad;
+        const my = v => mPadT + mPlotH * (1 - (v-mMin)/(mMax-mMin));
+        const zeroY = my(0);
+        let msvg = '<svg viewBox="0 0 ' + W + ' ' + mH + '" preserveAspectRatio="none">';
+        msvg += '<line x1="' + padL + '" y1="' + zeroY.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + zeroY.toFixed(1) + '" stroke="#262626" stroke-width="1" stroke-dasharray="3 3"/>';
+        histogram.forEach((v, i) => {
+          if(v == null) return;
+          const x = xFor(i), bw = Math.max(slotW * 0.6, 0.6);
+          const y = my(v), top = Math.min(y, zeroY), h = Math.max(Math.abs(y-zeroY), 0.8);
+          msvg += '<rect x="' + (x-bw/2).toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (v>=0?TEAL:PINK) + '" opacity="0.55"/>';
+        });
+        function mPath(arr){
+          let d = "", started = false;
+          arr.forEach((v, i) => {
+            if(v == null){ started = false; return; }
+            const x = xFor(i), y = my(v);
+            d += (started ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+            started = true;
+          });
+          return d.trim();
+        }
+        msvg += '<path d="' + mPath(macdLine) + '" fill="none" stroke="#4fd1ff" stroke-width="1.4"/>';
+        msvg += '<path d="' + mPath(signalLine) + '" fill="none" stroke="' + GOLD + '" stroke-width="1.2" stroke-dasharray="3 2"/>';
+        msvg += '<text x="' + (W-padR) + '" y="12" fill="#4fd1ff" font-size="9" font-family="monospace" text-anchor="end">MACD 12/26/9</text>';
+        msvg += '</svg>';
+        macdWrap.innerHTML = msvg;
+      }else{ macdWrap.style.display = "none"; macdWrap.innerHTML = ""; }
+
       // Volumen-Subplot
       const volumeWrap = document.getElementById("volumeWrap");
       if(indOn("volume")){
         volumeWrap.style.display = "block";
         const vH = 80, vPadT = 6, vPadB = 4, vPlotH = vH - vPadT - vPadB;
-        const vols = candles.map(c => c.volume || 0);
+        const vols = viewCandles.map(c => c.volume || 0);
         const vMax2 = Math.max(...vols, 1);
         const vy = v => vPadT + vPlotH * (1 - v/vMax2);
         let vsvg = '<svg viewBox="0 0 ' + W + ' ' + vH + '" preserveAspectRatio="none">';
-        candles.forEach((c, i) => {
+        viewCandles.forEach((c, i) => {
           const x = xFor(i);
           const up = c.close >= c.open;
           const bw = Math.max(slotW * 0.7, 0.6);
@@ -1884,24 +2089,31 @@
       };
 
       let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
-      svg += '<defs><filter id="liqGlow" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
       svg += '<rect x="' + padL + '" y="' + padT + '" width="' + plotW + '" height="' + plotH + '" fill="rgb(37,20,64)"/>';
       for(let i=0;i<bins;i++){
         const offset = -pct + i*binPct;
         const priceLevel = liqPrice * (1+offset);
         const intensity = smoothed[i] / maxDensity;
         const y0 = yForBin(i+1), y1 = yForBin(i);
-        svg += '<rect x="' + padL + '" y="' + y0.toFixed(1) + '" width="' + plotW + '" height="' + (y1-y0+0.6).toFixed(1) + '" fill="' + heatColor(intensity) + '"/>';
+        const estAmount = smoothed[i];
+        svg += '<rect x="' + padL + '" y="' + y0.toFixed(1) + '" width="' + plotW + '" height="' + (y1-y0+0.6).toFixed(1) + '" fill="' + heatColor(intensity) + '"><title>≈ ' + formatUSDCompact(estAmount) + ' geschätzte Liquidationen nahe ' + formatUSD(priceLevel) + '</title></rect>';
         if(i % 6 === 0){
           svg += '<text x="4" y="' + ((y0+y1)/2+3).toFixed(1) + '" fill="#999" font-size="8" font-family="monospace">' + Math.round(priceLevel/1000) + 'k</text>';
         }
       }
 
-      // Deutlich sichtbare Live-Preis-Linie (Binance Mark-Preis)
+      // Live-Preis-Indikator: bewusst anders gestaltet als die Heatmap-Balken (gestrichelt, Pfeil, freischwebendes Label),
+      // damit klar erkennbar ist, dass das der aktuelle Kurs ist und keine Liquidationszone
       const midY = priceToY(liqPrice);
-      svg += '<line x1="' + padL + '" y1="' + midY.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + midY.toFixed(1) + '" stroke="#ffffff" stroke-width="2.4" filter="url(#liqGlow)"/>';
-      svg += '<rect x="' + (W-padR-152) + '" y="' + (midY-16).toFixed(1) + '" width="152" height="15" fill="#08080a" opacity="0.85" rx="2"/>';
-      svg += '<text x="' + (W-padR-4) + '" y="' + (midY-5).toFixed(1) + '" fill="#ffffff" font-size="11" font-weight="700" font-family="monospace" text-anchor="end">LIVE: ' + formatUSD(liqPrice) + '</text>';
+      svg += '<line x1="' + padL + '" y1="' + midY.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + midY.toFixed(1) + '" stroke="' + ORANGE + '" stroke-width="2" stroke-dasharray="7 5"/>';
+      svg += '<polygon points="' + (padL-1) + ',' + (midY-6).toFixed(1) + ' ' + (padL-1) + ',' + (midY+6).toFixed(1) + ' ' + (padL+8) + ',' + midY.toFixed(1) + '" fill="' + ORANGE + '"/>';
+      const labelW = 122, labelH = 20;
+      const labelBelow = midY - padT < 30;
+      const labelY = labelBelow ? midY + 14 : midY - 34;
+      const labelX = W - padR - labelW;
+      svg += '<line x1="' + (labelX + labelW/2) + '" y1="' + (labelBelow ? labelY : labelY + labelH) + '" x2="' + (labelX + labelW/2) + '" y2="' + midY.toFixed(1) + '" stroke="' + ORANGE + '" stroke-width="1.2"/>';
+      svg += '<rect x="' + labelX + '" y="' + labelY + '" width="' + labelW + '" height="' + labelH + '" rx="4" fill="#08080a" stroke="' + ORANGE + '" stroke-width="1.3"/>';
+      svg += '<text x="' + (labelX + labelW/2) + '" y="' + (labelY+14) + '" fill="' + ORANGE + '" font-size="10" font-weight="700" font-family="monospace" text-anchor="middle">AKTUELL ' + formatUSD(liqPrice) + '</text>';
       svg += '<text x="' + (W-padR) + '" y="14" fill="' + GOLD + '" font-size="9" font-family="monospace" text-anchor="end">Hohe Dichte</text>';
       svg += '<text x="' + (W-padR) + '" y="' + (H-8) + '" fill="#8a7dc9" font-size="9" font-family="monospace" text-anchor="end">Niedrige Dichte</text>';
       svg += '</svg>';
