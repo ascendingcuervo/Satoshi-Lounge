@@ -681,7 +681,6 @@
               </div>
               <div class="rsi-wrap" id="rsiWrap" style="display:none;"></div>
               <div class="rsi-wrap" id="macdWrap" style="display:none;"></div>
-              <div class="rsi-wrap" id="volumeWrap" style="display:none;"></div>
             </div>
             <div class="stat-grid">
               <div class="stat-card">
@@ -1173,7 +1172,6 @@
       { key: "bmsb", label: "Bull Market Support Band", color: GOLD, on: false, type:"bmsb" },
       { key: "rsi", label: "RSI", color: PINK, on: true, type:"rsi" },
       { key: "macd", label: "MACD", color: "#4fd1ff", on: false, type:"macd" },
-      { key: "volume", label: "Volumen", color: TEAL, on: false, type:"volume" },
     ];
     const CATEGORIES = [
       { key: "geschichte", label: "Geschichte" },
@@ -1466,24 +1464,8 @@
         ath = ATH_FALLBACK;
         isLive = false;
       }else{
-        // Volumen und Marktdaten sind "nice to have" — schlagen sie fehl, läuft der Chart trotzdem mit echten Kursdaten weiter
-        let volumes = [];
-        try{
-          const chart = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily", 15000);
-          if(chart && Array.isArray(chart.total_volumes)) volumes = chart.total_volumes;
-        }catch(e){ volumes = []; }
-
-        function nearestVolume(t){
-          if(!volumes.length) return 0;
-          let lo = 0, hi = volumes.length - 1;
-          while(lo < hi){
-            const mid = (lo+hi) >> 1;
-            if(volumes[mid][0] < t) lo = mid+1; else hi = mid;
-          }
-          return volumes[lo] ? volumes[lo][1] : 0;
-        }
         const rawCandles = ohlc.map(function(c){
-          return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4], volume: nearestVolume(c[0]) };
+          return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
         });
         candles = resampleWeeklyOHLC(rawCandles);
 
@@ -1870,27 +1852,6 @@
         msvg += '</svg>';
         macdWrap.innerHTML = msvg;
       }else{ macdWrap.style.display = "none"; macdWrap.innerHTML = ""; }
-
-      // Volumen-Subplot
-      const volumeWrap = document.getElementById("volumeWrap");
-      if(indOn("volume")){
-        volumeWrap.style.display = "block";
-        const vH = 80, vPadT = 6, vPadB = 4, vPlotH = vH - vPadT - vPadB;
-        const vols = viewCandles.map(c => c.volume || 0);
-        const vMax2 = Math.max(...vols, 1);
-        const vy = v => vPadT + vPlotH * (1 - v/vMax2);
-        let vsvg = '<svg viewBox="0 0 ' + W + ' ' + vH + '" preserveAspectRatio="none">';
-        viewCandles.forEach((c, i) => {
-          const x = xFor(i);
-          const up = c.close >= c.open;
-          const bw = Math.max(slotW * 0.7, 0.6);
-          const y = vy(vols[i]);
-          vsvg += '<rect x="' + (x-bw/2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (vH-vPadB-y).toFixed(1) + '" fill="' + (up?TEAL:PINK) + '" opacity="0.55"/>';
-        });
-        vsvg += '<text x="' + (W-padR) + '" y="12" fill="' + TEAL + '" font-size="9" font-family="monospace" text-anchor="end">Volumen</text>';
-        vsvg += '</svg>';
-        volumeWrap.innerHTML = vsvg;
-      }else{ volumeWrap.style.display = "none"; volumeWrap.innerHTML = ""; }
     }
 
     function renderStats(){
