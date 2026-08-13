@@ -1261,7 +1261,7 @@
       if(isNaN(cursor.getTime()) || cursor.getTime() > now) return null;
       let totalBTC = 0, totalInvested = 0, months = 0;
       while(cursor.getTime() <= now && months < 600){
-        const price = interpolatePrice(candles, cursor.getTime());
+        const price = (now - cursor.getTime()) < 2*86400000 ? currentPrice : interpolatePrice(candles, cursor.getTime());
         totalBTC += monthlyAmount / price;
         totalInvested += monthlyAmount;
         months++;
@@ -1330,6 +1330,7 @@
 
     let isLive = false;
     let candles = FALLBACK_CANDLES;
+    let dailyCandles = FALLBACK_CANDLES; // feinere Auflösung für präzise Preis-Interpolation (Portfolio/DCA)
     let currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
     let change24h = null;
     let ath = ATH_FALLBACK;
@@ -1354,7 +1355,6 @@
     const athPctValueEl = document.getElementById("athPctValue");
 
     // ---- Zeit- & Zyklusmodell ----
-    const BULL_DAYS = 1064, BEAR_DAYS = 383;
     function avgPhaseLen(type){
       const done = PHASES_HISTORY.filter(p => p.type === type && p.end != null);
       const days = done.map(p => (p.end - p.start) / 86400000);
@@ -1383,7 +1383,7 @@
         '<div class="stat-card"><span class="stat-label">Seit letztem Halving</span><span class="stat-value">' + sinceHalving.toLocaleString("de-DE") + ' Tage</span><span class="stat-sub">20. April 2024</span></div>' +
         '<div class="stat-card"><span class="stat-label">Aktuelle Marktphase</span><span class="stat-value" style="color:' + (phase==="Bullenmarkt"?TEAL:PINK) + '">' + phase + '</span><span class="stat-sub">Seit ' + phaseStartLabel + ' · Tag ' + phaseDay + '</span></div>' +
         '<div class="stat-card"><span class="stat-label">Nächstes Halving</span><span class="stat-value">' + toNextHalving.toLocaleString("de-DE") + ' Tage</span><span class="stat-sub">Geschätzt: ' + nextHalvingLabel + '</span></div>' +
-        '<div class="stat-card wide"><span class="stat-label">Modell (Richtwert)</span><span class="stat-value" style="font-size:0.95rem;">1064 / 383 Tage</span><span class="stat-sub">Ø-Bulle ' + Math.round(avgPhaseLen("bull")) + ' Tage, Ø-Bär ' + Math.round(avgPhaseLen("bear")) + ' Tage (historisch)</span></div>';
+        '<div class="stat-card wide"><span class="stat-label">Modell (Richtwert)</span><span class="stat-value" style="font-size:0.95rem;">1064 / 384 Tage</span><span class="stat-sub">Ø-Bulle 1064 Tage, Ø-Bär 384 Tage</span></div>';
 
       document.getElementById("cycleBarFill").style.width = phasePct + "%";
       document.getElementById("cycleBarPct").textContent = "Tag " + phaseDay + " von ø " + phaseLen;
@@ -1476,6 +1476,7 @@
           return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
         });
         candles = resampleWeeklyOHLC(rawCandles);
+        dailyCandles = rawCandles;
 
         try{
           const market = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false", 15000);
@@ -1552,7 +1553,7 @@
       return out;
     }
 
-    // Bull-/Bär-Phasen für alle Halvings berechnen (1064 Tage Bulle, 383 Tage Bär)
+    // Bull-/Bär-Phasen für die Chart-Hintergrundzonen — basiert auf den echten historischen Daten (PHASES_HISTORY)
     function getPhases(){
       const now = Date.now();
       return PHASES_HISTORY.map(ph => ({ start: ph.start, end: ph.end == null ? now : ph.end, type: ph.type }));
@@ -1876,7 +1877,7 @@
     function renderDCA(){
       const amount = parseFloat(dcaAmountInput.value) || 0;
       const start = dcaStartInput.value;
-      const result = calcDCA(FALLBACK_CANDLES, amount, start, currentPrice);
+      const result = calcDCA(dailyCandles, amount, start, currentPrice);
       if(!result){
         dcaResultsEl.innerHTML = '<p class="empty-note">Bitte gültigen Betrag und Startdatum angeben.</p>';
         return;
@@ -1916,7 +1917,9 @@
     function renderPortfolio(){
       let invested = 0, btc = 0, freeBtc = 0, freeValue = 0, pendingBtc = 0, pendingValue = 0;
       entries.forEach(e => {
-        const price = interpolatePrice(FALLBACK_CANDLES, new Date(e.date).getTime());
+        const entryTs = new Date(e.date).getTime();
+        // Käufe der letzten 2 Tage: Live-Preis direkt nutzen — das ist genauer als jede historische Kerze
+        const price = (Date.now() - entryTs) < 2*86400000 ? currentPrice : interpolatePrice(dailyCandles, entryTs);
         const entryBtc = e.amount / price;
         invested += e.amount; btc += entryBtc;
         if(daysHeld(e.date) >= 365){ freeBtc += entryBtc; freeValue += entryBtc*currentPrice; }
