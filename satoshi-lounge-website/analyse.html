@@ -1254,14 +1254,21 @@
       }
       return candles[candles.length-1].close;
     }
-    function calcDCA(candles, monthlyAmount, startDate, currentPrice){
+    // Wählt die genaueste verfügbare Preisquelle für einen Zeitpunkt: Live-Preis (< 2 Tage alt),
+    // sonst feine 4h-Kerzen (letzte 30 Tage), sonst die gröberen ~4-Tage-Kerzen der kompletten Historie.
+    function bestPriceAt(ts){
+      if(Date.now() - ts < 2*86400000) return currentPrice;
+      if(recentCandles.length && ts >= recentCandles[0].t) return interpolatePrice(recentCandles, ts);
+      return interpolatePrice(dailyCandles, ts);
+    }
+    function calcDCA(monthlyAmount, startDate){
       if(!monthlyAmount || !startDate) return null;
       const now = Date.now();
       let cursor = new Date(startDate);
       if(isNaN(cursor.getTime()) || cursor.getTime() > now) return null;
       let totalBTC = 0, totalInvested = 0, months = 0;
       while(cursor.getTime() <= now && months < 600){
-        const price = (now - cursor.getTime()) < 2*86400000 ? currentPrice : interpolatePrice(candles, cursor.getTime());
+        const price = bestPriceAt(cursor.getTime());
         totalBTC += monthlyAmount / price;
         totalInvested += monthlyAmount;
         months++;
@@ -1330,7 +1337,8 @@
 
     let isLive = false;
     let candles = FALLBACK_CANDLES;
-    let dailyCandles = FALLBACK_CANDLES; // feinere Auflösung für präzise Preis-Interpolation (Portfolio/DCA)
+    let dailyCandles = FALLBACK_CANDLES; // gröbere Auflösung (~4 Tage/Punkt bei CoinGecko für große Zeiträume)
+    let recentCandles = []; // feine Auflösung (4h/Punkt) für die letzten 30 Tage — präzise für aktuelle Portfolio-Käufe
     let currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
     let change24h = null;
     let ath = ATH_FALLBACK;
@@ -1477,6 +1485,17 @@
         });
         candles = resampleWeeklyOHLC(rawCandles);
         dailyCandles = rawCandles;
+
+        // Feinere Auflösung (4h/Punkt) speziell für die letzten 30 Tage nachladen — die "große" Historie oben
+        // liefert bei CoinGecko nur ~alle 4 Tage einen Punkt, das ist für ganz aktuelle Portfolio-Käufe zu grob.
+        try{
+          const fineOhlc = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=30", 12000);
+          if(Array.isArray(fineOhlc) && fineOhlc.length){
+            recentCandles = fineOhlc.map(function(c){
+              return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
+            });
+          }
+        }catch(e){ /* recentCandles bleibt leer, Portfolio fällt dann auf dailyCandles zurück */ }
 
         try{
           const market = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false", 15000);
@@ -1877,7 +1896,7 @@
     function renderDCA(){
       const amount = parseFloat(dcaAmountInput.value) || 0;
       const start = dcaStartInput.value;
-      const result = calcDCA(dailyCandles, amount, start, currentPrice);
+      const result = calcDCA(amount, start);
       if(!result){
         dcaResultsEl.innerHTML = '<p class="empty-note">Bitte gültigen Betrag und Startdatum angeben.</p>';
         return;
@@ -1919,7 +1938,7 @@
       entries.forEach(e => {
         const entryTs = new Date(e.date).getTime();
         // Käufe der letzten 2 Tage: Live-Preis direkt nutzen — das ist genauer als jede historische Kerze
-        const price = (Date.now() - entryTs) < 2*86400000 ? currentPrice : interpolatePrice(dailyCandles, entryTs);
+        const price = bestPriceAt(entryTs);
         const entryBtc = e.amount / price;
         invested += e.amount; btc += entryBtc;
         if(daysHeld(e.date) >= 365){ freeBtc += entryBtc; freeValue += entryBtc*currentPrice; }
