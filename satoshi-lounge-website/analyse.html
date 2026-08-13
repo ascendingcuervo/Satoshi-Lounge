@@ -1801,6 +1801,7 @@
       const statusTextEl = document.getElementById("liqStatusText");
       const liqWrap = document.getElementById("liqWrap");
       let openInterestUsd = null, longShare = 0.5, shortShare = 0.5, liqLive = false;
+      let liqPrice = currentPrice;
       try{
         const [oi, ls, premium] = await Promise.all([
           fetchWithTimeout("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT"),
@@ -1808,8 +1809,10 @@
           fetchWithTimeout("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT"),
         ]);
         const oiBtc = parseFloat(oi.openInterest);
-        const markPrice = parseFloat(premium.markPrice) || currentPrice;
-        openInterestUsd = oiBtc * markPrice;
+        const markPrice = parseFloat(premium.markPrice);
+        // Binance Mark-Preis ist hier zuverlässiger als der (rate-limitete) CoinGecko-Preis
+        if(markPrice && !isNaN(markPrice)) liqPrice = markPrice;
+        openInterestUsd = oiBtc * liqPrice;
         if(Array.isArray(ls) && ls[0]){
           longShare = parseFloat(ls[0].longAccount);
           shortShare = parseFloat(ls[0].shortAccount);
@@ -1826,15 +1829,6 @@
         liqWrap.innerHTML = '<div class="chart-loading" style="display:flex;">Heatmap aktuell nicht verfügbar.</div>';
         return;
       }
-
-      // Feingranularer Kursverlauf der letzten Tage, nur für die Überlagerung auf der Heatmap
-      let recentCandles = [];
-      try{
-        const rec = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=7", 12000);
-        if(Array.isArray(rec) && rec.length){
-          recentCandles = rec.map(c => ({ t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] }));
-        }
-      }catch(e){ recentCandles = []; }
 
       const W = 900, H = 260, padL = 60, padR = 10, padT = 10, padB = 22;
       const plotW = W - padL - padR, plotH = H - padT - padB;
@@ -1885,15 +1879,16 @@
 
       const yForBin = i => padT + plotH * (1 - i/bins);
       const priceToY = p => {
-        const lo = currentPrice*(1-pct), hi = currentPrice*(1+pct);
+        const lo = liqPrice*(1-pct), hi = liqPrice*(1+pct);
         return padT + plotH * (1 - (p-lo)/(hi-lo));
       };
 
       let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
+      svg += '<defs><filter id="liqGlow" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
       svg += '<rect x="' + padL + '" y="' + padT + '" width="' + plotW + '" height="' + plotH + '" fill="rgb(37,20,64)"/>';
       for(let i=0;i<bins;i++){
         const offset = -pct + i*binPct;
-        const priceLevel = currentPrice * (1+offset);
+        const priceLevel = liqPrice * (1+offset);
         const intensity = smoothed[i] / maxDensity;
         const y0 = yForBin(i+1), y1 = yForBin(i);
         svg += '<rect x="' + padL + '" y="' + y0.toFixed(1) + '" width="' + plotW + '" height="' + (y1-y0+0.6).toFixed(1) + '" fill="' + heatColor(intensity) + '"/>';
@@ -1902,28 +1897,11 @@
         }
       }
 
-      // Echten Live-Bitcoin-Chart der letzten Tage als Candlesticks über die Heatmap legen
-      if(recentCandles.length > 1){
-        const tMin = recentCandles[0].t, tMax = recentCandles[recentCandles.length-1].t;
-        const xForT = t => padL + plotW * ((t-tMin)/((tMax-tMin) || 1));
-        const clamp = p => Math.min(currentPrice*(1+pct), Math.max(currentPrice*(1-pct), p));
-        const candleW = Math.max((plotW / recentCandles.length) * 0.55, 1.2);
-        recentCandles.forEach(c => {
-          const x = xForT(c.t);
-          const up = c.close >= c.open;
-          const color = up ? TEAL : PINK;
-          const yOpen = priceToY(clamp(c.open)), yClose = priceToY(clamp(c.close));
-          const yHigh = priceToY(clamp(c.high)), yLow = priceToY(clamp(c.low));
-          const bodyTop = Math.min(yOpen, yClose);
-          const bodyH = Math.max(Math.abs(yClose - yOpen), 1.1);
-          svg += '<line x1="' + x.toFixed(1) + '" y1="' + yHigh.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + yLow.toFixed(1) + '" stroke="' + color + '" stroke-width="1" opacity="0.95"/>';
-          svg += '<rect x="' + (x-candleW/2).toFixed(1) + '" y="' + bodyTop.toFixed(1) + '" width="' + candleW.toFixed(1) + '" height="' + bodyH.toFixed(1) + '" fill="' + color + '" opacity="0.95"/>';
-        });
-      }
-
-      const midY = priceToY(currentPrice);
-      svg += '<line x1="' + padL + '" y1="' + midY.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + midY.toFixed(1) + '" stroke="#fff" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>';
-      svg += '<text x="' + (W-padR) + '" y="' + (midY-6).toFixed(1) + '" fill="#fff" font-size="9" font-family="monospace" text-anchor="end">Aktueller Preis: ' + formatUSD(currentPrice) + '</text>';
+      // Deutlich sichtbare Live-Preis-Linie (Binance Mark-Preis)
+      const midY = priceToY(liqPrice);
+      svg += '<line x1="' + padL + '" y1="' + midY.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + midY.toFixed(1) + '" stroke="#ffffff" stroke-width="2.4" filter="url(#liqGlow)"/>';
+      svg += '<rect x="' + (W-padR-152) + '" y="' + (midY-16).toFixed(1) + '" width="152" height="15" fill="#08080a" opacity="0.85" rx="2"/>';
+      svg += '<text x="' + (W-padR-4) + '" y="' + (midY-5).toFixed(1) + '" fill="#ffffff" font-size="11" font-weight="700" font-family="monospace" text-anchor="end">LIVE: ' + formatUSD(liqPrice) + '</text>';
       svg += '<text x="' + (W-padR) + '" y="14" fill="' + GOLD + '" font-size="9" font-family="monospace" text-anchor="end">Hohe Dichte</text>';
       svg += '<text x="' + (W-padR) + '" y="' + (H-8) + '" fill="#8a7dc9" font-size="9" font-family="monospace" text-anchor="end">Niedrige Dichte</text>';
       svg += '</svg>';
