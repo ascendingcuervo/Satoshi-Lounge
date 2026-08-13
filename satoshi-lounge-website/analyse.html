@@ -1269,10 +1269,13 @@
       return values.map((_, i) => i < period-1 ? null : avg(values.slice(i-period+1, i+1)));
     }
     function emaSeries(values, period){
-      // Fällt bei zu wenig Datenpunkten (z.B. Fallback-Daten) auf die maximal verfügbare Länge zurück,
-      // statt komplett zu verschwinden — sonst zeigt z.B. EMA 200 bei <200 Kerzen gar nichts an.
-      const effPeriod = Math.min(period, values.length);
-      if(effPeriod < 2) return values.map(() => null);
+      // Fällt bei zu wenig Datenpunkten (z.B. Fallback-Daten) auf eine kürzere, sinnvolle Periode zurück,
+      // statt komplett zu verschwinden oder nur einen einzigen Punkt zu zeigen.
+      let effPeriod = period;
+      if(effPeriod > values.length){
+        effPeriod = Math.max(5, Math.floor(values.length * 0.5));
+      }
+      if(effPeriod < 2 || effPeriod > values.length) return values.map(() => null);
       const k = 2/(effPeriod+1); let prev = null;
       return values.map((v, i) => {
         if(i < effPeriod-1) return null;
@@ -1497,6 +1500,19 @@
         }
         isLive = true;
       }
+
+      // Live-Preis zusätzlich über Binance absichern — deutlich zuverlässiger als CoinGecko (rate-limited),
+      // damit im Header auch dann ein echter Live-Preis steht, wenn CoinGecko gerade blockt
+      try{
+        const ticker = await fetchWithTimeout("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", 8000);
+        const bPrice = parseFloat(ticker.lastPrice);
+        const bChg = parseFloat(ticker.priceChangePercent);
+        if(bPrice && !isNaN(bPrice)){
+          currentPrice = bPrice;
+          if(!isNaN(bChg)) change24h = bChg;
+          isLive = true;
+        }
+      }catch(e){ /* Binance nicht erreichbar — bleibt beim bisherigen Preis */ }
       const cl = document.getElementById("chartLoading");
       if(cl) cl.style.display = "none";
       viewStart = 0; viewEnd = candles.length; // Zoom auf frische Daten zurücksetzen
@@ -1673,7 +1689,7 @@
       const closes = viewCandles.map(c => c.close);
       const rsiArr = rsiSeries(fullCloses, 14).slice(viewStart, viewEnd);
 
-      const W = 900, H = 280, padL = 46, padR = 16, padT = 14, padB = 26;
+      const W = 900, H = 280, padL = 46, padR = 22, padT = 14, padB = 26;
       const plotW = W - padL - padR, plotH = H - padT - padB;
       const n = viewCandles.length;
       const slotW = plotW / n;
@@ -1774,15 +1790,18 @@
         svg += '<path d="' + pathFor(l.series) + '" fill="none" stroke="' + l.ind.color + '" stroke-width="1.5"/>';
       });
 
-      // X-Achse: Jahr + Monat (folgt dem sichtbaren Zoom-Fenster)
-      const labelStep = Math.max(1, Math.ceil(n / 7));
+      // X-Achse: nur Kalenderjahre (keine Monate) — eine Linie + Label an jedem Jahreswechsel im sichtbaren Bereich
+      let lastYear = null;
       viewCandles.forEach((c, i) => {
-        if(i % labelStep !== 0 && i !== n-1) return;
-        const d = new Date(c.t);
-        const label = d.toLocaleDateString("de-DE", { month:"short", year:"2-digit" });
-        const anchor = i === n-1 ? "end" : (i === 0 ? "start" : "middle");
-        const lx = i === n-1 ? (W-padR) : (i === 0 ? padL : xFor(i));
-        svg += '<text x="' + lx.toFixed(1) + '" y="' + (H-8) + '" fill="#666" font-size="9" font-family="monospace" text-anchor="' + anchor + '">' + label + '</text>';
+        const yr = new Date(c.t).getFullYear();
+        if(yr === lastYear) return;
+        lastYear = yr;
+        const x = xFor(i);
+        svg += '<line x1="' + x.toFixed(1) + '" y1="' + padT + '" x2="' + x.toFixed(1) + '" y2="' + (H-padB) + '" stroke="#1c1c1c" stroke-width="1" stroke-dasharray="2 3"/>';
+        let anchor = "middle";
+        if(x < padL + 16) anchor = "start";
+        else if(x > W - padR - 16) anchor = "end";
+        svg += '<text x="' + x.toFixed(1) + '" y="' + (H-8) + '" fill="#666" font-size="9" font-family="monospace" text-anchor="' + anchor + '">' + yr + '</text>';
       });
       svg += '</svg>';
       chartWrap.innerHTML = '<div class="chart-loading" id="chartLoading" style="display:none;">Lädt Chart…</div>' + svg;
