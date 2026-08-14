@@ -1483,53 +1483,52 @@
       }catch(e){ /* midCandles bleibt leer, bestPriceAt() fällt auf dailyCandles zurück */ }
     }
 
+    // Führt mehrere Kerzen-Serien zusammen (Tag-Bucket, spätere Serie gewinnt bei Überschneidung) —
+    // damit der Chart immer bis "jetzt" durchgehend ist, auch wenn die statische Datei mal 1-2 Tage alt ist.
+    function mergeCandleSeriesByDay(seriesList){
+      const map = new Map();
+      seriesList.forEach(function(series){
+        series.forEach(function(c){ map.set(Math.floor(c.t/86400000), c); });
+      });
+      return Array.from(map.values()).sort(function(a,b){ return a.t - b.t; });
+    }
+
     async function loadLive(){
       const chartLoading = document.getElementById("chartLoading");
       if(chartLoading){ chartLoading.style.display = "flex"; chartLoading.textContent = "Lädt komplette Historie…"; }
 
-      // OHLC ist die einzige wirklich kritische Abfrage — mit Rückfall auf einen kürzeren Zeitraum, falls "max" mal blockt
-      let ohlc = null;
+      // Große Historie (seit 2013) kommt jetzt aus einer eigenen, statischen Datei im Repo statt live von
+      // CoinGecko — die Datei wird automatisch 1x täglich per GitHub Action aktualisiert (siehe
+      // .github/workflows/update-btc-history.yml). Das spart Live-Anfragen an CoinGecko fast komplett ein.
+      let staticOk = false;
       try{
-        ohlc = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=max", 15000);
-        if(!Array.isArray(ohlc) || !ohlc.length) throw new Error("empty");
-      }catch(e){
-        try{
-          ohlc = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=1825", 15000);
-          if(!Array.isArray(ohlc) || !ohlc.length) throw new Error("empty");
-        }catch(e2){ ohlc = null; }
-      }
+        const res = await fetchWithTimeout("btc-history.json", 10000);
+        if(res && Array.isArray(res.candles) && res.candles.length){
+          dailyCandles = res.candles.map(function(c){
+            return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
+          });
+          staticOk = true;
+        }
+      }catch(e){ /* dailyCandles bleibt beim Default (FALLBACK_CANDLES) */ }
 
-      if(!ohlc){
+      await loadRecentCandlesFromBinance();
+
+      if(!staticOk && !midCandles.length && !recentCandles.length){
         candles = FALLBACK_CANDLES;
         currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
         change24h = null;
         ath = ATH_FALLBACK;
         isLive = false;
-        await loadRecentCandlesFromBinance();
       }else{
-        const rawCandles = ohlc.map(function(c){
-          return { t:c[0], open:c[1], high:c[2], low:c[3], close:c[4] };
-        });
-        candles = resampleWeeklyOHLC(rawCandles);
-        dailyCandles = rawCandles;
-        await loadRecentCandlesFromBinance();
-
-        try{
-          const market = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false", 15000);
-          currentPrice = market.market_data.current_price.usd;
-          change24h = market.market_data.price_change_percentage_24h;
-          ath = market.market_data.ath.usd;
-        }catch(e){
-          // Fallback: letzten bekannten Schlusskurs aus dem Chart selbst nehmen, statt komplett auf Fallback-Daten zu wechseln
-          currentPrice = rawCandles[rawCandles.length-1].close;
-          change24h = null;
-          ath = Math.max(ATH_FALLBACK, ...rawCandles.map(c => c.high));
-        }
-        isLive = true;
+        const merged = mergeCandleSeriesByDay([dailyCandles, midCandles, recentCandles]);
+        candles = resampleWeeklyOHLC(merged.length ? merged : dailyCandles);
+        ath = Math.max(ATH_FALLBACK, ...merged.map(function(c){ return c.high; }));
+        if(merged.length) currentPrice = merged[merged.length-1].close;
+        isLive = staticOk;
       }
 
       // Live-Preis zusätzlich über Binance absichern — deutlich zuverlässiger als CoinGecko (rate-limited),
-      // damit im Header auch dann ein echter Live-Preis steht, wenn CoinGecko gerade blockt
+      // damit im Header auch dann ein echter Live-Preis steht.
       try{
         const ticker = await fetchWithTimeout("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", 8000);
         const bPrice = parseFloat(ticker.lastPrice);
