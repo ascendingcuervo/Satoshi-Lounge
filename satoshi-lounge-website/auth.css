@@ -1,0 +1,85 @@
+/* ===== AUTH: Modal, Avatar, Profil-Dropdown ===== */
+
+.auth-overlay{
+  position:fixed; inset:0; background:rgba(5,5,7,0.8); backdrop-filter:blur(4px);
+  z-index:400; display:none; align-items:center; justify-content:center; padding:20px;
+}
+.auth-overlay.open{ display:flex; }
+
+.auth-modal{
+  background:#0d0d10; border:1.5px solid var(--line); border-radius:18px;
+  width:100%; max-width:380px; padding:32px 28px; position:relative;
+  font-family:'Inter', sans-serif;
+}
+.auth-modal-close{
+  position:absolute; top:16px; right:16px; background:none; border:none; color:var(--gray);
+  font-size:1.3rem; cursor:pointer; line-height:1; padding:4px;
+}
+.auth-modal-close:hover{ color:var(--ink); }
+
+.auth-tabs{ display:flex; gap:8px; margin-bottom:22px; }
+.auth-tab{
+  flex:1; text-align:center; padding:10px; border-radius:10px; border:1.5px solid var(--line);
+  background:transparent; color:var(--gray); font-family:'Space Grotesk', sans-serif; font-weight:700;
+  font-size:0.9rem; cursor:pointer; transition:.2s;
+}
+.auth-tab.active{ border-color:var(--orange); color:var(--orange); background:rgba(247,147,26,0.08); }
+
+.auth-field{ margin-bottom:14px; }
+.auth-field label{
+  display:block; font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray);
+  margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;
+}
+.auth-field input{
+  width:100%; background:#08080a; border:1.5px solid var(--line); border-radius:10px;
+  padding:12px 14px; color:var(--ink); font-family:'Inter', sans-serif; font-size:0.95rem;
+}
+.auth-field input:focus{ outline:none; border-color:var(--orange); }
+
+.auth-submit{
+  width:100%; padding:13px; border-radius:10px; border:none; background:var(--orange);
+  color:#0a0a0d; font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.95rem;
+  cursor:pointer; margin-top:6px; transition:.2s;
+}
+.auth-submit:hover{ background:var(--orange-deep); }
+.auth-submit:disabled{ opacity:0.6; cursor:default; }
+
+.auth-msg{
+  font-family:'Space Mono', monospace; font-size:0.78rem; margin-top:14px; text-align:center;
+  min-height:1em;
+}
+.auth-msg.error{ color:#ff6b6b; }
+.auth-msg.success{ color:var(--teal, #2adfc0); }
+
+/* Avatar / Profil-Button in der Topbar */
+.profile-btn{
+  width:38px; height:38px; border-radius:50%; overflow:hidden; border:1.5px solid var(--line);
+  background:var(--orange); cursor:pointer; padding:0; position:relative; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.profile-btn img{ width:100%; height:100%; object-fit:cover; display:block; }
+.profile-btn .initial{
+  color:#0a0a0d; font-family:'Space Grotesk', sans-serif; font-weight:800; font-size:1rem;
+}
+
+.profile-menu{
+  position:absolute; top:56px; right:20px; background:#0d0d10; border:1.5px solid var(--line);
+  border-radius:12px; min-width:220px; padding:8px; z-index:300; display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+.profile-menu.open{ display:block; }
+.profile-menu-email{
+  font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray);
+  padding:10px 12px; border-bottom:1px solid var(--line-soft); margin-bottom:6px; word-break:break-all;
+}
+.profile-menu button{
+  width:100%; text-align:left; background:none; border:none; color:var(--ink);
+  font-family:'Inter', sans-serif; font-size:0.88rem; padding:10px 12px; border-radius:8px;
+  cursor:pointer; transition:.15s;
+}
+.profile-menu button:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); }
+.profile-menu button.danger:hover{ background:rgba(255,107,107,0.1); color:#ff6b6b; }
+
+@media(max-width:600px){
+  .profile-menu{ right:16px; }
+}

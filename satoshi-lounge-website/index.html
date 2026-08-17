@@ -318,6 +318,7 @@
     .footer-warn{ justify-content:flex-start; }
   }
 </style>
+<link rel="stylesheet" href="auth.css">
 </head>
 <body>
   <canvas id="nodesCanvas"></canvas>
@@ -328,7 +329,7 @@
       <span></span><span></span><span></span>
     </button>
     <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
-    <a href="#" class="login-btn">Anmelden</a>
+    <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
   </div>
 
   <!-- DRAWER -->
@@ -570,6 +571,42 @@
     step();
   })();
 </script>
+
+
+  <!-- AUTH: Login/Registrieren Modal -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-modal">
+      <button class="auth-modal-close" id="authModalClose" aria-label="Schließen">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" type="button">Anmelden</button>
+        <button class="auth-tab" id="authTabSignup" type="button">Registrieren</button>
+      </div>
+      <form id="authForm">
+        <div class="auth-field">
+          <label for="authEmail">E-Mail</label>
+          <input type="email" id="authEmail" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="authPassword">Passwort</label>
+          <input type="password" id="authPassword" required minlength="6" autocomplete="current-password">
+        </div>
+        <button type="submit" class="auth-submit" id="authSubmitBtn">Anmelden</button>
+        <div class="auth-msg" id="authMsg"></div>
+      </form>
+    </div>
+  </div>
+
+  <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+
+  <div class="profile-menu" id="profileMenu">
+    <div class="profile-menu-email" id="profileMenuEmail"></div>
+    <button type="button" id="changeAvatarBtn">Profilbild ändern</button>
+    <button type="button" class="danger" id="logoutBtn">Abmelden</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="auth-config.js"></script>
+  <script src="auth.js"></script>
 
 </body>
 </html>
