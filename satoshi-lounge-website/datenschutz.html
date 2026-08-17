@@ -99,11 +99,22 @@
   .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
   .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
   .drawer-nav a:hover .idx{ color:inherit; }
-  .drawer-socials{ margin-top:auto; padding:24px 32px 0; }
-  .drawer-socials a{
-    border-bottom:none; padding:10px 0; font-size:0.95rem; color:var(--gray); text-decoration:none; display:block;
+  .drawer-brand{
+    display:flex; align-items:center; gap:12px;
+    padding:0 32px 22px; margin-bottom:6px; border-bottom:1px solid var(--line-soft);
   }
-  .drawer-socials a:hover{ padding-left:6px; color:var(--orange-deep); }
+  .drawer-brand-badge{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--orange), var(--orange-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk', sans-serif; font-weight:800; font-size:1.15rem; color:#0a0a0d;
+    box-shadow:0 0 16px rgba(247,147,26,0.45);
+  }
+  .drawer-brand-text{
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.92rem;
+    letter-spacing:0.04em; color:var(--ink);
+  }
+  .drawer-nav{ margin-top:auto; }
   .drawer-foot{ padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); margin-top:18px; }
 
   /* ===== PAGE / LEGAL CONTENT ===== */
@@ -224,6 +235,10 @@
   <!-- DRAWER -->
   <div class="overlay" id="overlay"></div>
   <nav class="drawer" id="drawer">
+    <div class="drawer-brand">
+      <span class="drawer-brand-badge">₿</span>
+      <span class="drawer-brand-text">SATOSHI LOUNGE</span>
+    </div>
     <div class="drawer-nav">
       <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
       <a href="analyse.html"><span>Analyse</span><span class="idx">02</span></a>
@@ -231,11 +246,6 @@
       <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
       <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
       <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
-    </div>
-    <div class="drawer-socials">
-      <a href="https://x.com/Krypto_Cuervo" target="_blank" rel="noopener">X (Twitter) →</a>
-      <a href="https://www.youtube.com/@Krypto_Cuervo" target="_blank" rel="noopener">YouTube →</a>
-      <a href="https://www.tiktok.com/@krypto_cuervo" target="_blank" rel="noopener">TikTok →</a>
     </div>
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
@@ -498,7 +508,7 @@
   }
   burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
   overlay.addEventListener('click', () => toggleDrawer(false));
-  document.querySelectorAll('.drawer-nav a, .drawer-socials a').forEach(a=>{
+  document.querySelectorAll('.drawer-nav a').forEach(a=>{
     a.addEventListener('click', () => toggleDrawer(false));
   });
 
