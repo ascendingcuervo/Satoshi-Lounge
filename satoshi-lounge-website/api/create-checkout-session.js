@@ -72,27 +72,43 @@ module.exports = async (req, res) => {
       orderTotalCents += product.price * qty;
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      automatic_payment_methods: { enabled: true },
-      line_items: lineItems,
-      shipping_address_collection: { allowed_countries: EUROPE_COUNTRIES },
-      shipping_options: [{
-        shipping_rate_data: {
-          type: "fixed_amount",
-          fixed_amount: {
-            amount: orderTotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS,
-            currency: "eur",
+    async function createSession(includeImages) {
+      return stripe.checkout.sessions.create({
+        mode: "payment",
+        automatic_payment_methods: { enabled: true },
+        line_items: includeImages ? lineItems : lineItems.map((li) => {
+          const clone = JSON.parse(JSON.stringify(li));
+          delete clone.price_data.product_data.images;
+          return clone;
+        }),
+        shipping_address_collection: { allowed_countries: EUROPE_COUNTRIES },
+        shipping_options: [{
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: orderTotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_FLAT_CENTS,
+              currency: "eur",
+            },
+            display_name: orderTotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? "Kostenloser Versand" : "Standardversand",
           },
-          display_name: orderTotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? "Kostenloser Versand" : "Standardversand",
-        },
-      }],
-      phone_number_collection: { enabled: true },
-      billing_address_collection: "auto",
-      metadata: { itemCount: String(rawItems.length) },
-      success_url: SITE_URL + "/product/erfolg.html?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: SITE_URL + "/merchandise.html",
-    });
+        }],
+        phone_number_collection: { enabled: true },
+        billing_address_collection: "auto",
+        metadata: { itemCount: String(rawItems.length) },
+        success_url: SITE_URL + "/product/erfolg.html?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url: SITE_URL + "/merchandise.html",
+      });
+    }
+
+    let session;
+    try {
+      session = await createSession(true);
+    } catch (imgErr) {
+      // Häufigste Ursache für einen fehlschlagenden Checkout: eine kaputte/nicht erreichbare
+      // Produktbild-URL. Statt den ganzen Kauf abzubrechen, nochmal ohne Bilder versuchen.
+      console.error("Checkout mit Bildern fehlgeschlagen, versuche ohne Bilder:", imgErr.message);
+      session = await createSession(false);
+    }
 
     res.status(200).json({ url: session.url });
   } catch (err) {
