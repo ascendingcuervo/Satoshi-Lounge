@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-<style>
   :root{
     --bg:#08080a;
     --bg-alt:#131316;
@@ -218,6 +217,15 @@
   .product-info .price{ color:var(--orange-deep); font-weight:700; font-family:'Space Mono', monospace; font-size:0.95rem; margin-bottom:8px; }
   .product-info .sizes{ color:var(--gray); font-size:0.82rem; margin-bottom:6px; }
   .product-info .note{ color:var(--pink); font-size:0.78rem; font-family:'Space Mono', monospace; margin-bottom:14px; }
+  .material-line{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; margin-bottom:10px; }
+  .product-info h3 a{ color:inherit; text-decoration:none; }
+  .product-info h3 a:hover{ text-decoration:underline; color:var(--orange); }
+  .details-link{
+    display:block; text-align:center; margin-top:12px; font-weight:700; font-size:0.88rem;
+    padding:12px 18px; border-radius:10px; border:none;
+    color:#0a0a0d; background:var(--orange); text-decoration:none; font-family:'Inter', sans-serif; transition:.2s;
+  }
+  .details-link:hover{ background:var(--orange-deep); color:#0a0a0d; text-decoration:none; }
   .soon-tag-btn{
     margin-top:auto; text-align:center; font-weight:700; font-size:0.88rem;
     padding:12px 18px; border-radius:10px; border:1.5px solid var(--line);
@@ -308,7 +316,6 @@
     border-radius:30px; transition:.2s;
   }
   .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
-</style>
 
   .breadcrumb{ font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray); margin-bottom:24px; }
   .breadcrumb a{ color:var(--gray); text-decoration:none; }
@@ -327,6 +334,8 @@
   .pd-section-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1rem; margin:26px 0 12px; }
   .pd-material{ color:var(--ink); font-size:0.92rem; line-height:1.6; margin-bottom:8px; }
   .pd-sizetable{ width:100%; border-collapse:collapse; margin-bottom:8px; font-size:0.85rem; }
+  .pd-sizetable-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:8px; }
+  .pd-sizetable-wrap .pd-sizetable{ margin-bottom:0; min-width:340px; }
   .pd-sizetable th{ text-align:left; color:var(--gray); font-family:'Space Mono', monospace; font-size:0.72rem;
     text-transform:uppercase; letter-spacing:0.03em; padding:8px 10px; border-bottom:1px solid var(--line); }
   .pd-sizetable td{ padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink); }
@@ -388,7 +397,7 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Aufstieg – jeden Tag.
         
 
         <div class="pd-section-title">Größentabelle</div>
-        <table class="pd-sizetable"><thead><tr><th></th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>2XL</th><th>3XL</th></tr></thead><tbody><tr><td>Taille (cm)</td><td>63,5</td><td>68,6</td><td>75</td><td>81,3</td><td>89</td><td>92,7</td><td>99</td></tr><tr><td>Schrittlänge (cm)</td><td>71</td><td>72,4</td><td>73</td><td>74,3</td><td>75</td><td>76,2</td><td>76,8</td></tr></tbody></table><p class="pd-sizetable-note">Diese Größenübersicht zeigt Körpermaße an. Wir empfehlen eine Größe kleiner zu wählen, wenn du zwischen zwei Größen bist.</p>
+        <div class="pd-sizetable-wrap"><table class="pd-sizetable"><thead><tr><th></th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>2XL</th><th>3XL</th></tr></thead><tbody><tr><td>Taille (cm)</td><td>63,5</td><td>68,6</td><td>75</td><td>81,3</td><td>89</td><td>92,7</td><td>99</td></tr><tr><td>Schrittlänge (cm)</td><td>71</td><td>72,4</td><td>73</td><td>74,3</td><td>75</td><td>76,2</td><td>76,8</td></tr></tbody></table><p class="pd-sizetable-note">Diese Größenübersicht zeigt Körpermaße an. Wir empfehlen eine Größe kleiner zu wählen, wenn du zwischen zwei Größen bist.</p></div>
 
         <div class="pd-buybox">
           <select class="size-select" id="sizeSelect"><option value="">Größe wählen…</option><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option></select>
@@ -593,8 +602,6 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Aufstieg – jeden Tag.
   <script src="../auth-config.js"></script>
   <script src="../auth.js"></script>
 
-</body>
-</html>
 
 
   <script>
