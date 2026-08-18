@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BTC Digital Gold Zip-Hoodie — Satoshi Lounge</title>
-<meta name="description" content="BTC Digital Gold Zip-Hoodie – Satoshi Lounge Merchandise. 50% Baumwolle, 50% Polyester · Stoffgewicht: 271 g/m² (8 oz/yd²)">
+<meta name="description" content="BTC Digital Gold Zip-Hoodie – Satoshi Lounge Merchandise. 50% Baumwolle, 50% Polyester, Stoffgewicht: 271 g/m² (8 oz/yd²)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -317,10 +317,7 @@
   }
   .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
 
-  .breadcrumb{ font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray); margin-bottom:24px; }
-  .breadcrumb a{ color:var(--gray); text-decoration:none; }
-  .breadcrumb a:hover{ color:var(--orange); }
-  .pd-wrap{ max-width:1100px; margin:0 auto; padding:100px 24px 60px; display:grid; grid-template-columns:1fr 1fr; gap:56px; }
+  .pd-wrap{ max-width:1100px; margin:0 auto; padding:100px 24px 40px; display:grid; grid-template-columns:1fr 1fr; gap:56px; }
   @media(max-width:860px){ .pd-wrap{ grid-template-columns:1fr; padding-top:90px; gap:32px; } }
   .pd-gallery .carousel{ border-radius:18px; overflow:hidden; }
   .pd-info h1{ font-size:1.9rem; margin-bottom:10px; }
@@ -331,16 +328,26 @@
   .pd-highlights li::before{ content:"✓"; position:absolute; left:0; color:var(--teal); font-weight:700; }
   .pd-note{ background:rgba(255,111,168,0.08); border:1px solid rgba(255,111,168,0.25); border-radius:10px;
     padding:12px 16px; color:var(--pink); font-size:0.85rem; margin-bottom:22px; }
-  .pd-section-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1rem; margin:26px 0 12px; }
-  .pd-material{ color:var(--ink); font-size:0.92rem; line-height:1.6; margin-bottom:8px; }
+  .pd-section-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1rem; margin:22px 0 10px; }
+  .pd-material-list{ list-style:none; margin-bottom:18px; }
+  .pd-material-list li{ color:var(--ink); font-size:0.92rem; padding:4px 0 4px 18px; position:relative; }
+  .pd-material-list li::before{ content:"•"; position:absolute; left:0; color:var(--orange); font-weight:700; }
   .pd-sizetable{ width:100%; border-collapse:collapse; margin-bottom:8px; font-size:0.85rem; }
-  .pd-sizetable-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:8px; }
+  .pd-sizetable-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:4px; }
   .pd-sizetable-wrap .pd-sizetable{ margin-bottom:0; min-width:340px; }
   .pd-sizetable th{ text-align:left; color:var(--gray); font-family:'Space Mono', monospace; font-size:0.72rem;
     text-transform:uppercase; letter-spacing:0.03em; padding:8px 10px; border-bottom:1px solid var(--line); }
   .pd-sizetable td{ padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink); }
-  .pd-sizetable-note{ color:var(--gray); font-size:0.76rem; margin-bottom:22px; }
-  .pd-buybox{ margin-top:26px; padding-top:22px; border-top:1px solid var(--line-soft); }
+  .pd-sizetable-note{ color:var(--gray); font-size:0.76rem; margin-bottom:0; }
+  .pd-buybox{ margin-top:18px; padding-top:18px; border-top:1px solid var(--line-soft); }
+  .home-return{ display:flex; justify-content:flex-end; max-width:1100px; margin:0 auto; padding:0 24px 60px; }
+  .btn-shop-return{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.9rem;
+    color:#0a0a0d; background:var(--orange); text-decoration:none; padding:12px 24px;
+    border-radius:30px; transition:.2s; border:none;
+  }
+  .btn-shop-return:hover{ background:var(--orange-deep); }
 
 </style>
 <link rel="stylesheet" href="../auth.css">
@@ -380,7 +387,6 @@
     <div class="pd-wrap">
 
       <div class="pd-gallery">
-        <p class="breadcrumb"><a href="../merchandise.html">← Zurück zum Shop</a></p>
         <div class="carousel" data-carousel><div class="carousel-track"><div class="carousel-slide"><img src="../images/merch/dg-ziphoodie-1.png" alt="dg-ziphoodie-1.png"></div><div class="carousel-slide"><img src="../images/merch/dg-ziphoodie-2.png" alt="dg-ziphoodie-2.png"></div><div class="carousel-slide"><img src="../images/merch/dg-ziphoodie-3.png" alt="dg-ziphoodie-3.png"></div><div class="carousel-slide"><img src="../images/merch/dg-ziphoodie-4.png" alt="dg-ziphoodie-4.png"></div></div><button class="car-btn prev" aria-label="Vorheriges Bild">‹</button><button class="car-btn next" aria-label="Nächstes Bild">›</button><div class="dots"></div></div>
       </div>
 
@@ -393,7 +399,7 @@ Diese Pieces sind keine Klamotten. Sie sind ein Statement, ein Reminder. Clean L
 
 Beweg dich wie jemand, der schon weiß, dass er gewinnt. Ascend – everyday. Trage dein Mindset wie eine Rüstung.</div>
         <ul class="pd-highlights"><li>Weicher Fleecestoff innen und außen</li><li>Normale Passform</li><li>Metallreißverschluss</li><li>Vorne mit Kängurutaschen</li><li>Umweltfreundliche Technik</li></ul>
-        <div class="pd-section-title">Material &amp; Zusammensetzung</div><p class="pd-material">50% Baumwolle, 50% Polyester · Stoffgewicht: 271 g/m² (8 oz/yd²)</p>
+        <div class="pd-section-title">Material &amp; Zusammensetzung</div><ul class="pd-material-list"><li>50% Baumwolle</li><li>50% Polyester</li><li>Stoffgewicht: 271 g/m² (8 oz/yd²)</li></ul>
         <div class="pd-note">Aufgrund der Stoffeigenschaften kann die Farbe White eher cremeweiß als strahlend weiß erscheinen.</div>
 
         <div class="pd-section-title">Größentabelle</div>
@@ -406,6 +412,10 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Ascend – everyday. Tr
         </div>
       </div>
 
+    </div>
+
+    <div class="home-return">
+      <a href="../merchandise.html" class="btn-shop-return">← Zurück zum Shop</a>
     </div>
   </main>
 
