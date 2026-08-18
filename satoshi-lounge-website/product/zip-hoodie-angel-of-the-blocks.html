@@ -22,18 +22,28 @@
     <img src="../assets/cae08e_cf4d351a305d4924bf9e704169fc86a2.jpg" alt="Zip Hoodie Angel of the blocks">
     <h1 class="h-lg">Zip Hoodie Angel of the blocks</h1>
     <p class="lead">54.99 €</p>
-    <button class="btn btn-ember snipcart-add-item"
-      data-item-id="zip-hoodie-angel-of-the-blocks"
-            data-item-custom1-name="Größe"
-            data-item-custom1-options="S|M|L|XL|2XL|3XL"
-            data-item-custom1-required="true"
-      data-item-name="Zip Hoodie Angel of the blocks"
-      data-item-price="54.99"
-      data-item-url="https://www.satoshi-lounge.com/product/zip-hoodie-angel-of-the-blocks.html"
-      data-item-image="../assets/cae08e_cf4d351a305d4924bf9e704169fc86a2.jpg"
-      data-item-description="Cuervo Apparel">
-      In den Warenkorb
-    </button>
+    <div style="margin-bottom:16px;"><select id="sizeSelect" style="padding:10px 14px;border-radius:8px;border:1.5px solid #333;background:#111;color:#fff;font-size:0.95rem;min-width:160px;"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select></div><button class="btn btn-ember" id="buyBtn" data-product-id="zip-hoodie-angel-of-the-blocks" style="cursor:pointer;border:none;">Jetzt kaufen</button>
+    <p id="buyMsg" style="color:#ff6b6b;font-size:0.85rem;margin-top:10px;min-height:1em;"></p>
+    <script>
+      document.getElementById("buyBtn").addEventListener("click", async function(){
+        var btn = this, msg = document.getElementById("buyMsg");
+        var sizeEl = document.getElementById("sizeSelect");
+        var size = sizeEl ? sizeEl.value : undefined;
+        if(sizeEl && !size){ msg.textContent = "Bitte zuerst eine Größe wählen."; return; }
+        msg.textContent = ""; btn.disabled = true; btn.textContent = "Einen Moment…";
+        try{
+          var res = await fetch("/api/create-checkout-session", {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ productId: btn.dataset.productId, size: size })
+          });
+          var data = await res.json();
+          if(data.url){ window.location.href = data.url; }
+          else{ msg.textContent = data.error || "Fehler beim Checkout."; btn.disabled = false; btn.textContent = "Jetzt kaufen"; }
+        }catch(e){
+          msg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; btn.disabled = false; btn.textContent = "Jetzt kaufen";
+        }
+      });
+    </script>
     <p style="margin-top:24px"><a href="../shop.html">&larr; Zurück zum Shop</a></p>
   </div>
 </main>
