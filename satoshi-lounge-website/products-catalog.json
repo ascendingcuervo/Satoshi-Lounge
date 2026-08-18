@@ -2,7 +2,7 @@
   "btc-beach-club-t-shirt-oversized": {
     "name": "BTC Beach Club T- Shirt Oversized",
     "price": 4999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_c10e0eba68e04a679b65718edc8df91f.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/beachclub-shirt-1.png",
     "sizes": [
       "S",
       "M",
@@ -15,7 +15,7 @@
   "btc-beach-club-shorts": {
     "name": "BTC Beach Club Shorts",
     "price": 3899,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_88ba95cf483f451f8722d03fcd86d171.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/beachclub-shorts-1.png",
     "sizes": [
       "XS",
       "S",
@@ -29,7 +29,7 @@
   "btc-beach-club-flip-flops": {
     "name": "BTC Beach Club Flip-Flops",
     "price": 1899,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_e041c459b0074c5c87f34f2749ae89c4.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/beachclub-flipflops-1.png",
     "sizes": [
       "S",
       "M",
@@ -39,7 +39,7 @@
   "t-shirt-bitcoin-digital-gold": {
     "name": "T- Shirt Bitcoin Digital Gold",
     "price": 2999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_808104a19c5845b8ac2bf27914aaec17.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/dg-shirt-1.png",
     "sizes": [
       "S",
       "M",
@@ -52,7 +52,7 @@
   "hoodie-bitcoin-digital-gold": {
     "name": "Hoodie Bitcoin Digital Gold",
     "price": 4999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_f49d1f9d9d95452a8a7fefd109f9aaca.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/dg-hoodie-1.png",
     "sizes": [
       "S",
       "M",
@@ -65,7 +65,7 @@
   "zip-hoodie-bitcoin-digital-gold": {
     "name": "Zip Hoodie Bitcoin Digital Gold",
     "price": 5499,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_60f56c5023e4469993dd88e70101f8c1.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/dg-ziphoodie-1.png",
     "sizes": [
       "S",
       "M",
@@ -78,7 +78,7 @@
   "trainingshose-bitcoin-digital-gold": {
     "name": "Trainingshose Bitcoin Digital Gold",
     "price": 3999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_1666c0f01b154bf2b333467b85fcad5b.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/dg-jogger-1.png",
     "sizes": [
       "XS",
       "S",
@@ -91,7 +91,7 @@
   "cap-bitcoin-digital-gold": {
     "name": "Cap Bitcoin Digital Gold",
     "price": 2799,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_5f86fec77708485cbaf2274ff428ed6b.jpg",
+    "image": "https://www.satoshi-lounge.com/images/merch/dg-cap-1.png",
     "sizes": null
   }
 }
