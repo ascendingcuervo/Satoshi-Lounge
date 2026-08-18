@@ -72,17 +72,28 @@ module.exports = async (req, res) => {
       orderTotalCents += product.price * qty;
     }
 
-    async function createSession(includeImages) {
-      return stripe.checkout.sessions.create({
+    async function createSession(opts) {
+      const items = opts.includeImages ? lineItems : lineItems.map((li) => {
+        const clone = JSON.parse(JSON.stringify(li));
+        delete clone.price_data.product_data.images;
+        return clone;
+      });
+
+      const payload = {
         mode: "payment",
-        automatic_payment_methods: { enabled: true },
-        line_items: includeImages ? lineItems : lineItems.map((li) => {
-          const clone = JSON.parse(JSON.stringify(li));
-          delete clone.price_data.product_data.images;
-          return clone;
-        }),
-        shipping_address_collection: { allowed_countries: EUROPE_COUNTRIES },
-        shipping_options: [{
+        line_items: items,
+        billing_address_collection: "auto",
+        metadata: { itemCount: String(rawItems.length) },
+        success_url: SITE_URL + "/product/erfolg.html?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url: SITE_URL + "/merchandise.html",
+      };
+
+      if (opts.paymentMethods === "automatic") payload.automatic_payment_methods = { enabled: true };
+      else payload.payment_method_types = ["card"];
+
+      if (opts.shipping) {
+        payload.shipping_address_collection = { allowed_countries: opts.countries };
+        payload.shipping_options = [{
           shipping_rate_data: {
             type: "fixed_amount",
             fixed_amount: {
@@ -91,24 +102,36 @@ module.exports = async (req, res) => {
             },
             display_name: orderTotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? "Kostenloser Versand" : "Standardversand",
           },
-        }],
-        phone_number_collection: { enabled: true },
-        billing_address_collection: "auto",
-        metadata: { itemCount: String(rawItems.length) },
-        success_url: SITE_URL + "/product/erfolg.html?session_id={CHECKOUT_SESSION_ID}",
-        cancel_url: SITE_URL + "/merchandise.html",
-      });
+        }];
+        payload.phone_number_collection = { enabled: true };
+      }
+
+      return stripe.checkout.sessions.create(payload);
     }
 
-    let session;
-    try {
-      session = await createSession(true);
-    } catch (imgErr) {
-      // Häufigste Ursache für einen fehlschlagenden Checkout: eine kaputte/nicht erreichbare
-      // Produktbild-URL. Statt den ganzen Kauf abzubrechen, nochmal ohne Bilder versuchen.
-      console.error("Checkout mit Bildern fehlgeschlagen, versuche ohne Bilder:", imgErr.message);
-      session = await createSession(false);
+    // Mehrstufiger Versuch: volle Version zuerst, bei Fehler automatisch mit reduziertem
+    // Funktionsumfang erneut versuchen — der Checkout soll nie komplett ausfallen.
+    // (jeder Fehlschlag wird geloggt, damit sich die genaue Ursache später nachvollziehen lässt)
+    const attempts = [
+      { includeImages: true,  paymentMethods: "automatic", shipping: true,  countries: EUROPE_COUNTRIES },
+      { includeImages: false, paymentMethods: "automatic", shipping: true,  countries: EUROPE_COUNTRIES },
+      { includeImages: false, paymentMethods: "card",      shipping: true,  countries: EUROPE_COUNTRIES },
+      { includeImages: false, paymentMethods: "card",      shipping: true,  countries: ["DE","AT","CH"] },
+      { includeImages: false, paymentMethods: "card",      shipping: false, countries: ["DE","AT","CH"] },
+    ];
+
+    let session = null, lastErr = null;
+    for (let i = 0; i < attempts.length; i++) {
+      try {
+        session = await createSession(attempts[i]);
+        if (i > 0) console.error("Checkout erfolgreich erst bei Versuch " + (i + 1) + " (Konfiguration: " + JSON.stringify(attempts[i]) + ")");
+        break;
+      } catch (e) {
+        lastErr = e;
+        console.error("Checkout-Versuch " + (i + 1) + " fehlgeschlagen:", e.message);
+      }
     }
+    if (!session) throw lastErr;
 
     res.status(200).json({ url: session.url });
   } catch (err) {
