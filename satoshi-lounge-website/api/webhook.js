@@ -9,7 +9,7 @@ const NOTIFY_EMAIL = process.env.ORDER_NOTIFY_EMAIL || "ascendingcuervo@t-online
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 // Solange keine eigene Domain bei Resend verifiziert ist, funktioniert nur dieser Test-Absender
 // UND nur der Versand an die eigene, bei Resend hinterlegte E-Mail-Adresse zuverlässig.
-const FROM_ADDRESS = process.env.RESEND_FROM || "Satoshi Lounge <onboarding@resend.dev>";
+const FROM_ADDRESS = process.env.RESEND_FROM || "Satoshi Lounge <bestellungen@satoshi-lounge.com>";
 
 // Vercel soll den Rohtext des Requests NICHT selbst parsen — Stripe braucht die
 // unveränderten Original-Bytes, um die Signatur zu prüfen (Fälschungsschutz).
