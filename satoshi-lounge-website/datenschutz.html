@@ -254,7 +254,7 @@
   <main class="page">
     <span class="eyebrow">Rechtliches</span>
     <h1>Datenschutzerklärung</h1>
-    <p class="lead">Stand: 25. Juli 2026 — wir freuen uns über Ihren Besuch auf satoshi-lounge.com. Der Schutz Ihrer personenbezogenen Daten ist uns wichtig. Nachfolgend informieren wir Sie, welche Daten wir erheben, wie wir diese verarbeiten und welche Rechte Ihnen nach der DSGVO zustehen.</p>
+    <p class="lead">Stand: 19. August 2026 — wir freuen uns über Ihren Besuch auf satoshi-lounge.com. Der Schutz Ihrer personenbezogenen Daten ist uns wichtig. Nachfolgend informieren wir Sie, welche Daten wir erheben, wie wir diese verarbeiten und welche Rechte Ihnen nach der DSGVO zustehen.</p>
 
     <div class="legal-block">
       <h2>1. Verantwortlicher</h2>
@@ -330,21 +330,21 @@
 
     <div class="legal-block">
       <h2>7. Benutzerkonto</h2>
-      <p>Auf unserer Website besteht die Möglichkeit, ein Benutzerkonto anzulegen. Hierbei können personenbezogene Daten verarbeitet werden, insbesondere:</p>
+      <p>Auf unserer Website besteht die Möglichkeit, ein Benutzerkonto anzulegen. Die technische Umsetzung (Registrierung, Login, Passwort-Verwaltung, Profilbild-Speicherung) erfolgt über den Dienst Supabase (Supabase Inc.), dessen Server für unser Projekt in der EU (Irland) stehen.</p>
+      <p style="margin-top:14px;">Hierbei werden insbesondere folgende personenbezogene Daten verarbeitet:</p>
       <ul class="legal-list">
-        <li>Benutzername</li>
-        <li>Passwort</li>
-        <li>gegebenenfalls weitere freiwillig angegebene Daten</li>
+        <li>E-Mail-Adresse</li>
+        <li>Passwort (ausschließlich verschlüsselt/gehasht gespeichert, niemals im Klartext)</li>
+        <li>optional: ein von Ihnen hochgeladenes Profilbild</li>
       </ul>
-      <p style="margin-top:14px;">Die Verarbeitung erfolgt ausschließlich zum Zweck der Bereitstellung des Benutzerkontos und der Nutzung unserer Dienste.</p>
-      <p style="margin-top:14px;">Passwörter werden nicht im Klartext gespeichert, sondern nach dem Stand der Technik verschlüsselt bzw. gehasht.</p>
-      <p style="margin-top:14px;">Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+      <p style="margin-top:14px;">Die Verarbeitung erfolgt ausschließlich zum Zweck der Bereitstellung des Benutzerkontos und der Nutzung unserer Dienste, auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO.</p>
+      <p style="margin-top:14px;">Weitere Informationen zum Datenschutz bei Supabase finden Sie unter: <a href="https://supabase.com/privacy" target="_blank" rel="noopener">supabase.com/privacy</a></p>
     </div>
 
     <div class="legal-block">
       <h2>8. Anmeldung</h2>
-      <p>Die Anmeldung erfolgt mittels Benutzername und Passwort.</p>
-      <p style="margin-top:14px;">Der Zugang dient insbesondere der Nutzung kostenpflichtiger Inhalte, sobald diese verfügbar sind.</p>
+      <p>Die Anmeldung erfolgt mittels E-Mail-Adresse und Passwort.</p>
+      <p style="margin-top:14px;">Ein Benutzerkonto ist für den Einkauf in unserem Shop nicht erforderlich; es dient aktuell der Speicherung eines Profils sowie künftig ggf. der Nutzung kostenpflichtiger Inhalte, sobald diese verfügbar sind.</p>
       <p style="margin-top:14px;">Eine Weitergabe der Zugangsdaten an Dritte erfolgt nicht.</p>
       <p style="margin-top:14px;">Nutzer sind verpflichtet, ihre Zugangsdaten vertraulich aufzubewahren.</p>
     </div>
@@ -364,7 +364,7 @@
 
     <div class="legal-block">
       <h2>11. Print-on-Demand und Versanddienstleister</h2>
-      <p>Sobald über unsere Website physische Produkte bestellt werden können, erfolgt die Produktion und der Versand über unseren Fulfillment-Partner Printful.</p>
+      <p>Über unseren Shop können physische Produkte bestellt werden. Produktion und Versand erfolgen über unseren Fulfillment-Partner Printful.</p>
       <p style="margin-top:14px;">Zur Abwicklung Ihrer Bestellung können insbesondere folgende personenbezogene Daten an Printful übermittelt werden:</p>
       <ul class="legal-list">
         <li>Vor- und Nachname</li>
@@ -380,13 +380,31 @@
 
     <div class="legal-block">
       <h2>12. Zahlungsabwicklung</h2>
-      <p>Derzeit werden über diese Website keine Zahlungen abgewickelt.</p>
-      <p style="margin-top:14px;">Sobald kostenpflichtige Produkte oder Dienstleistungen angeboten werden, erfolgt die Verarbeitung personenbezogener Daten ausschließlich zur Vertragsabwicklung.</p>
-      <p style="margin-top:14px;">Die jeweils eingesetzten Zahlungsdienstleister werden rechtzeitig vor Aufnahme des Verkaufs in dieser Datenschutzerklärung ergänzt.</p>
+      <p>Die Zahlungsabwicklung für Bestellungen in unserem Shop erfolgt über den Zahlungsdienstleister Stripe (Stripe Payments Europe, Ltd., Irland).</p>
+      <p style="margin-top:14px;">Ihre Zahlungsdaten (z. B. Kreditkartendaten) werden dabei ausschließlich direkt an Stripe übermittelt und niemals auf unseren eigenen Servern gespeichert oder verarbeitet.</p>
+      <p style="margin-top:14px;">Je nach Verfügbarkeit können folgende Zahlungsmethoden über Stripe angeboten werden: Kreditkarte, PayPal, Klarna, SEPA-Lastschrift, Apple Pay, Google Pay. Die tatsächlich im Einzelfall angebotenen Methoden werden Ihnen im Checkout angezeigt.</p>
+      <p style="margin-top:14px;">Zur Abwicklung der Zahlung sowie des Versands übermitteln wir insbesondere folgende Daten an Stripe:</p>
+      <ul class="legal-list">
+        <li>Name</li>
+        <li>Liefer- und Rechnungsadresse</li>
+        <li>E-Mail-Adresse</li>
+        <li>Telefonnummer</li>
+        <li>Bestell- und Zahlungsbetrag</li>
+      </ul>
+      <p style="margin-top:14px;">Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).</p>
+      <p style="margin-top:14px;">Weitere Informationen zum Datenschutz bei Stripe finden Sie unter: <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener">stripe.com/de/privacy</a></p>
     </div>
 
     <div class="legal-block">
-      <h2>13. Bitcoin-Analysetool</h2>
+      <h2>13. Bestellbestätigung per E-Mail</h2>
+      <p>Nach Abschluss einer Bestellung versenden wir automatisiert eine Bestellbestätigung mit den Bestelldetails (Artikel, Größe, Liefer- und Kontaktdaten) per E-Mail. Hierzu nutzen wir den E-Mail-Versanddienstleister Resend (Resend, Inc.).</p>
+      <p style="margin-top:14px;">Zu diesem Zweck werden Ihre E-Mail-Adresse sowie die genannten Bestelldaten an Resend übermittelt.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).</p>
+      <p style="margin-top:14px;">Weitere Informationen zum Datenschutz bei Resend finden Sie unter: <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener">resend.com/legal/privacy-policy</a></p>
+    </div>
+
+    <div class="legal-block">
+      <h2>14. Bitcoin-Analysetool</h2>
       <p>Auf unserer Website wird künftig ein kostenpflichtiges Bitcoin-Analysetool angeboten.</p>
       <p style="margin-top:14px;">Zur Bereitstellung des Zugangs können insbesondere folgende Daten verarbeitet werden:</p>
       <ul class="legal-list">
@@ -401,7 +419,7 @@
     </div>
 
     <div class="legal-block">
-      <h2>14. Affiliate-Programme</h2>
+      <h2>15. Affiliate-Programme</h2>
       <p>Auf unserer Website befinden sich Affiliate-Links zu ausgewählten Partnerunternehmen. Hierzu gehören unter anderem:</p>
       <ul class="legal-list two-col">
         <li>Bitvavo</li>
@@ -424,20 +442,20 @@
     </div>
 
     <div class="legal-block">
-      <h2>15. Externe Links</h2>
+      <h2>16. Externe Links</h2>
       <p>Unsere Website enthält Verlinkungen auf externe Webseiten Dritter.</p>
       <p style="margin-top:14px;">Für die Inhalte sowie die Datenschutzbestimmungen dieser externen Websites sind ausschließlich deren jeweilige Betreiber verantwortlich.</p>
       <p style="margin-top:14px;">Zum Zeitpunkt der Verlinkung waren keine rechtswidrigen Inhalte erkennbar.</p>
     </div>
 
     <div class="legal-block">
-      <h2>16. Speicherdauer</h2>
+      <h2>17. Speicherdauer</h2>
       <p>Personenbezogene Daten werden nur so lange gespeichert, wie dies zur Erfüllung der jeweiligen Zwecke erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen.</p>
       <p style="margin-top:14px;">Nach Wegfall des jeweiligen Verarbeitungszwecks werden die Daten gelöscht, sofern keine gesetzlichen Verpflichtungen einer Löschung entgegenstehen.</p>
     </div>
 
     <div class="legal-block">
-      <h2>17. Ihre Rechte nach der DSGVO</h2>
+      <h2>18. Ihre Rechte nach der DSGVO</h2>
       <p>Sie haben jederzeit das Recht auf:</p>
       <ul class="legal-list">
         <li>Auskunft über Ihre gespeicherten personenbezogenen Daten (Art. 15 DSGVO)</li>
@@ -452,13 +470,13 @@
     </div>
 
     <div class="legal-block">
-      <h2>18. Beschwerderecht</h2>
+      <h2>19. Beschwerderecht</h2>
       <p>Sie haben das Recht, sich bei einer Datenschutzaufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten zu beschweren.</p>
       <p style="margin-top:14px;">Zuständig ist insbesondere die Datenschutzaufsichtsbehörde Ihres gewöhnlichen Aufenthaltsortes, Ihres Arbeitsplatzes oder des Ortes des mutmaßlichen Verstoßes.</p>
     </div>
 
     <div class="legal-block">
-      <h2>19. Änderungen dieser Datenschutzerklärung</h2>
+      <h2>20. Änderungen dieser Datenschutzerklärung</h2>
       <p>Wir behalten uns vor, diese Datenschutzerklärung anzupassen, wenn dies aufgrund technischer Entwicklungen, gesetzlicher Änderungen oder neuer Angebote erforderlich wird.</p>
       <p style="margin-top:14px;">Die jeweils aktuelle Version ist jederzeit auf unserer Website abrufbar.</p>
     </div>
