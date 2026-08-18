@@ -1,51 +1,622 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hoodie Bitcoin Digital Gold | Satoshi Lounge Shop</title>
-<meta name="description" content="Hoodie Bitcoin Digital Gold – Cuervo Apparel, Satoshi Lounge Merch.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f97316'/><text x='16' y='23' font-size='20' font-family='sans-serif' font-weight='800' text-anchor='middle' fill='%231a0f06'>S</text></svg>">
-<link rel="stylesheet" href="../style.a751cc0cfe.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC Digital Gold Hoodie — Satoshi Lounge</title>
+<meta name="description" content="BTC Digital Gold Hoodie – Satoshi Lounge Merchandise. Oberseite 100% Baumwolle · Innenseite 65% ringgesponnene Baumwolle, 35% Polyester">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  .product-page-wrap{max-width:640px;margin:80px auto;padding:0 24px;text-align:center}
-  .product-page-wrap img{width:100%;max-width:360px;border-radius:var(--r-xl,18px);margin-bottom:24px}
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-alt:#131316;
+    --surface:#151518;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(255,255,255,0.12);
+    --line-soft: rgba(255,255,255,0.08);
+    --orange:#F7931A;
+    --orange-deep:#ffab47;
+    --purple:#9b83ff;
+    --teal:#2adfc0;
+    --pink:#ff6fa8;
+    --gold:#f2c94c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+  }
+  .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px;
+    background:rgba(8,8,10,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px;
+    cursor:pointer; z-index:210;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{
+    font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
+  }
+  .topbar .brand{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    white-space:nowrap;
+  }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--orange); color:#0a0a0d; border:none;
+    padding:10px 22px; border-radius:30px; cursor:pointer; text-decoration:none;
+    transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,26,0.35);
+    opacity:0; pointer-events:none; transition:.35s; z-index:150;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
+    background:#0d0d10;
+    border-right:1.5px solid var(--line);
+    transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1);
+    z-index:200;
+    display:flex; flex-direction:column;
+    padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none;
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:space-between;
+    transition:.2s;
+  }
+  .drawer-nav a.active{ color:var(--pink); background:rgba(255,111,168,0.08); }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-brand{
+    display:flex; align-items:center; gap:12px;
+    padding:0 32px 22px; margin-bottom:6px; border-bottom:1px solid var(--line-soft);
+  }
+  .drawer-brand-badge{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--orange), var(--orange-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk', sans-serif; font-weight:800; font-size:1.15rem; color:#0a0a0d;
+    box-shadow:0 0 16px rgba(247,147,26,0.45);
+  }
+  .drawer-brand-text{
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.92rem;
+    letter-spacing:0.04em; color:var(--ink);
+  }
+  .drawer-foot{ margin-top:auto; padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); }
+
+  /* ===== PAGE HEADER ===== */
+  .page{ max-width:1180px; margin:0 auto; padding:150px 24px 70px; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
+    margin-bottom:32px; transition:.2s;
+  }
+  .back-link:hover{ color:var(--orange); }
+
+  .hero-center{ text-align:center; margin-bottom:56px; }
+  .soon-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.78rem; letter-spacing:0.08em;
+    color:var(--pink); border:1.5px solid var(--pink); background:rgba(255,111,168,0.08);
+    padding:8px 18px; border-radius:30px; margin-bottom:26px;
+  }
+  .soon-badge .pulse{
+    width:8px; height:8px; border-radius:50%; background:var(--pink);
+    box-shadow:0 0 10px var(--pink);
+    animation:pulse 1.6s infinite ease-in-out;
+  }
+  @keyframes pulse{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:.4; transform:scale(0.7); } }
+
+  .page h1{ font-size:clamp(2.2rem, 5.5vw, 3.4rem); font-weight:700; margin-bottom:20px; }
+  .page h1 .accent{ color:var(--pink); }
+  .hero-center p{ color:var(--gray); max-width:60ch; margin:0 auto; font-size:1.02rem; line-height:1.75; }
+
+  /* ===== EDITION HEADER ===== */
+  .edition-head{
+    display:flex; align-items:flex-end; gap:16px; margin:70px 0 30px;
+    padding-bottom:16px; border-bottom:1px solid var(--line);
+  }
+  .edition-head:first-of-type{ margin-top:0; }
+  .edition-head .edition-eyebrow{
+    font-family:'Space Mono', monospace; font-size:0.72rem; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--gray);
+  }
+  .edition-head h2{ font-size:1.7rem; font-weight:700; }
+  .edition-head .featured-tag{
+    margin-left:auto; font-family:'Space Mono', monospace; font-size:0.7rem;
+    color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:5px 12px; border-radius:20px; white-space:nowrap;
+  }
+
+  /* ===== PRODUCT GRID ===== */
+  .products{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:28px; margin-bottom:20px;
+  }
+  .product{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:18px;
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+
+  /* Carousel */
+  .carousel{ position:relative; aspect-ratio:4/5; background:#0d0d10; }
+  .carousel-track{
+    display:flex; height:100%; overflow-x:auto; scroll-snap-type:x mandatory;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .carousel-track::-webkit-scrollbar{ display:none; }
+  .carousel-slide{
+    flex:0 0 100%; scroll-snap-align:start; height:100%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .carousel-slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .carousel-slide.placeholder{
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    color:var(--gray); font-family:'Space Mono', monospace; font-size:0.8rem; text-align:center; padding:20px;
+  }
+  .car-btn{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:34px; height:34px; border-radius:50%; border:1.5px solid var(--line);
+    background:rgba(8,8,10,0.6); backdrop-filter:blur(4px); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    font-size:1.1rem; transition:.2s; z-index:2;
+  }
+  .car-btn:hover{ background:var(--orange); color:#0a0a0d; border-color:var(--orange); }
+  .car-btn.prev{ left:10px; }
+  .car-btn.next{ right:10px; }
+  .dots{
+    position:absolute; bottom:12px; left:0; right:0;
+    display:flex; justify-content:center; gap:6px; z-index:2;
+  }
+  .dot{
+    width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.35);
+    cursor:pointer; transition:.2s; border:none; padding:0;
+  }
+  .dot.active{ background:var(--orange); width:18px; border-radius:4px; }
+
+  .product-info{ padding:20px 22px 22px; display:flex; flex-direction:column; flex:1; }
+  .product-info h3{ font-size:1.1rem; margin-bottom:6px; }
+  .product-info .price{ color:var(--orange-deep); font-weight:700; font-family:'Space Mono', monospace; font-size:0.95rem; margin-bottom:8px; }
+  .product-info .sizes{ color:var(--gray); font-size:0.82rem; margin-bottom:6px; }
+  .product-info .note{ color:var(--pink); font-size:0.78rem; font-family:'Space Mono', monospace; margin-bottom:14px; }
+  .soon-tag-btn{
+    margin-top:auto; text-align:center; font-weight:700; font-size:0.88rem;
+    padding:12px 18px; border-radius:10px; border:1.5px solid var(--line);
+    color:var(--gray); background:transparent; cursor:not-allowed; font-family:'Inter', sans-serif;
+  }
+  .size-select{
+    margin-bottom:12px; padding:11px 34px 11px 14px; border-radius:8px; border:1.5px solid var(--line);
+    background:#08080a; color:var(--ink); font-size:0.85rem; font-family:'Inter', sans-serif; width:100%;
+    appearance:none; -webkit-appearance:none; cursor:pointer; transition:.2s;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239b9aa4' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .size-select:hover, .size-select:focus{ border-color:var(--orange); outline:none; }
+  .buy-btn{
+    margin-top:4px; text-align:center; font-weight:700; font-size:0.88rem;
+    padding:12px 18px; border-radius:10px; border:none;
+    color:#0a0a0d; background:var(--orange); cursor:pointer; font-family:'Inter', sans-serif; transition:.2s;
+  }
+  .buy-btn:hover{ background:var(--orange-deep); }
+  .buy-btn:disabled{ opacity:0.6; cursor:default; }
+  .buy-msg{ color:#ff6b6b; font-size:0.78rem; margin-top:8px; min-height:1em; }
+
+  /* ===== WASHING CARE ===== */
+  .care-section{ margin-top:90px; }
+  .care-box{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-left:3px solid var(--teal);
+    border-radius:14px; padding:32px 34px; max-width:820px; margin:0 auto;
+  }
+  .care-box h2{ font-size:1.3rem; margin-bottom:8px; color:var(--teal); }
+  .care-box > p{ color:var(--gray); font-size:0.9rem; margin-bottom:20px; }
+  .care-list{ list-style:none; }
+  .care-list li{
+    display:flex; gap:12px; padding:10px 0; border-top:1px solid var(--line-soft);
+    font-size:0.92rem; color:#d8d7dc; line-height:1.6;
+  }
+  .care-list li:first-child{ border-top:none; }
+  .care-list strong{ color:var(--ink); white-space:nowrap; }
+
+  /* ===== FOOTER ===== */
+  footer{
+    border-top:1.5px solid var(--line);
+    background:var(--bg-alt);
+    padding:44px 24px 30px;
+  }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:30px; padding-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.9rem; max-width:34ch; }
+  .footer-links{
+    display:grid; grid-template-columns:repeat(3, auto); gap:10px 40px;
+  }
+  .footer-links a{
+    color:var(--ink); text-decoration:none; font-size:0.88rem;
+    display:block; transition:.2s;
+  }
+  .footer-links a:hover{ color:var(--orange-deep); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding-top:24px;
+  }
+  .footer-bottom .copy{ color:var(--gray); font-size:0.78rem; font-family:'Space Mono', monospace; }
+  .footer-warn{
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .footer-warn span{
+    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep);
+    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
+    padding:6px 12px; border-radius:20px;
+  }
+  @media(max-width:600px){
+    .footer-links{ grid-template-columns:repeat(2, auto); }
+    .footer-warn{ justify-content:flex-start; }
+    .edition-head{ flex-wrap:wrap; }
+    .edition-head .featured-tag{ margin-left:0; }
+    .topbar .brand{ font-size:0.88rem; letter-spacing:0.04em; gap:7px; }
+    .brand .dot{ width:6px; height:6px; }
+    .login-btn{ padding:8px 14px; font-size:0.78rem; }
+    .topbar{ padding:16px 16px; }
+  }
+  .home-return{ display:flex; justify-content:flex-end; margin-top:36px; }
+  .home-return a{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
 </style>
+
+  .breadcrumb{ font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray); margin-bottom:24px; }
+  .breadcrumb a{ color:var(--gray); text-decoration:none; }
+  .breadcrumb a:hover{ color:var(--orange); }
+  .pd-wrap{ max-width:1100px; margin:0 auto; padding:100px 24px 60px; display:grid; grid-template-columns:1fr 1fr; gap:56px; }
+  @media(max-width:860px){ .pd-wrap{ grid-template-columns:1fr; padding-top:90px; gap:32px; } }
+  .pd-gallery .carousel{ border-radius:18px; overflow:hidden; }
+  .pd-info h1{ font-size:1.9rem; margin-bottom:10px; }
+  .pd-price{ color:var(--orange-deep); font-weight:700; font-family:'Space Mono', monospace; font-size:1.3rem; margin-bottom:18px; }
+  .pd-desc{ color:var(--gray); line-height:1.7; margin-bottom:20px; white-space:pre-line; }
+  .pd-highlights{ list-style:none; margin-bottom:22px; }
+  .pd-highlights li{ color:var(--ink); font-size:0.92rem; padding:6px 0 6px 22px; position:relative; }
+  .pd-highlights li::before{ content:"✓"; position:absolute; left:0; color:var(--teal); font-weight:700; }
+  .pd-note{ background:rgba(255,111,168,0.08); border:1px solid rgba(255,111,168,0.25); border-radius:10px;
+    padding:12px 16px; color:var(--pink); font-size:0.85rem; margin-bottom:22px; }
+  .pd-section-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1rem; margin:26px 0 12px; }
+  .pd-material{ color:var(--ink); font-size:0.92rem; line-height:1.6; margin-bottom:8px; }
+  .pd-sizetable{ width:100%; border-collapse:collapse; margin-bottom:8px; font-size:0.85rem; }
+  .pd-sizetable th{ text-align:left; color:var(--gray); font-family:'Space Mono', monospace; font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:0.03em; padding:8px 10px; border-bottom:1px solid var(--line); }
+  .pd-sizetable td{ padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink); }
+  .pd-sizetable-note{ color:var(--gray); font-size:0.76rem; margin-bottom:22px; }
+  .pd-buybox{ margin-top:26px; padding-top:22px; border-top:1px solid var(--line-soft); }
+
+</style>
+<link rel="stylesheet" href="../auth.css">
 </head>
 <body>
-<header class="site-header"><div class="wrap"><nav class="nav">
-  <a class="brand" href="../index.html"><span class="mark"><span>S</span></span> Satoshi Lounge</a>
-  <div class="nav-links"><a href="../shop.html">Zurück zum Shop</a></div>
-</nav></div></header>
-<main>
-  <div class="product-page-wrap">
-    <img src="../assets/cae08e_f49d1f9d9d95452a8a7fefd109f9aaca.jpg" alt="Hoodie Bitcoin Digital Gold">
-    <h1 class="h-lg">Hoodie Bitcoin Digital Gold</h1>
-    <p class="lead">49.99 €</p>
-    <div style="margin-bottom:16px;"><select id="sizeSelect" style="padding:10px 14px;border-radius:8px;border:1.5px solid #333;background:#111;color:#fff;font-size:0.95rem;min-width:160px;"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select></div><button class="btn btn-ember" id="buyBtn" data-product-id="hoodie-bitcoin-digital-gold" style="cursor:pointer;border:none;">Jetzt kaufen</button>
-    <p id="buyMsg" style="color:#ff6b6b;font-size:0.85rem;margin-top:10px;min-height:1em;"></p>
-    <script>
-      document.getElementById("buyBtn").addEventListener("click", async function(){
-        var btn = this, msg = document.getElementById("buyMsg");
-        var sizeEl = document.getElementById("sizeSelect");
-        var size = sizeEl ? sizeEl.value : undefined;
-        if(sizeEl && !size){ msg.textContent = "Bitte zuerst eine Größe wählen."; return; }
-        msg.textContent = ""; btn.disabled = true; btn.textContent = "Einen Moment…";
-        try{
-          var res = await fetch("/api/create-checkout-session", {
-            method: "POST", headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ productId: btn.dataset.productId, size: size })
-          });
-          var data = await res.json();
-          if(data.url){ window.location.href = data.url; }
-          else{ msg.textContent = data.error || "Fehler beim Checkout."; btn.disabled = false; btn.textContent = "Jetzt kaufen"; }
-        }catch(e){
-          msg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; btn.disabled = false; btn.textContent = "Jetzt kaufen";
-        }
-      });
-    </script>
-    <p style="margin-top:24px"><a href="../shop.html">&larr; Zurück zum Shop</a></p>
+  <canvas id="nodesCanvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="../index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
+    <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
   </div>
-</main>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-brand">
+      <span class="drawer-brand-badge">₿</span>
+      <span class="drawer-brand-text">SATOSHI LOUNGE</span>
+    </div>
+    <div class="drawer-nav">
+      <a href="../boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="../analyse.html"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="../wallets.html"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="../merchandise.html" class="active"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="../bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="../socials.html"><span>Socials</span><span class="idx">06</span></a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com</div>
+  </nav>
+
+  <!-- PAGE -->
+  <main class="page">
+    <div class="pd-wrap">
+
+      <div class="pd-gallery">
+        <p class="breadcrumb"><a href="../merchandise.html">← Zurück zum Shop</a></p>
+        <div class="carousel" data-carousel><div class="carousel-track"><div class="carousel-slide"><img src="../images/merch/dg-hoodie-1.png" alt="dg-hoodie-1.png"></div><div class="carousel-slide"><img src="../images/merch/dg-hoodie-2.png" alt="dg-hoodie-2.png"></div><div class="carousel-slide"><img src="../images/merch/dg-hoodie-3.png" alt="dg-hoodie-3.png"></div></div><button class="car-btn prev" aria-label="Vorheriges Bild">‹</button><button class="car-btn next" aria-label="Nächstes Bild">›</button><div class="dots"></div></div>
+      </div>
+
+      <div class="pd-info">
+        <h1>BTC Digital Gold Hoodie</h1>
+        <div class="pd-price">49,99€</div>
+        <div class="pd-desc">Bitcoin – Digital Gold. Bitcoin ist kein Trend. Es ist die Währung für die neue Weltordnung.
+
+Diese Pieces sind keine Klamotten. Sie sind ein Statement, ein Reminder. Clean Lines, goldene ₿-Akzente, Premium Feel. Für die, die nicht folgen – sondern vorangehen.
+
+Beweg dich wie jemand, der schon weiß, dass er gewinnt. Ascend – everyday. Trage dein Mindset wie eine Rüstung.</div>
+        <ul class="pd-highlights"><li>Beuteltasche vorne</li></ul>
+        <div class="pd-section-title">Material &amp; Zusammensetzung</div><p class="pd-material">Oberseite 100% Baumwolle · Innenseite 65% ringgesponnene Baumwolle, 35% Polyester</p>
+        <div class="pd-note">Der Hoodie ist klein geschnitten. Für eine perfekte Passform empfehlen wir, eine Nummer größer als gewohnt zu bestellen.</div>
+
+        <div class="pd-section-title">Größentabelle</div>
+        <table class="pd-sizetable"><thead><tr><th>Größe</th><th>Länge (cm)</th><th>Breite (cm)</th><th>Ärmellänge (cm)</th></tr></thead><tbody><tr><td>S</td><td>68,6</td><td>50,8</td><td>68,6</td></tr><tr><td>M</td><td>71</td><td>53,3</td><td>71</td></tr><tr><td>L</td><td>73,7</td><td>58,4</td><td>73,7</td></tr><tr><td>XL</td><td>76,2</td><td>63,5</td><td>76,2</td></tr><tr><td>2XL</td><td>78,7</td><td>67,3</td><td>78,7</td></tr><tr><td>3XL</td><td>81,3</td><td>71</td><td>81,3</td></tr></tbody></table><p class="pd-sizetable-note">Die Produktabmessungen können um bis zu 5 cm (2″) variieren.</p>
+
+        <div class="pd-buybox">
+          <select class="size-select" id="sizeSelect"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
+          <button class="buy-btn" id="buyBtn" data-product-id="hoodie-bitcoin-digital-gold">Jetzt kaufen</button>
+          <p class="buy-msg" id="buyMsg"></p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="../impressum.html">Impressum</a>
+          <a href="../datenschutz.html">Datenschutzerklärung</a>
+          <a href="../agb.html">AGB</a>
+          <a href="../widerruf.html">Widerrufsbelehrung</a>
+          <a href="../versand.html">Versand &amp; Lieferung</a>
+          <a href="../zahlungsarten.html">Zahlungsarten</a>
+          <a href="../disclaimer.html">Disclaimer</a>
+          <a href="../affiliate.html">Affiliate-Hinweis</a>
+          <a href="../ueber-mich.html">Über mich</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn">
+          <span>Keine Anlageberatung!</span>
+          <span>Ab 18 Jahren</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a').forEach(a=>{
+    a.addEventListener('click', () => toggleDrawer(false));
+  });
+
+  // ===== PRODUKT-KARUSSELLS (swipe + Pfeile + Dots) =====
+  document.querySelectorAll('[data-carousel]').forEach(carousel => {
+    const track = carousel.querySelector('.carousel-track');
+    const slides = Array.from(track.children);
+    const dotsWrap = carousel.querySelector('.dots');
+    const prevBtn = carousel.querySelector('.car-btn.prev');
+    const nextBtn = carousel.querySelector('.car-btn.next');
+
+    if(slides.length <= 1){
+      if(dotsWrap) dotsWrap.remove();
+      if(prevBtn) prevBtn.remove();
+      if(nextBtn) nextBtn.remove();
+      return;
+    }
+
+    // Dots erzeugen
+    slides.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.setAttribute('aria-label', 'Bild ' + (i+1));
+      d.addEventListener('click', () => {
+        track.scrollTo({ left: slides[i].offsetLeft, behavior: 'smooth' });
+      });
+      dotsWrap.appendChild(d);
+    });
+    const dots = Array.from(dotsWrap.children);
+
+    function updateActive(){
+      const idx = Math.round(track.scrollLeft / track.clientWidth);
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+    let scrollTimeout;
+    track.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(updateActive, 80);
+    });
+
+    prevBtn.addEventListener('click', () => {
+      const idx = Math.max(0, Math.round(track.scrollLeft / track.clientWidth) - 1);
+      track.scrollTo({ left: slides[idx].offsetLeft, behavior: 'smooth' });
+    });
+    nextBtn.addEventListener('click', () => {
+      const idx = Math.min(slides.length - 1, Math.round(track.scrollLeft / track.clientWidth) + 1);
+      track.scrollTo({ left: slides[idx].offsetLeft, behavior: 'smooth' });
+    });
+  });
+
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35,
+        vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1,
+        pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize();
+    makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy;
+        n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(247,147,26,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+
+  <!-- AUTH: Login/Registrieren Modal -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-modal">
+      <button class="auth-modal-close" id="authModalClose" aria-label="Schließen">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" type="button">Anmelden</button>
+        <button class="auth-tab" id="authTabSignup" type="button">Registrieren</button>
+      </div>
+      <form id="authForm">
+        <div class="auth-field">
+          <label for="authEmail">E-Mail</label>
+          <input type="email" id="authEmail" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="authPassword">Passwort</label>
+          <input type="password" id="authPassword" required minlength="6" autocomplete="current-password">
+        </div>
+        <button type="submit" class="auth-submit" id="authSubmitBtn">Anmelden</button>
+        <div class="auth-msg" id="authMsg"></div>
+      </form>
+    </div>
+  </div>
+
+  <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+
+  <div class="profile-menu" id="profileMenu">
+    <div class="profile-menu-email" id="profileMenuEmail"></div>
+    <button type="button" id="changeAvatarBtn">Profilbild ändern</button>
+    <button type="button" class="danger" id="logoutBtn">Abmelden</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="../auth-config.js"></script>
+  <script src="../auth.js"></script>
+
+</body>
+</html>
+
+
+  <script>
+    var sizeEl = document.getElementById("sizeSelect");
+    document.getElementById("buyBtn").addEventListener("click", async function(){
+      var btn = this, msg = document.getElementById("buyMsg");
+      var size = sizeEl ? sizeEl.value : undefined;
+      if(sizeEl && !size){ msg.textContent = "Bitte zuerst eine Größe wählen."; return; }
+      msg.textContent = ""; btn.disabled = true; btn.textContent = "Einen Moment…";
+      try{
+        var res = await fetch("/api/create-checkout-session", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ productId: btn.dataset.productId, size: size })
+        });
+        var data = await res.json();
+        if(data.url){ window.location.href = data.url; }
+        else{ msg.textContent = data.error || "Fehler beim Checkout."; btn.disabled = false; btn.textContent = "Jetzt kaufen"; }
+      }catch(e){
+        msg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; btn.disabled = false; btn.textContent = "Jetzt kaufen";
+      }
+    });
+  </script>
+
 </body>
 </html>
