@@ -221,6 +221,18 @@
     padding:12px 18px; border-radius:10px; border:1.5px solid var(--line);
     color:var(--gray); background:transparent; cursor:not-allowed; font-family:'Inter', sans-serif;
   }
+  .size-select{
+    margin-bottom:10px; padding:10px 12px; border-radius:8px; border:1.5px solid var(--line);
+    background:#08080a; color:var(--ink); font-size:0.85rem; font-family:'Inter', sans-serif; width:100%;
+  }
+  .buy-btn{
+    margin-top:auto; text-align:center; font-weight:700; font-size:0.88rem;
+    padding:12px 18px; border-radius:10px; border:none;
+    color:#0a0a0d; background:var(--orange); cursor:pointer; font-family:'Inter', sans-serif; transition:.2s;
+  }
+  .buy-btn:hover{ background:var(--orange-deep); }
+  .buy-btn:disabled{ opacity:0.6; cursor:default; }
+  .buy-msg{ color:#ff6b6b; font-size:0.78rem; margin-top:8px; min-height:1em; }
 
   /* ===== WASHING CARE ===== */
   .care-section{ margin-top:90px; }
@@ -328,9 +340,8 @@
   <main class="page">
 
     <div class="hero-center">
-      <span class="soon-badge"><span class="pulse"></span>Coming Soon</span>
       <h1>Satoshi Lounge <span class="accent">Merchandise</span></h1>
-      <p>Ein erster Blick auf unser Bitcoin-Merch — Designs, Fotos und Preise stehen schon, der Shop selbst startet in Kürze. Kaufen kannst du hier noch nicht, aber du kannst dir schon jetzt alles in Ruhe ansehen.</p>
+      <p>Bitcoin-Only Merch — hochwertige Materialien, dezente Designs. Versand nach Deutschland, Österreich und in die Schweiz.</p>
     </div>
 
     <!-- ===== EDITION: BTC BEACH CLUB ===== -->
@@ -361,7 +372,9 @@
           <h3>BTC Beach Club T-Shirt Oversized</h3>
           <div class="price">49,99€</div>
           <div class="sizes">Größen: S – 3XL</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_btc_beach_club_t_shirt_oversized"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
+          <button class="buy-btn" id="buy_btc_beach_club_t_shirt_oversized" data-product-id="btc-beach-club-t-shirt-oversized">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_btc_beach_club_t_shirt_oversized"></p>
         </div>
       </div>
 
@@ -380,7 +393,9 @@
           <h3>BTC Beach Club Shorts</h3>
           <div class="price">38,99€</div>
           <div class="sizes">Größen: XS – 3XL</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_btc_beach_club_shorts"><option value="">Größe wählen…</option><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
+          <button class="buy-btn" id="buy_btc_beach_club_shorts" data-product-id="btc-beach-club-shorts">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_btc_beach_club_shorts"></p>
         </div>
       </div>
 
@@ -400,7 +415,9 @@
           <h3>BTC Beach Club Flip Flops</h3>
           <div class="price">18,99€</div>
           <div class="sizes">Größen: S, M, L</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_btc_beach_club_flip_flops"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option></select>
+          <button class="buy-btn" id="buy_btc_beach_club_flip_flops" data-product-id="btc-beach-club-flip-flops">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_btc_beach_club_flip_flops"></p>
         </div>
       </div>
 
@@ -432,7 +449,9 @@
           <h3>BTC Digital Gold T-Shirt</h3>
           <div class="price">29,99€</div>
           <div class="sizes">Größen: S – 3XL</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_t_shirt_bitcoin_digital_gold"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
+          <button class="buy-btn" id="buy_t_shirt_bitcoin_digital_gold" data-product-id="t-shirt-bitcoin-digital-gold">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_t_shirt_bitcoin_digital_gold"></p>
         </div>
       </div>
 
@@ -453,7 +472,9 @@
           <div class="price">49,99€</div>
           <div class="sizes">Größen: S – 3XL</div>
           <div class="note">Fällt eine Nummer kleiner aus</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_hoodie_bitcoin_digital_gold"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
+          <button class="buy-btn" id="buy_hoodie_bitcoin_digital_gold" data-product-id="hoodie-bitcoin-digital-gold">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_hoodie_bitcoin_digital_gold"></p>
         </div>
       </div>
 
@@ -474,7 +495,9 @@
           <h3>BTC Digital Gold Zip-Hoodie</h3>
           <div class="price">54,99€</div>
           <div class="sizes">Größen: S – 3XL</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_zip_hoodie_bitcoin_digital_gold"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
+          <button class="buy-btn" id="buy_zip_hoodie_bitcoin_digital_gold" data-product-id="zip-hoodie-bitcoin-digital-gold">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_zip_hoodie_bitcoin_digital_gold"></p>
         </div>
       </div>
 
@@ -493,7 +516,9 @@
           <h3>BTC Digital Gold Trainingshose</h3>
           <div class="price">39,99€</div>
           <div class="sizes">Größen: XS – 3XL</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <select class="size-select" id="size_trainingshose_bitcoin_digital_gold"><option value="">Größe wählen…</option><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option></select>
+          <button class="buy-btn" id="buy_trainingshose_bitcoin_digital_gold" data-product-id="trainingshose-bitcoin-digital-gold">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_trainingshose_bitcoin_digital_gold"></p>
         </div>
       </div>
 
@@ -512,7 +537,8 @@
           <h3>BTC Digital Gold Cap</h3>
           <div class="price">27,99€</div>
           <div class="sizes">Größe: One Size</div>
-          <button class="soon-tag-btn" disabled>Bald verfügbar</button>
+          <button class="buy-btn" id="buy_cap_bitcoin_digital_gold" data-product-id="cap-bitcoin-digital-gold">Jetzt kaufen</button>
+          <p class="buy-msg" id="msg_cap_bitcoin_digital_gold"></p>
         </div>
       </div>
 
@@ -729,6 +755,31 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+
+  <script>
+    document.querySelectorAll(".buy-btn").forEach(function(btn){
+      btn.addEventListener("click", async function(){
+        var pid = btn.dataset.productId;
+        var uid = pid.replace(/-/g, "_");
+        var sizeEl = document.getElementById("size_" + uid);
+        var msg = document.getElementById("msg_" + uid);
+        var size = sizeEl ? sizeEl.value : undefined;
+        if(sizeEl && !size){ msg.textContent = "Bitte zuerst eine Größe wählen."; return; }
+        msg.textContent = ""; btn.disabled = true; btn.textContent = "Einen Moment…";
+        try{
+          var res = await fetch("/api/create-checkout-session", {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ productId: pid, size: size })
+          });
+          var data = await res.json();
+          if(data.url){ window.location.href = data.url; }
+          else{ msg.textContent = data.error || "Fehler beim Checkout."; btn.disabled = false; btn.textContent = "Jetzt kaufen"; }
+        }catch(e){
+          msg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; btn.disabled = false; btn.textContent = "Jetzt kaufen";
+        }
+      });
+    });
+  </script>
 
 </body>
 </html>

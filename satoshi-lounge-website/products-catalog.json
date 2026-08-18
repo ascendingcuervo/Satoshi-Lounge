@@ -1,18 +1,15 @@
 {
-  "beanie-kas-to-the-moon": {
-    "name": "Beanie Kas To The Moon",
-    "price": 2999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_ab68b306a4444f489564f0f01a8a1f66.jpg",
-    "sizes": null
-  },
-  "btc-beach-club-flip-flops": {
-    "name": "BTC Beach Club Flip-Flops",
-    "price": 1899,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_e041c459b0074c5c87f34f2749ae89c4.jpg",
+  "btc-beach-club-t-shirt-oversized": {
+    "name": "BTC Beach Club T- Shirt Oversized",
+    "price": 4999,
+    "image": "https://www.satoshi-lounge.com/assets/cae08e_c10e0eba68e04a679b65718edc8df91f.jpg",
     "sizes": [
       "S",
       "M",
-      "L"
+      "L",
+      "XL",
+      "2XL",
+      "3XL"
     ]
   },
   "btc-beach-club-shorts": {
@@ -29,35 +26,20 @@
       "3XL"
     ]
   },
-  "btc-beach-club-t-shirt-oversized": {
-    "name": "BTC Beach Club T- Shirt Oversized",
-    "price": 4999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_c10e0eba68e04a679b65718edc8df91f.jpg",
+  "btc-beach-club-flip-flops": {
+    "name": "BTC Beach Club Flip-Flops",
+    "price": 1899,
+    "image": "https://www.satoshi-lounge.com/assets/cae08e_e041c459b0074c5c87f34f2749ae89c4.jpg",
     "sizes": [
       "S",
       "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
+      "L"
     ]
   },
-  "cap-all-in-or-nothing": {
-    "name": "Cap All in or Nothing",
-    "price": 2499,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_25d29b47d6554db19a1d2a37f67d98a1.jpg",
-    "sizes": null
-  },
-  "cap-bitcoin-digital-gold": {
-    "name": "Cap Bitcoin Digital Gold",
-    "price": 2799,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_5f86fec77708485cbaf2274ff428ed6b.jpg",
-    "sizes": null
-  },
-  "hoodie-angel-of-the-blocks": {
-    "name": "Hoodie Angel of the blocks",
-    "price": 4999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_4f3cb41b595948cf8d72210263fc682d.jpg",
+  "t-shirt-bitcoin-digital-gold": {
+    "name": "T- Shirt Bitcoin Digital Gold",
+    "price": 2999,
+    "image": "https://www.satoshi-lounge.com/assets/cae08e_808104a19c5845b8ac2bf27914aaec17.jpg",
     "sizes": [
       "S",
       "M",
@@ -80,10 +62,10 @@
       "3XL"
     ]
   },
-  "hoodie-kas-to-the-moon": {
-    "name": "Hoodie Kas To The Moon",
-    "price": 4999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_ab62c11090e84103b2eaaa25bc80afe7.jpg",
+  "zip-hoodie-bitcoin-digital-gold": {
+    "name": "Zip Hoodie Bitcoin Digital Gold",
+    "price": 5499,
+    "image": "https://www.satoshi-lounge.com/assets/cae08e_60f56c5023e4469993dd88e70101f8c1.jpg",
     "sizes": [
       "S",
       "M",
@@ -91,71 +73,6 @@
       "XL",
       "2XL",
       "3XL"
-    ]
-  },
-  "sweatshirt-kas-to-the-moon": {
-    "name": "Sweatshirt Kas To The Moon",
-    "price": 4499,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_d8bdc8791456407a8077cce03443c66b.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
-  },
-  "t-shirt-angel-of-the-blocks": {
-    "name": "T- Shirt Angel of the blocks",
-    "price": 2999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_57d3a2f6a3504245801f917fafe7fc8c.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
-  },
-  "t-shirt-bitcoin-digital-gold": {
-    "name": "T- Shirt Bitcoin Digital Gold",
-    "price": 2999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_808104a19c5845b8ac2bf27914aaec17.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
-  },
-  "t-shirt-kas-to-the-moon": {
-    "name": "T- Shirt Kas To The Moon",
-    "price": 2999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_e1d85e604aba48cc908cf810d4fc5069.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
-  },
-  "trainingshose-angel-of-the-blocks": {
-    "name": "Trainingshose Angel of the blocks",
-    "price": 3999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_46527c34c0284c128170f8503111fef5.jpg",
-    "sizes": [
-      "XS",
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL"
     ]
   },
   "trainingshose-bitcoin-digital-gold": {
@@ -171,68 +88,10 @@
       "2XL"
     ]
   },
-  "trainingshose-kas-to-the-moon": {
-    "name": "Trainingshose Kas To The Moon",
-    "price": 3999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_a78a9a94c6244d7dac748f4e42c4ae3e.jpg",
-    "sizes": [
-      "XS",
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL"
-    ]
-  },
-  "windbreaker-kas-to-the-moon": {
-    "name": "Windbreaker Kas To The Moon",
-    "price": 3999,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_d629275347cd47fc8bc795913a13b463.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL"
-    ]
-  },
-  "zip-hoodie-angel-of-the-blocks": {
-    "name": "Zip Hoodie Angel of the blocks",
-    "price": 5499,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_cf4d351a305d4924bf9e704169fc86a2.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
-  },
-  "zip-hoodie-bitcoin-digital-gold": {
-    "name": "Zip Hoodie Bitcoin Digital Gold",
-    "price": 5499,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_60f56c5023e4469993dd88e70101f8c1.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
-  },
-  "zip-hoodie-kas-to-the-moon": {
-    "name": "Zip Hoodie Kas To The Moon",
-    "price": 5499,
-    "image": "https://www.satoshi-lounge.com/assets/cae08e_89a28d0be06d423d9cd3527fa78b355e.jpg",
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "3XL"
-    ]
+  "cap-bitcoin-digital-gold": {
+    "name": "Cap Bitcoin Digital Gold",
+    "price": 2799,
+    "image": "https://www.satoshi-lounge.com/assets/cae08e_5f86fec77708485cbaf2274ff428ed6b.jpg",
+    "sizes": null
   }
 }
