@@ -317,6 +317,7 @@
   .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
 </style>
 <link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="cart.css">
 </head>
 <body>
 
@@ -328,7 +329,10 @@
       <span></span><span></span><span></span>
     </button>
     <a href="index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
-    <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
+    <div class="topbar-right">
+      <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
+      <button class="cart-btn" id="cartBtn" aria-label="Warenkorb öffnen">🛒<span class="cart-badge" id="cartBadge">0</span></button>
+    </div>
   </div>
 
   <!-- DRAWER -->
@@ -752,6 +756,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+
+  <!-- WARENKORB -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <aside class="cart-panel" id="cartPanel">
+    <div class="cart-panel-head">
+      <h3>Warenkorb</h3>
+      <button id="cartPanelClose" aria-label="Schließen">&times;</button>
+    </div>
+    <div class="cart-panel-body">
+      <p id="cartEmpty" class="cart-empty">Dein Warenkorb ist leer.</p>
+      <div id="cartItemsList"></div>
+    </div>
+    <div class="cart-panel-foot" id="cartPanelFoot" style="display:none;">
+      <div class="cart-total-row"><span>Zwischensumme</span><span id="cartTotal">0,00 €</span></div>
+      <p class="cart-shipping-note">zzgl. Versand (5,99€, ab 70€ kostenlos) — wird an der Kasse berechnet</p>
+      <button class="cart-checkout-btn" id="cartCheckoutBtn">Zur Kasse</button>
+      <p class="cart-checkout-msg" id="cartCheckoutMsg"></p>
+    </div>
+  </aside>
+  <script src="cart.js"></script>
 
 </body>
 </html>
