@@ -340,6 +340,11 @@
   .pd-sizetable td{ padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink); }
   .pd-sizetable-note{ color:var(--gray); font-size:0.76rem; margin-bottom:0; }
   .pd-buybox{ margin-top:18px; padding-top:18px; border-top:1px solid var(--line-soft); }
+  .buy-now-link{
+    display:block; text-align:center; margin-top:10px; color:var(--gray);
+    font-size:0.8rem; text-decoration:none; font-family:'Space Mono', monospace;
+  }
+  .buy-now-link:hover{ color:var(--orange); }
   .home-return{ display:flex; justify-content:flex-end; max-width:1100px; margin:0 auto; padding:0 24px 60px; }
   .btn-shop-return{
     display:inline-flex; align-items:center; gap:8px;
@@ -351,6 +356,7 @@
 
 </style>
 <link rel="stylesheet" href="../auth.css">
+<link rel="stylesheet" href="../cart.css">
 </head>
 <body>
   <canvas id="nodesCanvas"></canvas>
@@ -361,7 +367,10 @@
       <span></span><span></span><span></span>
     </button>
     <a href="../index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
-    <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
+    <div class="topbar-right">
+      <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
+      <button class="cart-btn" id="cartBtn" aria-label="Warenkorb öffnen">🛒<span class="cart-badge" id="cartBadge">0</span></button>
+    </div>
   </div>
 
   <!-- DRAWER -->
@@ -407,7 +416,8 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Aufstieg – jeden Tag.
 
         <div class="pd-buybox">
           <select class="size-select" id="sizeSelect"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
-          <button class="buy-btn" id="buyBtn" data-product-id="t-shirt-bitcoin-digital-gold">Jetzt kaufen</button>
+          <button class="buy-btn" id="addToCartBtn" data-product-id="t-shirt-bitcoin-digital-gold">In den Warenkorb legen</button>
+          <a href="#" class="buy-now-link" id="buyNowLink">oder sofort kaufen →</a>
           <p class="buy-msg" id="buyMsg"></p>
         </div>
       </div>
@@ -614,23 +624,63 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Aufstieg – jeden Tag.
 
 
 
+  <!-- WARENKORB -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <aside class="cart-panel" id="cartPanel">
+    <div class="cart-panel-head">
+      <h3>Warenkorb</h3>
+      <button id="cartPanelClose" aria-label="Schließen">&times;</button>
+    </div>
+    <div class="cart-panel-body">
+      <p id="cartEmpty" class="cart-empty">Dein Warenkorb ist leer.</p>
+      <div id="cartItemsList"></div>
+    </div>
+    <div class="cart-panel-foot" id="cartPanelFoot" style="display:none;">
+      <div class="cart-total-row"><span>Zwischensumme</span><span id="cartTotal">0,00 €</span></div>
+      <p class="cart-shipping-note">zzgl. Versand (5,99€, ab 70€ kostenlos) — wird an der Kasse berechnet</p>
+      <button class="cart-checkout-btn" id="cartCheckoutBtn">Zur Kasse</button>
+      <p class="cart-checkout-msg" id="cartCheckoutMsg"></p>
+    </div>
+  </aside>
+  <script src="../cart.js"></script>
+
   <script>
+    var PRODUCT = {
+      id: "t-shirt-bitcoin-digital-gold",
+      name: "BTC Digital Gold T-Shirt",
+      price: 2999,
+      image: "/images/merch/dg-shirt-1.png"
+    };
     var sizeEl = document.getElementById("sizeSelect");
-    document.getElementById("buyBtn").addEventListener("click", async function(){
-      var btn = this, msg = document.getElementById("buyMsg");
-      var size = sizeEl ? sizeEl.value : undefined;
-      if(sizeEl && !size){ msg.textContent = "Bitte zuerst eine Größe wählen."; return; }
-      msg.textContent = ""; btn.disabled = true; btn.textContent = "Einen Moment…";
+    var buyMsg = document.getElementById("buyMsg");
+
+    function currentSize(){ return sizeEl ? sizeEl.value : undefined; }
+    function sizeMissing(){
+      if(sizeEl && !currentSize()){ buyMsg.textContent = "Bitte zuerst eine Größe wählen."; return true; }
+      buyMsg.textContent = ""; return false;
+    }
+
+    document.getElementById("addToCartBtn").addEventListener("click", function(){
+      if(sizeMissing()) return;
+      SatoshiCart.addToCart(PRODUCT.id, PRODUCT.name, PRODUCT.price, PRODUCT.image, currentSize());
+      SatoshiCart.toggleCartPanel(true);
+    });
+
+    document.getElementById("buyNowLink").addEventListener("click", async function(e){
+      e.preventDefault();
+      if(sizeMissing()) return;
+      var link = this;
+      link.textContent = "Einen Moment…";
       try{
         var res = await fetch("/api/create-checkout-session", {
           method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({ productId: btn.dataset.productId, size: size })
+          body: JSON.stringify({ items: [{ productId: PRODUCT.id, size: currentSize(), qty: 1 }] })
         });
         var data = await res.json();
         if(data.url){ window.location.href = data.url; }
-        else{ msg.textContent = data.error || "Fehler beim Checkout."; btn.disabled = false; btn.textContent = "Jetzt kaufen"; }
-      }catch(e){
-        msg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; btn.disabled = false; btn.textContent = "Jetzt kaufen";
+        else{ buyMsg.textContent = data.error || "Fehler beim Checkout."; link.textContent = "oder sofort kaufen →"; }
+      }catch(e2){
+        buyMsg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; link.textContent = "oder sofort kaufen →";
       }
     });
   </script>

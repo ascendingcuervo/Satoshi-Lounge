@@ -39,5 +39,9 @@
     <p>Danke für deinen Kauf bei Satoshi Lounge. Du bekommst in Kürze eine Bestätigung per E-Mail — deine Bestellung wird jetzt vorbereitet.</p>
     <a class="btn" href="../merchandise.html">Zurück zum Shop</a>
   </div>
+  <script>
+    // Warenkorb nach erfolgreicher Bestellung leeren
+    try{ localStorage.removeItem("satoshi_cart_v1"); }catch(e){}
+  </script>
 </body>
 </html>
