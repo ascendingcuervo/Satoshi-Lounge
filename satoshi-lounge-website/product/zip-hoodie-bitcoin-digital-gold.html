@@ -345,6 +345,13 @@
     font-size:0.8rem; text-decoration:none; font-family:'Space Mono', monospace;
   }
   .buy-now-link:hover{ color:var(--orange); }
+  .buy-now-btn{
+    display:block; width:100%; text-align:center; margin-top:10px; font-weight:700; font-size:0.88rem;
+    padding:12px 18px; border-radius:10px; border:none;
+    color:#0a0a0d; background:var(--orange); cursor:pointer; font-family:'Inter', sans-serif; transition:.2s;
+  }
+  .buy-now-btn:hover{ background:var(--orange-deep); }
+  .buy-now-btn:disabled{ opacity:0.6; cursor:default; }
   .home-return{ display:flex; justify-content:flex-end; max-width:1100px; margin:0 auto; padding:0 24px 60px; }
   .btn-shop-return{
     display:inline-flex; align-items:center; gap:8px;
@@ -417,7 +424,7 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Ascend – everyday. Tr
         <div class="pd-buybox">
           <select class="size-select" id="sizeSelect"><option value="">Größe wählen…</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="2XL">2XL</option><option value="3XL">3XL</option></select>
           <button class="buy-btn" id="addToCartBtn" data-product-id="zip-hoodie-bitcoin-digital-gold">In den Warenkorb legen</button>
-          <a href="#" class="buy-now-link" id="buyNowLink">oder sofort kaufen →</a>
+          <button class="buy-now-btn" id="buyNowLink" data-product-id="zip-hoodie-bitcoin-digital-gold">Sofort kaufen</button>
           <p class="buy-msg" id="buyMsg"></p>
         </div>
       </div>
@@ -669,8 +676,8 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Ascend – everyday. Tr
     document.getElementById("buyNowLink").addEventListener("click", async function(e){
       e.preventDefault();
       if(sizeMissing()) return;
-      var link = this;
-      link.textContent = "Einen Moment…";
+      var btn = this;
+      btn.disabled = true; btn.textContent = "Einen Moment…";
       try{
         var res = await fetch("/api/create-checkout-session", {
           method: "POST", headers: {"Content-Type":"application/json"},
@@ -678,9 +685,9 @@ Beweg dich wie jemand, der schon weiß, dass er gewinnt. Ascend – everyday. Tr
         });
         var data = await res.json();
         if(data.url){ window.location.href = data.url; }
-        else{ buyMsg.textContent = data.error || "Fehler beim Checkout."; link.textContent = "oder sofort kaufen →"; }
+        else{ buyMsg.textContent = data.error || "Fehler beim Checkout."; btn.disabled = false; btn.textContent = "Sofort kaufen"; }
       }catch(e2){
-        buyMsg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; link.textContent = "oder sofort kaufen →";
+        buyMsg.textContent = "Verbindung fehlgeschlagen. Versuch es nochmal."; btn.disabled = false; btn.textContent = "Sofort kaufen";
       }
     });
   </script>
