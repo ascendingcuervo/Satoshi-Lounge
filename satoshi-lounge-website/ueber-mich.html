@@ -272,6 +272,7 @@
   .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
 </style>
 <link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="cookie-consent.css">
 </head>
 <body>
 
@@ -374,6 +375,7 @@
           <a href="disclaimer.html">Disclaimer</a>
           <a href="affiliate.html">Affiliate-Hinweis</a>
           <a href="ueber-mich.html">Über mich</a>
+          <a href="cookies.html">Cookie-Richtlinie</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -501,5 +503,29 @@
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
 
+
+  <!-- COOKIE-BANNER -->
+  <div class="cookie-overlay" id="cookieOverlay">
+    <div class="cookie-banner">
+      <h3>Cookies &amp; Privatsphäre</h3>
+      <p>Wir nutzen ausschließlich technisch notwendige Speicherung (z. B. für Warenkorb und Login) — aktuell setzen wir keine Analyse- oder Marketing-Cookies ein. Mehr dazu in unserer <a href="cookies.html">Cookie-Richtlinie</a>.</p>
+      <div class="cookie-detail" id="cookieDetailBox">
+        <div class="cookie-detail-row">
+          <div><span class="label">Warenkorb</span><span class="sub">Speichert deine ausgewählten Produkte lokal in deinem Browser</span></div>
+          <span class="tag">Notwendig</span>
+        </div>
+        <div class="cookie-detail-row">
+          <div><span class="label">Login-Sitzung</span><span class="sub">Hält dich angemeldet (Supabase)</span></div>
+          <span class="tag">Notwendig</span>
+        </div>
+      </div>
+      <div class="cookie-btn-row">
+        <button class="cookie-btn-details" id="cookieDetailsBtn" type="button">Details</button>
+        <button class="cookie-btn-necessary" id="cookieNecessaryBtn" type="button">Nur notwendige</button>
+        <button class="cookie-btn-accept" id="cookieAcceptBtn" type="button">Alle akzeptieren</button>
+      </div>
+    </div>
+  </div>
+  <script src="cookie-consent.js"></script>
 </body>
 </html>

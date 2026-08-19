@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Satoshi Lounge — Bitcoin. Verstanden.</title>
+<title>Cookie-Richtlinie — Satoshi Lounge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -16,13 +16,8 @@
     --gray:#9b9aa4;
     --line: rgba(255,255,255,0.12);
     --line-soft: rgba(255,255,255,0.08);
-
     --orange:#F7931A;
     --orange-deep:#ffab47;
-    --purple:#9b83ff;
-    --teal:#2adfc0;
-    --pink:#ff6fa8;
-    --gold:#f2c94c;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -36,11 +31,11 @@
     position:fixed; top:0; left:0; width:100vw; height:100vh;
     z-index:0; pointer-events:none; display:block;
   }
-  .topbar, .hero, .chain, footer, .drawer, .overlay{ position:relative; z-index:1; }
-  h1,h2,h3,.display{ font-family:'Space Grotesk', sans-serif; }
+  .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
   .mono{ font-family:'Space Mono', monospace; }
 
-  /* ===== TOP BAR ===== */
+  /* ===== TOP BAR (identisch zur Startseite) ===== */
   .topbar{
     position:fixed; top:0; left:0; right:0; z-index:100;
     display:flex; align-items:center; justify-content:space-between;
@@ -53,7 +48,7 @@
     width:44px; height:44px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
     background:transparent; border:1.5px solid var(--line); border-radius:10px;
-    cursor:pointer; z-index:210; flex-shrink:0;
+    cursor:pointer; z-index:210;
   }
   .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
   .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
@@ -61,14 +56,13 @@
   .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
   .brand{
     font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase;
-    display:flex; align-items:center; gap:10px; color:var(--ink);
+    display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none;
   }
   .topbar .brand{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     white-space:nowrap;
   }
   .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(247,147,26,0.6); }
-
   .login-btn{
     font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
     background:var(--orange); color:#0a0a0d; border:none;
@@ -83,7 +77,6 @@
     opacity:0; pointer-events:none; transition:.35s; z-index:150;
   }
   .overlay.show{ opacity:1; pointer-events:auto; }
-
   .drawer{
     position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw;
     background:#0d0d10;
@@ -104,12 +97,7 @@
     transition:.2s;
   }
   .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
-  .drawer-nav a:nth-child(1):hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
-  .drawer-nav a:nth-child(2):hover{ background:rgba(124,92,252,0.08); color:var(--purple); padding-left:38px; }
-  .drawer-nav a:nth-child(3):hover{ background:rgba(15,181,154,0.08); color:var(--teal); padding-left:38px; }
-  .drawer-nav a:nth-child(4):hover{ background:rgba(255,79,147,0.08); color:var(--pink); padding-left:38px; }
-  .drawer-nav a:nth-child(5):hover{ background:rgba(242,183,5,0.12); color:#a97e00; padding-left:38px; }
-  .drawer-nav a:nth-child(6):hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
+  .drawer-nav a:hover{ background:rgba(247,147,26,0.08); color:var(--orange-deep); padding-left:38px; }
   .drawer-nav a:hover .idx{ color:inherit; }
   .drawer-brand{
     display:flex; align-items:center; gap:12px;
@@ -128,162 +116,47 @@
   }
   .drawer-foot{ margin-top:auto; padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); }
 
-  /* ===== HERO ===== */
-  .hero{
-    min-height:100svh;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:140px 20px 80px;
-    position:relative;
+  /* ===== PAGE / LEGAL CONTENT ===== */
+  .page{
+    max-width:760px; margin:0 auto; padding:150px 24px 70px;
   }
-  .hero::before{
-    content:"";
-    position:absolute; inset:0;
-    background:
-      radial-gradient(circle at 15% 20%, rgba(247,147,26,0.16), transparent 45%),
-      radial-gradient(circle at 85% 15%, rgba(155,131,255,0.14), transparent 45%),
-      radial-gradient(circle at 50% 85%, rgba(42,223,192,0.10), transparent 50%),
-      radial-gradient(circle at 90% 80%, rgba(255,111,168,0.10), transparent 45%);
-    z-index:0;
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--gray); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem;
+    margin-bottom:32px; transition:.2s;
   }
-  .hero::after{
-    content:"";
-    position:absolute; inset:0;
-    background-image:
-      linear-gradient(var(--line-soft) 1px, transparent 1px),
-      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
-    background-size:64px 64px;
-    mask-image:radial-gradient(circle at 50% 30%, black, transparent 65%);
-    z-index:0;
+  .back-link:hover{ color:var(--orange); }
+  .page .eyebrow{
+    font-family:'Space Mono', monospace; color:var(--orange); font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:14px; display:block;
   }
-  .ticker{
-    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--orange-deep);
-    border:1.5px solid var(--orange); background:rgba(247,147,26,0.08);
-    padding:8px 18px; border-radius:30px;
-    margin-bottom:28px; letter-spacing:0.05em; position:relative; z-index:1;
-  }
-  .hero h1{
-    font-size:clamp(2.6rem, 7vw, 5.2rem); line-height:1.02; font-weight:700;
-    max-width:16ch; position:relative; z-index:1;
-  }
-  .hero h1 .accent{ color:var(--orange); }
-  .hero h1 .accent2{ color:var(--purple); }
-  .hero p{
-    margin-top:24px; color:var(--gray); max-width:52ch; font-size:1.05rem; line-height:1.6;
-    position:relative; z-index:1;
-  }
-  .hero-cta{ display:flex; gap:14px; margin-top:38px; position:relative; z-index:1; flex-wrap:wrap; justify-content:center; }
-  .btn{
-    padding:14px 26px; border-radius:10px; font-weight:600; text-decoration:none;
-    font-size:0.95rem; transition:.25s; display:inline-block; border:1.5px solid transparent;
-  }
-  .btn-primary{ background:var(--orange); color:#0a0a0d; border-color:var(--orange); }
-  .btn-primary:hover{ background:var(--orange-deep); border-color:var(--orange-deep); }
-  .btn-ghost{ border:1.5px solid var(--line); color:var(--ink); }
-  .btn-ghost:hover{ border-color:var(--purple); color:var(--purple); }
-
-  /* live price big display in hero */
-  .hero-price{
-    position:relative; z-index:1; margin-top:34px;
-    font-family:'Space Mono', monospace; font-size:0.85rem; color:var(--gray);
-  }
-  .hero-price .big{
-    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:2.1rem; color:var(--ink);
-    display:block; margin-top:4px;
-  }
-  .hero-price .big .cur{ color:var(--orange); }
-
-  @media(max-width:600px){
-    .hero-price{ order:1; margin-top:26px; }
-    .hero-cta{ order:2; margin-top:26px; }
-    .brand{ font-size:0.88rem; letter-spacing:0.04em; gap:7px; }
-    .brand .dot{ width:6px; height:6px; }
-    .login-btn{ padding:8px 14px; font-size:0.78rem; }
-    .topbar{ padding:16px 16px; }
-  }
-
-  /* ===== CHAIN / SECTIONS ===== */
-  .chain{ max-width:1180px; margin:0 auto; padding:60px 24px 140px; position:relative; }
-  .chain-line{
-    position:absolute; left:50%; top:0; bottom:0; width:2px;
-    background:linear-gradient(var(--orange), var(--purple), var(--teal), var(--pink), var(--gold), var(--orange));
-    transform:translateX(-50%);
-    opacity:0.5;
-  }
-  .eyebrow{
-    font-family:'Space Mono', monospace; font-size:0.75rem;
-    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px; display:block;
-    color:var(--accent);
-  }
-  .block{
-    position:relative; scroll-margin-top:110px;
-    display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center;
-    padding:70px 0;
-  }
-  .block:nth-child(even) .block-text{ order:2; }
-  .block-num{
-    position:absolute; left:50%; top:70px; transform:translate(-50%,-50%);
-    width:46px; height:46px; border-radius:50%;
-    background:#0d0d10; border:2px solid var(--accent);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--accent); font-weight:700;
-    z-index:2;
-  }
-  .block-text h2{ font-size:2rem; font-weight:600; margin-bottom:14px; }
-  .block-text p{ color:var(--gray); line-height:1.7; margin-bottom:22px; max-width:46ch; }
-  .block-visual{
+  .page h1{ font-size:clamp(2.2rem, 5vw, 3rem); font-weight:700; margin-bottom:44px; }
+  .legal-block{
     background:var(--bg-alt); border:1.5px solid var(--line); border-radius:16px;
-    aspect-ratio:1717/916; display:flex; align-items:center; justify-content:center;
-    position:relative; overflow:hidden; text-decoration:none;
+    padding:32px 34px; margin-bottom:22px;
   }
-  .block-visual::after{
-    content:""; position:absolute; inset:0;
-    background:radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%);
-    pointer-events:none;
+  .legal-block h2{
+    font-size:1.15rem; color:var(--orange); margin-bottom:14px; font-weight:600;
   }
-  .block-visual span{ font-family:'Space Mono', monospace; color:var(--gray); font-size:0.85rem; z-index:1; }
-  .block-visual img{
-    width:100%; height:100%; object-fit:cover; display:block; position:relative;
-    transition:transform .5s ease;
+  .legal-block p{ color:#d8d7dc; line-height:1.75; font-size:0.98rem; margin-bottom:6px; }
+  .legal-block a{ color:var(--orange-deep); text-decoration:none; word-break:break-word; }
+  .legal-block a:hover{ text-decoration:underline; }
+  .cookie-table{ width:100%; border-collapse:collapse; margin-top:14px; font-size:0.88rem; }
+  .cookie-table th{
+    text-align:left; color:var(--gray); font-family:'Space Mono', monospace; font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:0.03em; padding:10px 12px; border-bottom:1px solid var(--line);
   }
-  .block-visual:hover img{ transform:scale(1.04); }
-  .socials-visual{ display:flex; align-items:center; justify-content:center; gap:28px; text-decoration:none; }
-  .socials-visual .ic{
-    width:64px; height:64px; border-radius:50%; background:#0d0d10; overflow:hidden;
-    display:flex; align-items:center; justify-content:center;
-    border:1.5px solid var(--line); position:relative; z-index:1;
-    transition:transform .3s ease;
+  .cookie-table td{ padding:12px; border-bottom:1px solid var(--line-soft); color:#d8d7dc; vertical-align:top; }
+  @media(max-width:640px){
+    .cookie-table{ display:block; overflow-x:auto; white-space:nowrap; }
   }
-  .socials-visual .ic:hover{ transform:translateY(-4px); }
-  .socials-visual .ic img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .tag-list{ display:flex; gap:10px; flex-wrap:wrap; }
-  .tag{
-    font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--accent);
-    border:1.5px solid var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent);
-    padding:6px 12px; border-radius:20px;
-  }
+  .legal-block .addr{ color:#d8d7dc; line-height:1.75; font-size:0.98rem; }
 
-  .c1{ --accent:var(--orange); }
-  .c2{ --accent:var(--purple); }
-  .c3{ --accent:var(--teal); }
-  .c4{ --accent:var(--pink); }
-  .c5{ --accent:#c99500; }
-  .c6{ --accent:var(--orange); }
-
-  @media(max-width:820px){
-    .block{ grid-template-columns:1fr; padding:50px 0 20px; }
-    .block:nth-child(even) .block-text{ order:0; }
-    .block-num{ top:58px; left:23px; transform:translate(-50%,-50%); }
-    .chain-line{ left:23px; }
-    .block-text{ padding-left:58px; }
-    .block-visual{ margin-top:20px; }
-  }
-
-  /* ===== FOOTER ===== */
+  /* ===== FOOTER (identisch zur Startseite, gekürzt) ===== */
   footer{
     border-top:1.5px solid var(--line);
     background:var(--bg-alt);
-    padding:60px 24px 30px;
-    position:relative; z-index:1;
+    padding:44px 24px 30px;
   }
   .footer-inner{ max-width:1180px; margin:0 auto; }
   .footer-top{
@@ -316,12 +189,29 @@
   @media(max-width:600px){
     .footer-links{ grid-template-columns:repeat(2, auto); }
     .footer-warn{ justify-content:flex-start; }
+    .topbar .brand{ font-size:0.88rem; letter-spacing:0.04em; gap:7px; }
+    .brand .dot{ width:6px; height:6px; }
+    .login-btn{ padding:8px 14px; font-size:0.78rem; }
+    .topbar{ padding:16px 16px; }
   }
+
+  @media(max-width:600px){
+    .legal-block{ padding:24px 22px; }
+  }
+  .home-return{ display:flex; justify-content:flex-end; margin-top:36px; }
+  .home-return a{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .home-return a:hover{ color:var(--orange); border-color:var(--orange); }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
 </head>
 <body>
+
   <canvas id="nodesCanvas"></canvas>
 
   <!-- TOP BAR -->
@@ -329,7 +219,7 @@
     <button class="burger" id="burgerBtn" aria-label="Menü öffnen">
       <span></span><span></span><span></span>
     </button>
-    <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+    <a href="index.html" class="brand"><span class="dot"></span>SATOSHI LOUNGE</a>
     <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
   </div>
 
@@ -351,94 +241,81 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <!-- HERO -->
-  <header class="hero">
-    <div class="ticker">◎ 21.000.000 BTC — HART BEGRENZT, KEINE AUSNAHME</div>
-    <h1>Bitcoin. <span class="accent">Verstanden.</span><br><span class="accent2">Verglichen.</span> Getragen.</h1>
-    <p>Satoshi Lounge bündelt alles, was du für deinen Bitcoin-Weg brauchst: Börsenvergleich, eigenes Analysetool, Wallet-Übersicht, Merchandise und Bücher — an einem Ort.</p>
-    <div class="hero-cta">
-      <a href="merchandise.html" class="btn btn-primary">Merch entdecken</a>
-      <a href="analyse.html" class="btn btn-ghost">Zum Analysetool</a>
+  <!-- LEGAL CONTENT -->
+  <main class="page">
+    <span class="eyebrow">Rechtliches</span>
+    <h1>Cookie-Richtlinie</h1>
+    <p class="lead">Stand: 19. August 2026 — diese Cookie-Richtlinie erklärt, welche Cookies und ähnlichen Speichertechnologien (z. B. lokaler Speicher/Local Storage) wir auf satoshi-lounge.com einsetzen, wofür wir sie nutzen und wie du deine Einwilligung verwalten kannst.</p>
+
+    <div class="legal-block">
+      <h2>1. Was sind Cookies und lokaler Speicher?</h2>
+      <p>Cookies sind kleine Textdateien, die beim Besuch einer Website auf deinem Endgerät gespeichert werden. Ähnlich funktioniert der sogenannte "Local Storage" deines Browsers, den wir für einzelne Funktionen unserer Website nutzen. Beide Technologien ermöglichen es, Informationen über deinen Besuch zu speichern und beim nächsten Aufruf wieder abzurufen.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage für den Einsatz ist § 25 TTDSG sowie, soweit personenbezogene Daten verarbeitet werden, Art. 6 DSGVO.</p>
     </div>
-    <div class="hero-price">
-      Live BTC/USD
-      <span class="big" id="heroPrice"><span class="cur">$</span>—</span>
+
+    <div class="legal-block">
+      <h2>2. Technisch notwendige Speicherung (keine Einwilligung erforderlich)</h2>
+      <p>Folgende Speichertechnologien setzen wir ein, weil sie technisch notwendig sind, um von dir aktiv angeforderte Funktionen bereitzustellen (§ 25 Abs. 2 Nr. 2 TTDSG). Hierfür ist keine Einwilligung erforderlich:</p>
+
+      <table class="cookie-table">
+        <thead>
+          <tr><th>Zweck</th><th>Anbieter</th><th>Speicherdauer</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Warenkorb-Inhalt (welche Produkte du ausgewählt hast)</td>
+            <td>satoshi-lounge.com (eigener lokaler Speicher, kein Server-Cookie)</td>
+            <td>bis zur Bestellung oder manuellen Löschung durch dich</td>
+          </tr>
+          <tr>
+            <td>Login-Sitzung (angemeldet bleiben)</td>
+            <td>Supabase (im Auftrag von satoshi-lounge.com)</td>
+            <td>bis zum Abmelden bzw. Ablauf der Sitzung</td>
+          </tr>
+          <tr>
+            <td>Speicherung deiner Cookie-Auswahl aus diesem Banner</td>
+            <td>satoshi-lounge.com (eigener lokaler Speicher)</td>
+            <td>12 Monate</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:14px;">Diese Speicherungen erfolgen ausschließlich lokal in deinem Browser bzw. — im Fall der Login-Sitzung — bei unserem Auftragsverarbeiter Supabase. Ohne diese Speicherung könnten wir dir Warenkorb und Login schlicht nicht anbieten.</p>
     </div>
-  </header>
 
-  <!-- CHAIN OF SECTIONS -->
-  <main class="chain">
-    <div class="chain-line"></div>
+    <div class="legal-block">
+      <h2>3. Analyse- und Marketing-Cookies</h2>
+      <p><strong>Aktuell setzen wir keine Analyse-, Marketing- oder Tracking-Cookies ein</strong> — weder eigene noch von Drittanbietern (z. B. Google Analytics, Facebook Pixel oder ähnliche Dienste).</p>
+      <p style="margin-top:14px;">Sollten wir solche Dienste zukünftig einsetzen, werden wir vorab deine ausdrückliche Einwilligung über den Cookie-Banner einholen und diese Richtlinie entsprechend aktualisieren.</p>
+    </div>
 
-    <section class="block c1" id="boersen">
-      <div class="block-num">01</div>
-      <div class="block-text">
-        <span class="eyebrow">Kapitel 01</span>
-        <h2>Börsen</h2>
-        <p>Unser unabhängiger Börsenvergleich zeigt dir Gebühren, Sicherheit und Funktionsumfang der wichtigsten Bitcoin-Börsen — übersichtlich gegenübergestellt, damit du die passende für dich findest.</p>
-        <div class="tag-list"><span class="tag">Gebührenvergleich</span><span class="tag">Sicherheit</span><span class="tag">Ein-/Auszahlung</span></div>
-      </div>
-      <a href="boersen.html" class="block-visual"><img src="images/boersen.png" alt="Börsenvergleich"></a>
-    </section>
+    <div class="legal-block">
+      <h2>4. Zahlungsabwicklung (Stripe)</h2>
+      <p>Der eigentliche Bezahlvorgang findet auf den Servern unseres Zahlungsdienstleisters Stripe statt (nicht auf unserer Website). Cookies, die dabei ggf. gesetzt werden, unterliegen der Cookie- bzw. Datenschutzrichtlinie von Stripe und nicht dieser Richtlinie.</p>
+      <p style="margin-top:14px;">Weitere Informationen: <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener">stripe.com/de/privacy</a></p>
+    </div>
 
-    <section class="block c2" id="analyse">
-      <div class="block-num">02</div>
-      <div class="block-text">
-        <span class="eyebrow">Kapitel 02</span>
-        <h2>Analyse</h2>
-        <p>Unser eigenes Bitcoin-Analysetool wertet Zeit, On-Chain-Daten und weitere Faktoren aus — verständlich aufbereitet, ganz ohne überladene Charts oder versteckte Kosten.</p>
-        <div class="tag-list"><span class="tag">Zeitbasiert</span><span class="tag">On-Chain-Daten</span><span class="tag">Eigenentwicklung</span></div>
-      </div>
-      <a href="analyse.html" class="block-visual"><img src="images/analyse.png" alt="Bitcoin Analysetool"></a>
-    </section>
+    <div class="legal-block">
+      <h2>5. Eingebettete Schriftarten (Google Fonts)</h2>
+      <p>Unsere Website lädt Schriftarten von den Servern von Google ("Google Fonts"). Dabei kann eine Verbindung zu Servern von Google LLC (USA) hergestellt und deine IP-Adresse übermittelt werden. Dies dient der einheitlichen und ansprechenden Darstellung unserer Website.</p>
+      <p style="margin-top:14px;">Rechtsgrundlage ist unser berechtigtes Interesse an einer konsistenten Darstellung unserer Website (Art. 6 Abs. 1 lit. f DSGVO). Weitere Informationen: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></p>
+    </div>
 
-    <section class="block c3" id="wallets">
-      <div class="block-num">03</div>
-      <div class="block-text">
-        <span class="eyebrow">Kapitel 03</span>
-        <h2>Wallets</h2>
-        <p>Hot oder Cold, Software oder Hardware — unser Wallet-Vergleich hilft dir, die Verwahrung zu wählen, die zu deinem Sicherheitsbedürfnis und deiner Bitcoin-Menge passt.</p>
-        <div class="tag-list"><span class="tag">Hardware</span><span class="tag">Software</span><span class="tag">Self-Custody</span></div>
-      </div>
-      <a href="wallets.html" class="block-visual"><img src="images/wallets.png" alt="Wallet Vergleich"></a>
-    </section>
+    <div class="legal-block">
+      <h2>6. Deine Einwilligung verwalten</h2>
+      <p>Beim ersten Besuch unserer Website wirst du über ein Banner um deine Auswahl gebeten. Du kannst deine Auswahl jederzeit ändern:</p>
+      <p style="margin-top:14px;"><button id="reopenCookieBanner" class="btn-shop-return" style="cursor:pointer;">Cookie-Einstellungen öffnen</button></p>
+    </div>
 
-    <section class="block c4" id="merchandise">
-      <div class="block-num">04</div>
-      <div class="block-text">
-        <span class="eyebrow">Kapitel 04</span>
-        <h2>Merchandise</h2>
-        <p>Selbst entworfenes Bitcoin-Merchandise — Shirts, Hoodies und Accessoires für alle, die ihre Überzeugung sichtbar tragen wollen. Fair produziert, orange im Detail.</p>
-        <div class="tag-list"><span class="tag">Faire Preise</span><span class="tag">Premium-Qualität</span><span class="tag">Eigenes Design</span></div>
-      </div>
-      <a href="merchandise.html" class="block-visual"><img src="images/merchandise.png" alt="Cuervo Apparell Merchandise"></a>
-    </section>
+    <div class="legal-block">
+      <h2>7. Deine Rechte</h2>
+      <p>Du hast jederzeit das Recht, eine erteilte Einwilligung mit Wirkung für die Zukunft zu widerrufen. Zudem kannst du das Speichern von Cookies durch entsprechende Einstellungen deines Browsers verhindern; wir weisen darauf hin, dass in diesem Fall einzelne Funktionen unserer Website (z. B. der Warenkorb) nicht vollumfänglich nutzbar sein könnten.</p>
+      <p style="margin-top:14px;">Weitere Informationen zu deinen Rechten findest du in unserer <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+    </div>
 
-    <section class="block c5" id="bibliothek">
-      <div class="block-num">05</div>
-      <div class="block-text">
-        <span class="eyebrow">Kapitel 05</span>
-        <h2>Bibliothek</h2>
-        <p>Hier findest du meine eigenen Bücher rund um Bitcoin und Krypto sowie handverlesene Empfehlungen anderer Autoren, die mich selbst geprägt haben — alles an einem Ort für deine Reise ins Verständnis von Bitcoin.</p>
-        <div class="tag-list"><span class="tag">Eigene Bücher</span><span class="tag">Buchempfehlungen</span><span class="tag">Für Einsteiger</span></div>
-      </div>
-      <a href="bibliothek.html" class="block-visual"><img src="images/bibliothek.png" alt="Bitcoin Bibliothek"></a>
-    </section>
-
-    <section class="block c6" id="socials">
-      <div class="block-num">06</div>
-      <div class="block-text">
-        <span class="eyebrow">Kapitel 06</span>
-        <h2>Socials</h2>
-        <p>Folge Satoshi Lounge auf X, YouTube und TikTok für Neuigkeiten, Analysen und Merch-Drops.</p>
-        <div class="tag-list"><span class="tag">X</span><span class="tag">YouTube</span><span class="tag">TikTok</span></div>
-      </div>
-      <a href="socials.html" class="block-visual socials-visual">
-        <div class="ic" title="X"><img src="images/socials/x.png" alt="X Logo"></div>
-        <div class="ic" title="YouTube"><img src="images/socials/youtube.png" alt="YouTube Logo"></div>
-        <div class="ic" title="TikTok"><img src="images/socials/tiktok.png" alt="TikTok Logo"></div>
-      </a>
-    </section>
+    <div class="home-return">
+      <a href="index.html">Zur Startseite →</a>
+    </div>
   </main>
 
   <!-- FOOTER -->
@@ -476,7 +353,6 @@
   const burger = document.getElementById('burgerBtn');
   const drawer = document.getElementById('drawer');
   const overlay = document.getElementById('overlay');
-
   function toggleDrawer(open){
     burger.classList.toggle('open', open);
     drawer.classList.toggle('open', open);
@@ -488,21 +364,6 @@
     a.addEventListener('click', () => toggleDrawer(false));
   });
 
-  // ===== LIVE BTC PRICE (CoinGecko, keine API-Key nötig) =====
-  async function loadPrice(){
-    try{
-      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
-      const data = await res.json();
-      const price = data.bitcoin.usd;
-
-      const formatted = price.toLocaleString('de-DE', {maximumFractionDigits:0});
-      document.getElementById('heroPrice').innerHTML = '<span class="cur">$</span>' + formatted;
-    }catch(e){
-      document.getElementById('heroPrice').innerHTML = '<span class="cur">$</span>—';
-    }
-  }
-  loadPrice();
-  setInterval(loadPrice, 60000);
   // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
   (function(){
     const canvas = document.getElementById('nodesCanvas');
@@ -532,16 +393,12 @@
 
     function step(){
       ctx.clearRect(0,0,w,h);
-
-      // Knoten bewegen
       for(const n of nodes){
         n.x += n.vx; n.y += n.vy;
         n.pulse += 0.02;
         if(n.x < 0 || n.x > w) n.vx *= -1;
         if(n.y < 0 || n.y > h) n.vy *= -1;
       }
-
-      // Verbindungslinien zwischen nahen Nodes
       for(let i=0; i<nodes.length; i++){
         for(let j=i+1; j<nodes.length; j++){
           const a = nodes[i], b = nodes[j];
@@ -558,8 +415,6 @@
           }
         }
       }
-
-      // Nodes zeichnen (mit leichtem Glow-Pulsieren)
       for(const n of nodes){
         const glow = 0.55 + Math.sin(n.pulse)*0.25;
         ctx.beginPath();
@@ -567,7 +422,6 @@
         ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
         ctx.fill();
       }
-
       requestAnimationFrame(step);
     }
     step();
@@ -615,7 +469,7 @@
   <div class="cookie-overlay" id="cookieOverlay">
     <div class="cookie-banner">
       <h3>Cookies &amp; Privatsphäre</h3>
-      <p>Wir nutzen ausschließlich technisch notwendige Speicherung (z. B. für Warenkorb und Login) — aktuell setzen wir keine Analyse- oder Marketing-Cookies ein. Mehr dazu in unserer <a href="cookies.html">Cookie-Richtlinie</a>.</p>
+      <p>Wir nutzen ausschließlich technisch notwendige Speicherung (z. B. für Warenkorb und Login) — aktuell setzen wir keine Analyse- oder Marketing-Cookies ein.</p>
       <div class="cookie-detail" id="cookieDetailBox">
         <div class="cookie-detail-row">
           <div><span class="label">Warenkorb</span><span class="sub">Speichert deine ausgewählten Produkte lokal in deinem Browser</span></div>
