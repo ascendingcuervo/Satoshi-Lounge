@@ -8,6 +8,12 @@ const catalog = require("../products-catalog.json");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const SITE_URL = process.env.SITE_URL || "https://www.satoshi-lounge.com";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Stripe lässt keine 0€-Zahlungen zu — deshalb bleibt bei voller Gutschein-Deckung immer
+// mindestens dieser Betrag zur Zahlung übrig. Der Rest bleibt als Guthaben auf dem Gutschein.
+const MIN_PAYABLE_CENTS = 100;
 
 // Ganz Europa (EU-Länder + gängige weitere europäische Länder) — entspricht "Versand innerhalb
 // Europas" aus der AGB. Liste sind ISO-3166-1-alpha-2-Codes, wie von Stripe erwartet.
@@ -21,6 +27,17 @@ const EUROPE_COUNTRIES = [
 const SHIPPING_FLAT_CENTS = 599;
 const FREE_SHIPPING_THRESHOLD_CENTS = 7000;
 const MAX_QTY_PER_ITEM = 20; // Sicherheitsgrenze gegen Missbrauch
+
+async function fetchGiftCard(code) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
+  const res = await fetch(
+    SUPABASE_URL + "/rest/v1/gift_cards?code=eq." + encodeURIComponent(code) + "&select=code,remaining_amount_cents,status",
+    { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY, "Authorization": "Bearer " + SUPABASE_SERVICE_ROLE_KEY } }
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows && rows[0] ? rows[0] : null;
+}
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", SITE_URL);
@@ -72,6 +89,29 @@ module.exports = async (req, res) => {
       orderTotalCents += product.price * qty;
     }
 
+    // ---- Gutschein-Code (falls im Warenkorb eingelöst) — wird HIER geprüft, nie dem Client
+    // vertraut, egal was er als Guthaben behauptet. Löst noch nichts ein, das passiert erst
+    // nach erfolgreicher Zahlung im Webhook. ----
+    let giftCardDiscount = null; // { code, discountCents, couponId }
+    const giftCardCodeRaw = (body.giftCardCode || "").trim().toUpperCase();
+    if (giftCardCodeRaw) {
+      const giftCard = await fetchGiftCard(giftCardCodeRaw);
+      if (!giftCard || giftCard.status !== "active" || giftCard.remaining_amount_cents <= 0) {
+        res.status(400).json({ error: "Der Gutscheincode ist ungültig oder bereits aufgebraucht. Bitte im Warenkorb entfernen." });
+        return;
+      }
+      const discountCents = Math.min(giftCard.remaining_amount_cents, Math.max(0, orderTotalCents - MIN_PAYABLE_CENTS));
+      if (discountCents > 0) {
+        const coupon = await stripe.coupons.create({
+          amount_off: discountCents,
+          currency: "eur",
+          duration: "once",
+          name: "Gutschein " + giftCard.code,
+        });
+        giftCardDiscount = { code: giftCard.code, discountCents, couponId: coupon.id };
+      }
+    }
+
     async function createSession(opts) {
       const items = opts.includeImages ? lineItems : lineItems.map((li) => {
         const clone = JSON.parse(JSON.stringify(li));
@@ -83,11 +123,18 @@ module.exports = async (req, res) => {
         mode: "payment",
         line_items: items,
         billing_address_collection: "auto",
-        allow_promotion_codes: true,
-        metadata: { itemCount: String(rawItems.length) },
+        metadata: {
+          itemCount: String(rawItems.length),
+          ...(giftCardDiscount ? { giftCardCode: giftCardDiscount.code, giftCardAmountUsedCents: String(giftCardDiscount.discountCents) } : {}),
+        },
         success_url: SITE_URL + "/product/erfolg.html?session_id={CHECKOUT_SESSION_ID}",
         cancel_url: SITE_URL + "/merchandise.html",
       };
+
+      // "discounts" und "allow_promotion_codes" schließen sich bei Stripe gegenseitig aus —
+      // ein eingelöster Gutschein hat Vorrang vor dem freien Rabattcode-Feld.
+      if (giftCardDiscount) payload.discounts = [{ coupon: giftCardDiscount.couponId }];
+      else payload.allow_promotion_codes = true;
 
       // Wichtig: "automatic_payment_methods" ist bei Checkout Sessions KEIN gültiger Parameter
       // (das gibt es nur bei PaymentIntents/SetupIntents). Bei Checkout Sessions lässt man
