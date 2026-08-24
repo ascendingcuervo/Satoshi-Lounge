@@ -59,6 +59,33 @@
   font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.05rem; margin-bottom:4px;
 }
 .cart-shipping-note{ color:var(--gray); font-size:0.75rem; margin-bottom:16px; }
+
+.giftcard-redeem{ margin-bottom:16px; }
+.giftcard-box-cart{
+  border:1.5px solid var(--line); border-left:3px solid var(--gold); border-radius:10px;
+  padding:14px 16px;
+}
+.giftcard-cart-label{ display:block; font-size:0.75rem; color:var(--gray); margin-bottom:8px; font-family:'Space Mono', monospace; }
+.giftcard-cart-row{ display:flex; gap:8px; }
+.giftcard-cart-input{
+  flex:1; min-width:0; background:#08080a; border:1.5px solid var(--line); border-radius:8px;
+  color:var(--ink); font-size:0.85rem; font-family:'Space Mono', monospace; padding:9px 12px;
+  text-transform:uppercase;
+}
+.giftcard-cart-input:focus{ outline:none; border-color:var(--gold); }
+.giftcard-cart-apply{
+  padding:9px 14px; border-radius:8px; border:none; background:var(--gold);
+  color:#0a0a0d; font-weight:700; font-size:0.8rem; cursor:pointer; white-space:nowrap; font-family:'Inter', sans-serif;
+}
+.giftcard-cart-apply:disabled{ opacity:0.6; cursor:default; }
+.giftcard-cart-msg{ color:#ff6b6b; font-size:0.75rem; margin-top:8px; min-height:1em; }
+.giftcard-chip{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.giftcard-chip-info{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.giftcard-chip-code{ font-family:'Space Mono', monospace; font-size:0.82rem; font-weight:700; color:var(--gold); }
+.giftcard-chip-balance{ font-size:0.72rem; color:var(--gray); }
+.giftcard-chip-remove{ background:none; border:none; color:var(--gray); font-size:1.2rem; cursor:pointer; padding:2px 4px; flex-shrink:0; }
+.giftcard-chip-remove:hover{ color:#ff6b6b; }
+
 .cart-checkout-btn{
   width:100%; padding:14px; border-radius:10px; border:none; background:var(--orange);
   color:#0a0a0d; font-weight:700; font-size:0.95rem; cursor:pointer; transition:.2s; font-family:'Inter', sans-serif;

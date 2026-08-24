@@ -5,6 +5,19 @@
 (function () {
   const KEY = "satoshi_cart_v1";
 
+  const GIFTCARD_KEY = "satoshi_giftcard_v1";
+
+  function getAppliedGiftCard() {
+    try { return JSON.parse(localStorage.getItem(GIFTCARD_KEY)) || null; }
+    catch (e) { return null; }
+  }
+  function setAppliedGiftCard(code) {
+    localStorage.setItem(GIFTCARD_KEY, JSON.stringify({ code }));
+  }
+  function clearAppliedGiftCard() {
+    localStorage.removeItem(GIFTCARD_KEY);
+  }
+
   function getCart() {
     try { return JSON.parse(localStorage.getItem(KEY)) || []; }
     catch (e) { return []; }
@@ -97,11 +110,91 @@
     });
   }
 
+  async function renderGiftCardBox() {
+    const box = document.getElementById("giftcardRedeemBox");
+    if (!box) return;
+    const applied = getAppliedGiftCard();
+
+    if (!applied) {
+      box.innerHTML =
+        '<div class="giftcard-box-cart">' +
+          '<label for="giftcardCodeInput" class="giftcard-cart-label">Gutschein-Code</label>' +
+          '<div class="giftcard-cart-row">' +
+            '<input type="text" id="giftcardCodeInput" class="giftcard-cart-input" placeholder="SL-GIFT-XXXXXXXX">' +
+            '<button type="button" id="giftcardApplyBtn" class="giftcard-cart-apply">Anwenden</button>' +
+          '</div>' +
+          '<p class="giftcard-cart-msg" id="giftcardCartMsg"></p>' +
+        '</div>';
+
+      const applyBtn = document.getElementById("giftcardApplyBtn");
+      const input = document.getElementById("giftcardCodeInput");
+      const msg = document.getElementById("giftcardCartMsg");
+      if (applyBtn) {
+        applyBtn.addEventListener("click", async function () {
+          const code = (input.value || "").trim().toUpperCase();
+          if (!code) { if (msg) msg.textContent = "Bitte einen Code eingeben."; return; }
+          applyBtn.disabled = true; applyBtn.textContent = "…";
+          try {
+            const res = await fetch("/api/validate-giftcard", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: code }),
+            });
+            const data = await res.json();
+            if (data.valid) {
+              setAppliedGiftCard(data.code);
+              renderGiftCardBox();
+            } else {
+              if (msg) msg.textContent = data.error || "Code ungültig.";
+              applyBtn.disabled = false; applyBtn.textContent = "Anwenden";
+            }
+          } catch (e) {
+            if (msg) msg.textContent = "Verbindung fehlgeschlagen.";
+            applyBtn.disabled = false; applyBtn.textContent = "Anwenden";
+          }
+        });
+      }
+      return;
+    }
+
+    // Ein Code ist gespeichert -> aktuelles Guthaben nachladen, damit die Anzeige stimmt
+    // (könnte sich seit dem letzten Öffnen des Warenkorbs geändert haben).
+    box.innerHTML = '<div class="giftcard-box-cart"><p class="giftcard-cart-msg">Prüfe Guthaben…</p></div>';
+    try {
+      const res = await fetch("/api/validate-giftcard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: applied.code }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        clearAppliedGiftCard();
+        renderGiftCardBox();
+        return;
+      }
+      const discountCents = Math.min(data.remainingCents, cartTotal());
+      box.innerHTML =
+        '<div class="giftcard-box-cart">' +
+          '<div class="giftcard-chip">' +
+            '<div class="giftcard-chip-info">' +
+              '<span class="giftcard-chip-code">' + data.code + '</span>' +
+              '<span class="giftcard-chip-balance">Guthaben: ' + euro(data.remainingCents) + ' · Rabatt: -' + euro(discountCents) + '</span>' +
+            '</div>' +
+            '<button type="button" class="giftcard-chip-remove" id="giftcardRemoveBtn" aria-label="Entfernen">×</button>' +
+          '</div>' +
+        '</div>';
+      const removeBtn = document.getElementById("giftcardRemoveBtn");
+      if (removeBtn) removeBtn.addEventListener("click", function () { clearAppliedGiftCard(); renderGiftCardBox(); });
+    } catch (e) {
+      box.innerHTML = '<div class="giftcard-box-cart"><p class="giftcard-cart-msg">Guthaben konnte nicht geprüft werden.</p></div>';
+    }
+  }
+
   function toggleCartPanel(open) {
     const panel = document.getElementById("cartPanel");
     const overlay = document.getElementById("cartOverlay");
     if (!panel) return;
-    if (open) renderCartPanel();
+    if (open) { renderCartPanel(); renderGiftCardBox(); }
     panel.classList.toggle("open", open);
     if (overlay) overlay.classList.toggle("show", open);
   }
@@ -123,18 +216,25 @@
 
     const checkoutBtn = document.getElementById("cartCheckoutBtn");
     if (checkoutBtn) {
+      // Container für die Gutschein-Box einmalig vor dem Kasse-Button einfügen.
+      if (!document.getElementById("giftcardRedeemBox")) {
+        checkoutBtn.insertAdjacentHTML("beforebegin", '<div class="giftcard-redeem" id="giftcardRedeemBox"></div>');
+      }
+
       checkoutBtn.addEventListener("click", async function () {
         const cart = getCart();
         if (!cart.length) return;
         const msg = document.getElementById("cartCheckoutMsg");
         checkoutBtn.disabled = true; checkoutBtn.textContent = "Einen Moment…";
         if (msg) msg.textContent = "";
+        const applied = getAppliedGiftCard();
         try {
           const res = await fetch("/api/create-checkout-session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               items: cart.map((i) => ({ productId: i.productId, size: i.size, qty: i.qty })),
+              giftCardCode: applied ? applied.code : undefined,
             }),
           });
           const data = await res.json();
