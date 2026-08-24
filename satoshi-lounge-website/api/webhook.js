@@ -185,6 +185,54 @@ async function handleGiftCardOrder(session) {
   );
 }
 
+// Zieht bei einer normalen (Produkt-)Bestellung, die mit einem Gutschein bezahlt wurde, den
+// verwendeten Betrag vom Restguthaben ab. Idempotent über order_session_id — falls Stripe den
+// Webhook zweimal schickt, wird nie doppelt abgezogen.
+async function redeemGiftCardForOrder(session) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  const code = session.metadata.giftCardCode;
+  const amountUsedCents = parseInt(session.metadata.giftCardAmountUsedCents, 10);
+  if (!code || !amountUsedCents) return;
+
+  try {
+    // Schon verarbeitet? (order_session_id ist unique — zweiter Insert-Versuch schlägt fehl)
+    const insertRes = await supabaseRequest("gift_card_redemptions", {
+      method: "POST",
+      headers: { "Prefer": "return=representation" },
+      body: JSON.stringify({ code, order_session_id: session.id, amount_used_cents: amountUsedCents }),
+    });
+    if (!insertRes.ok) {
+      if (insertRes.status === 409) {
+        console.log("Gutschein-Einlösung für Session " + session.id + " bereits verarbeitet — überspringe.");
+        return;
+      }
+      throw new Error("Supabase-Fehler beim Speichern der Einlösung: " + insertRes.status);
+    }
+
+    // Aktuellen Kontostand holen und Restguthaben neu setzen (nie unter 0).
+    const cardRes = await supabaseRequest(
+      "gift_cards?code=eq." + encodeURIComponent(code) + "&select=remaining_amount_cents",
+      { method: "GET" }
+    );
+    if (!cardRes.ok) throw new Error("Supabase-Fehler beim Lesen des Gutscheins: " + cardRes.status);
+    const rows = await cardRes.json();
+    const current = rows && rows[0];
+    if (!current) return;
+
+    const newRemaining = Math.max(0, current.remaining_amount_cents - amountUsedCents);
+    const updateRes = await supabaseRequest("gift_cards?code=eq." + encodeURIComponent(code), {
+      method: "PATCH",
+      body: JSON.stringify({
+        remaining_amount_cents: newRemaining,
+        status: newRemaining <= 0 ? "redeemed" : "active",
+      }),
+    });
+    if (!updateRes.ok) throw new Error("Supabase-Fehler beim Aktualisieren des Gutscheins: " + updateRes.status);
+  } catch (e) {
+    console.error("Gutschein-Einlösung fehlgeschlagen:", e.message);
+  }
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") { res.status(405).end(); return; }
 
@@ -309,6 +357,11 @@ module.exports = async (req, res) => {
           "<p>Bei Fragen antworte einfach auf diese E-Mail.</p>",
           attachments
         );
+      }
+      // Falls bei dieser Bestellung ein Gutschein eingelöst wurde: Guthaben jetzt abziehen,
+      // NACHDEM die Zahlung sicher bestätigt ist.
+      if (session.metadata && session.metadata.giftCardCode) {
+        await redeemGiftCardForOrder(session);
       }
     } catch (err) {
       console.error("Fehler beim Verarbeiten der Bestellung:", err);
