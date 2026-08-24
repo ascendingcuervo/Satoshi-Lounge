@@ -83,6 +83,7 @@ module.exports = async (req, res) => {
         mode: "payment",
         line_items: items,
         billing_address_collection: "auto",
+        allow_promotion_codes: true,
         metadata: { itemCount: String(rawItems.length) },
         success_url: SITE_URL + "/product/erfolg.html?session_id={CHECKOUT_SESSION_ID}",
         cancel_url: SITE_URL + "/merchandise.html",
