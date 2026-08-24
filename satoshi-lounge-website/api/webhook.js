@@ -4,6 +4,7 @@
 // inklusive einer automatisch erzeugten PDF-Rechnung im Anhang.
 
 const Stripe = require("stripe");
+const crypto = require("crypto");
 const { generateInvoicePDF } = require("../lib/invoice");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -74,6 +75,116 @@ async function sendEmail(to, subject, html, attachments) {
   }
 }
 
+// ---- Gutschein-Logik ----
+// Zeichen ohne 0/O und 1/I, damit man den Code auch von Hand gut abtippen kann.
+const GIFTCARD_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generateGiftCardCode() {
+  const bytes = crypto.randomBytes(8);
+  let code = "";
+  for (let i = 0; i < 8; i++) code += GIFTCARD_CODE_CHARS[bytes[i] % GIFTCARD_CODE_CHARS.length];
+  return "SL-GIFT-" + code;
+}
+
+async function supabaseRequest(path, options) {
+  return fetch(SUPABASE_URL + "/rest/v1/" + path, {
+    ...options,
+    headers: {
+      "apikey": SUPABASE_SERVICE_ROLE_KEY,
+      "Authorization": "Bearer " + SUPABASE_SERVICE_ROLE_KEY,
+      "Content-Type": "application/json",
+      ...(options && options.headers),
+    },
+  });
+}
+
+// Prüft, ob für diese Stripe-Session schon ein Gutschein angelegt wurde (verhindert doppelte
+// Codes, falls Stripe den Webhook mal zweimal schickt).
+async function findExistingGiftCard(sessionId) {
+  const res = await supabaseRequest(
+    "gift_cards?stripe_session_id=eq." + encodeURIComponent(sessionId) + "&select=code,initial_amount_cents",
+    { method: "GET" }
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows && rows[0] ? rows[0] : null;
+}
+
+// Erzeugt einen neuen, eindeutigen Gutschein-Code und speichert ihn in Supabase. Bei einer
+// (extrem seltenen) Code-Kollision wird einfach ein neuer Code generiert und erneut versucht.
+async function createGiftCard(sessionId, amountCents, purchaserEmail) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = generateGiftCardCode();
+    const res = await supabaseRequest("gift_cards", {
+      method: "POST",
+      headers: { "Prefer": "return=representation" },
+      body: JSON.stringify({
+        code,
+        initial_amount_cents: amountCents,
+        remaining_amount_cents: amountCents,
+        currency: "eur",
+        status: "active",
+        purchaser_email: purchaserEmail || null,
+        stripe_session_id: sessionId,
+      }),
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      return rows[0];
+    }
+    if (res.status !== 409) {
+      const text = await res.text();
+      throw new Error("Supabase-Fehler beim Anlegen des Gutscheins: " + res.status + " " + text);
+    }
+    // 409 = Konflikt (Code existiert schon) -> nochmal mit neuem Code versuchen
+  }
+  throw new Error("Konnte nach mehreren Versuchen keinen eindeutigen Gutschein-Code erzeugen.");
+}
+
+// Wird aufgerufen, wenn eine abgeschlossene Checkout-Session ein Gutschein-Kauf war
+// (metadata.type === "giftcard", gesetzt von api/create-giftcard-checkout.js).
+async function handleGiftCardOrder(session) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY fehlt — Gutschein kann nicht erzeugt werden.");
+    return;
+  }
+
+  const amountCents = parseInt(session.metadata.amountCents, 10) || session.amount_total;
+  const purchaserEmail = session.customer_details ? session.customer_details.email : null;
+
+  const existing = await findExistingGiftCard(session.id);
+  if (existing) {
+    console.log("Gutschein für Session " + session.id + " existiert bereits (" + existing.code + ") — überspringe.");
+    return;
+  }
+
+  const giftCard = await createGiftCard(session.id, amountCents, purchaserEmail);
+  const amountStr = euroDE(amountCents);
+
+  if (purchaserEmail) {
+    await sendEmail(
+      purchaserEmail,
+      "Dein Satoshi Lounge Gutschein: " + giftCard.code,
+      "<h2>🎁 Dein Satoshi Lounge Gutschein</h2>" +
+      "<p>Danke für deinen Kauf! Hier ist dein Gutscheincode:</p>" +
+      "<p style='font-size:22px;font-weight:bold;letter-spacing:1px;padding:14px 18px;background:#f5f5f5;border-radius:8px;display:inline-block;'>" + giftCard.code + "</p>" +
+      "<p>Wert: <strong>" + amountStr + "</strong></p>" +
+      "<p>Den Code kannst du bei deiner nächsten Bestellung im Warenkorb einlösen. Reicht das Guthaben nicht für die ganze Bestellung, wird der Rest ganz normal per Karte/PayPal/etc. bezahlt — der übrige Betrag bleibt auf dem Gutschein erhalten.</p>" +
+      "<p>Bei Fragen antworte einfach auf diese E-Mail.</p>"
+    );
+  }
+
+  await sendEmail(
+    NOTIFY_EMAIL,
+    "Neuer Gutschein verkauft: " + amountStr,
+    "<h2>🎁 Neuer Gutschein verkauft</h2>" +
+    "<p>Betrag: " + amountStr + "</p>" +
+    "<p>Code: " + giftCard.code + "</p>" +
+    "<p>Käufer: " + (purchaserEmail || "-") + "</p>" +
+    "<hr><p style='color:#888;font-size:12px;'>Stripe Session: " + session.id + "</p>"
+  );
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") { res.status(405).end(); return; }
 
@@ -93,6 +204,14 @@ module.exports = async (req, res) => {
       const session = await stripe.checkout.sessions.retrieve(event.data.object.id, {
         expand: ["line_items", "customer_details"],
       });
+
+      // Gutschein-Käufe laufen komplett anders als normale Bestellungen (kein Versand, kein
+      // Produktkatalog, eigene Rechnungslogik) — deshalb eigener Zweig, der hier abbricht.
+      if (session.metadata && session.metadata.type === "giftcard") {
+        await handleGiftCardOrder(session);
+        res.status(200).json({ received: true });
+        return;
+      }
 
       const items = session.line_items.data.map((li) => ({
         name: li.description,
