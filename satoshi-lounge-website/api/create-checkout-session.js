@@ -88,8 +88,12 @@ module.exports = async (req, res) => {
         cancel_url: SITE_URL + "/merchandise.html",
       };
 
-      if (opts.paymentMethods === "automatic") payload.automatic_payment_methods = { enabled: true };
-      else payload.payment_method_types = ["card"];
+      // Wichtig: "automatic_payment_methods" ist bei Checkout Sessions KEIN gültiger Parameter
+      // (das gibt es nur bei PaymentIntents/SetupIntents). Bei Checkout Sessions lässt man
+      // "payment_method_types" stattdessen einfach weg — dann verwendet Stripe automatisch alle
+      // im Dashboard aktivierten und für die Situation passenden Zahlungsmethoden (Dynamic
+      // Payment Methods). Nur im expliziten Karten-Fallback wird der Parameter gesetzt.
+      if (opts.paymentMethods !== "automatic") payload.payment_method_types = ["card"];
 
       if (opts.shipping) {
         payload.shipping_address_collection = { allowed_countries: opts.countries };
