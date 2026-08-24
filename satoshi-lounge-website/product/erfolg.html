@@ -41,8 +41,9 @@
     <a class="btn" href="../merchandise.html">Zurück zum Shop</a>
   </div>
   <script>
-    // Warenkorb nach erfolgreicher Bestellung leeren
+    // Warenkorb + angewendeten Gutschein-Code nach erfolgreicher Bestellung leeren
     try{ localStorage.removeItem("satoshi_cart_v1"); }catch(e){}
+    try{ localStorage.removeItem("satoshi_giftcard_v1"); }catch(e){}
   </script>
 
   <!-- COOKIE-BANNER -->
