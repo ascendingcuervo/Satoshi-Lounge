@@ -573,10 +573,10 @@
         <h2>Gutschein verschenken</h2>
         <p>Die perfekte Geschenkidee für Bitcoiner — Betrag wählen, wir schicken den Code direkt per E-Mail.</p>
         <div class="giftcard-form">
-          <label for="giftcardAmount" class="giftcard-label">Betrag (1 € – 250 €)</label>
+          <label for="giftcardAmount" class="giftcard-label">Betrag (10 € – 100 €)</label>
           <div class="giftcard-input-row">
             <span class="giftcard-currency">€</span>
-            <input type="number" id="giftcardAmount" class="giftcard-amount-input" min="1" max="250" step="1" value="50" inputmode="numeric">
+            <input type="number" id="giftcardAmount" class="giftcard-amount-input" min="10" max="100" step="1" value="50" inputmode="numeric">
           </div>
           <button class="buy-btn" id="giftcardBuyBtn">Gutschein kaufen</button>
           <p class="buy-msg" id="giftcardMsg"></p>
@@ -708,8 +708,8 @@
       const amountEur = parseInt(input.value, 10);
       if (msg) msg.textContent = '';
 
-      if (!Number.isInteger(amountEur) || amountEur < 1 || amountEur > 250) {
-        if (msg) msg.textContent = 'Bitte einen ganzzahligen Betrag zwischen 1€ und 250€ eingeben.';
+      if (!Number.isInteger(amountEur) || amountEur < 10 || amountEur > 100) {
+        if (msg) msg.textContent = 'Bitte einen ganzzahligen Betrag zwischen 10€ und 100€ eingeben.';
         return;
       }
 
