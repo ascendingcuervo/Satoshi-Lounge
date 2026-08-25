@@ -9,7 +9,7 @@ const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const SITE_URL = process.env.SITE_URL || "https://www.satoshi-lounge.com";
 
-const MIN_AMOUNT_EUR = 10;
+const MIN_AMOUNT_EUR = 1;
 const MAX_AMOUNT_EUR = 250;
 
 module.exports = async (req, res) => {

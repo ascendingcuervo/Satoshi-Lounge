@@ -365,6 +365,20 @@ module.exports = async (req, res) => {
       }
     } catch (err) {
       console.error("Fehler beim Verarbeiten der Bestellung:", err);
+      // Zusätzlich per Mail benachrichtigen — Vercel-Logs sind auf dem Handy mühsam zu finden,
+      // eine E-Mail mit der genauen Fehlermeldung ist viel schneller einsehbar.
+      try {
+        await sendEmail(
+          NOTIFY_EMAIL,
+          "⚠️ Fehler bei der Bestellverarbeitung",
+          "<h2>Fehler beim Verarbeiten einer Bestellung/eines Gutscheins</h2>" +
+          "<p><strong>Fehlermeldung:</strong> " + (err && err.message ? err.message : String(err)) + "</p>" +
+          "<pre style='white-space:pre-wrap;font-size:11px;color:#888;'>" + (err && err.stack ? err.stack : "") + "</pre>" +
+          "<p style='color:#888;font-size:12px;'>Stripe Session: " + (event.data && event.data.object && event.data.object.id) + "</p>"
+        );
+      } catch (mailErr) {
+        console.error("Fehler-Benachrichtigung konnte nicht gesendet werden:", mailErr.message);
+      }
       // Trotzdem 200 an Stripe zurückgeben, sonst versucht Stripe es endlos erneut
     }
   }
