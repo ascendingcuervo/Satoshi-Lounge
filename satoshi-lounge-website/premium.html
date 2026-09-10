@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Lounge — Satoshi Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000000;
+    --bg-alt:#0d0d0d;
+    --surface:#111111;
+    --ink:#F7F6F3;
+    --gray:#9b9aa4;
+    --line: rgba(242,201,76,0.16);
+    --line-soft: rgba(242,201,76,0.10);
+    --orange:#f2c94c;
+    --orange-deep:#ffdd7a;
+    --gold:#f2c94c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{ background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif; overflow-x:hidden; }
+  #nodesCanvas{ position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; pointer-events:none; display:block; }
+  .topbar, .hero, footer, .drawer, .overlay{ position:relative; z-index:1; }
+  h1,h2,h3,.display{ font-family:'Space Grotesk', sans-serif; }
+  .mono{ font-family:'Space Mono', monospace; }
+
+  /* ===== TOP BAR ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .burger{
+    width:44px; height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    background:transparent; border:1.5px solid var(--line); border-radius:10px; cursor:pointer; z-index:210; flex-shrink:0;
+  }
+  .burger span{ width:20px; height:2px; background:var(--ink); transition:.3s; }
+  .burger.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+  .burger.open span:nth-child(2){ opacity:0; }
+  .burger.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  .brand{ font-weight:700; font-size:1.05rem; letter-spacing:0.08em; text-transform:uppercase; display:flex; align-items:center; gap:10px; color:var(--ink); }
+  .topbar .brand{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); white-space:nowrap; }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--gold); box-shadow:0 0 10px rgba(242,201,76,0.6); }
+  .login-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.85rem;
+    background:var(--gold); color:#0a0a0d; border:none; padding:10px 22px; border-radius:30px;
+    cursor:pointer; text-decoration:none; transition:.2s; display:inline-block;
+  }
+  .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
+
+  /* ===== DRAWER ===== */
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.5); opacity:0; pointer-events:none; transition:.35s; z-index:150; }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:320px; max-width:85vw; background:#0a0a0a;
+    border-right:1.5px solid var(--line); transform:translateX(-105%);
+    transition:transform .4s cubic-bezier(.65,0,.35,1); z-index:200; display:flex; flex-direction:column; padding:100px 0 32px;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-nav{ display:flex; flex-direction:column; }
+  .drawer-nav a{
+    color:var(--ink); text-decoration:none; font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.15rem;
+    padding:16px 32px; border-bottom:1px solid var(--line-soft); display:flex; align-items:center; justify-content:space-between; transition:.2s;
+  }
+  .drawer-nav a .idx{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .drawer-nav a:hover{ background:rgba(242,201,76,0.1); color:var(--gold); padding-left:38px; }
+  .drawer-nav a:hover .idx{ color:inherit; }
+  .drawer-nav a.active{ color:var(--gold); background:rgba(242,201,76,0.06); }
+  .drawer-nav a.active .idx{ color:var(--gold); }
+  .drawer-brand{ display:flex; align-items:center; gap:12px; padding:0 32px 22px; margin-bottom:6px; border-bottom:1px solid var(--line-soft); }
+  .drawer-brand-badge{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg, var(--gold), var(--orange-deep));
+    display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk', sans-serif; font-weight:800; font-size:1.15rem; color:#0a0a0d;
+    box-shadow:0 0 16px rgba(242,201,76,0.45);
+  }
+  .drawer-brand-text{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.92rem; letter-spacing:0.04em; color:var(--ink); }
+  .drawer-foot{ margin-top:auto; padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); }
+
+  /* ===== HERO ===== */
+  .hero{
+    min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:140px 20px 100px; position:relative;
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(242,201,76,0.16), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(242,201,76,0.10), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(242,201,76,0.08), transparent 55%);
+    z-index:0;
+  }
+  .hero::after{
+    content:""; position:absolute; inset:0;
+    background-image: linear-gradient(var(--line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px; mask-image:radial-gradient(circle at 50% 30%, black, transparent 65%); z-index:0;
+  }
+  .ticker{
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gold);
+    border:1.5px solid var(--gold); background:rgba(242,201,76,0.08); padding:8px 18px; border-radius:30px;
+    margin-bottom:24px; letter-spacing:0.05em; position:relative; z-index:1;
+  }
+  .hero h1{ font-size:clamp(2.4rem, 6.5vw, 4.4rem); line-height:1.05; font-weight:700; position:relative; z-index:1; color:var(--gold); }
+  .hero p{ margin-top:18px; color:var(--gray); max-width:52ch; font-size:1.05rem; line-height:1.6; position:relative; z-index:1; }
+
+  @media(max-width:600px){
+    .brand{ font-size:0.88rem; letter-spacing:0.04em; gap:7px; }
+    .brand .dot{ width:6px; height:6px; }
+    .login-btn{ padding:8px 14px; font-size:0.78rem; }
+    .topbar{ padding:16px 16px; }
+    .topbar .brand{ display:none; }
+  }
+
+  /* ===== PRICING CARD (der "Fels" in der Mitte) ===== */
+  .price-card{
+    position:relative; z-index:1; margin-top:44px; width:100%; max-width:420px;
+    background:linear-gradient(180deg, #141210, #0a0908);
+    border:1.5px solid var(--gold); border-radius:22px; padding:36px 32px;
+    box-shadow:0 0 50px rgba(242,201,76,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .price-toggle{
+    display:flex; background:#050505; border:1px solid var(--line); border-radius:30px; padding:4px; margin-bottom:26px;
+  }
+  .price-toggle button{
+    flex:1; background:none; border:none; color:var(--gray); font-family:'Inter', sans-serif; font-weight:600;
+    font-size:0.85rem; padding:10px 0; border-radius:26px; cursor:pointer; transition:.2s;
+  }
+  .price-toggle button.active{ background:var(--gold); color:#0a0a0d; }
+  .price-display{ text-align:center; margin-bottom:6px; }
+  .price-display .amount{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:2.8rem; color:var(--ink); }
+  .price-display .amount span{ font-size:1rem; color:var(--gray); font-weight:500; }
+  .price-perk{
+    display:none; align-items:center; justify-content:center; gap:8px; margin:8px 0 20px;
+    font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gold);
+    border:1px dashed rgba(242,201,76,0.5); border-radius:10px; padding:9px 12px;
+  }
+  .price-perk.show{ display:flex; }
+  .price-cta{
+    display:block; width:100%; text-align:center; padding:15px; border-radius:12px;
+    background:var(--gold); color:#0a0a0d; font-weight:700; font-size:0.95rem;
+    text-decoration:none; border:none; cursor:default; opacity:0.6; margin-top:4px;
+  }
+  .price-note{ text-align:center; font-size:0.75rem; color:var(--gray); margin-top:14px; }
+
+  /* ===== FEATURES LIST ===== */
+  .features{ max-width:720px; margin:0 auto; padding:0 24px 140px; position:relative; z-index:1; }
+  .features h3{ text-align:center; font-size:1.2rem; margin-bottom:30px; color:var(--gray); font-weight:500; }
+  .feature-row{
+    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:14px;
+    margin-bottom:14px; overflow:hidden;
+  }
+  .feature-row-head{
+    display:flex; align-items:center; gap:20px; padding:22px 24px; cursor:pointer; user-select:none;
+  }
+  .feature-num{
+    width:38px; height:38px; border-radius:50%; border:2px solid var(--gold); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace; font-weight:700; color:var(--gold); font-size:0.9rem;
+  }
+  .feature-row-head h4{ font-size:1.05rem; font-weight:600; }
+  .feature-chevron{ margin-left:auto; color:var(--gray); font-size:1.1rem; transition:transform .25s ease, color .25s ease; flex-shrink:0; }
+  .feature-row.open .feature-chevron{ transform:rotate(180deg); color:var(--gold); }
+  .feature-detail{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
+  .feature-row.open .feature-detail{ max-height:260px; }
+  .feature-detail p{
+    padding:0 24px 22px 82px; color:var(--gray); font-size:0.88rem; line-height:1.65;
+  }
+  @media(max-width:520px){
+    .feature-detail p{ padding-left:24px; }
+  }
+
+  /* ===== FOOTER ===== */
+  footer{ border-top:1px solid var(--line-soft); padding:60px 24px 30px; position:relative; z-index:1; }
+  .footer-inner{ max-width:1180px; margin:0 auto; }
+  .footer-top{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; margin-bottom:40px; }
+  .footer-brand .brand{ margin-bottom:10px; }
+  .footer-brand p{ color:var(--gray); font-size:0.85rem; max-width:32ch; line-height:1.6; }
+  .footer-links{ display:grid; grid-template-columns:repeat(3, auto); gap:10px 32px; }
+  .footer-links a{ color:var(--gray); text-decoration:none; font-size:0.85rem; transition:.2s; }
+  .footer-links a:hover{ color:var(--gold); }
+  .footer-bottom{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; padding-top:24px; border-top:1px solid var(--line-soft); }
+  .copy{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); }
+  .footer-warn{ display:flex; gap:14px; }
+  .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.7rem; color:var(--gray); border:1px solid var(--line); padding:5px 10px; border-radius:6px; }
+  @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
+</style>
+</head>
+<body>
+<canvas id="nodesCanvas"></canvas>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="burger" id="burgerBtn" aria-label="Menü"><span></span><span></span><span></span></button>
+    <div class="brand"><span class="dot"></span>PREMIUM LOUNGE</div>
+    <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="drawer" id="drawer">
+    <div class="drawer-brand"><span class="drawer-brand-badge">₿</span><span class="drawer-brand-text">SATOSHI LOUNGE</span></div>
+    <div class="drawer-nav">
+      <a href="boersen.html"><span>Börsen</span><span class="idx">01</span></a>
+      <a href="analyse.html"><span>Analyse</span><span class="idx">02</span></a>
+      <a href="wallets.html"><span>Wallets</span><span class="idx">03</span></a>
+      <a href="merchandise.html"><span>Merchandise</span><span class="idx">04</span></a>
+      <a href="bibliothek.html"><span>Bibliothek</span><span class="idx">05</span></a>
+      <a href="socials.html"><span>Socials</span><span class="idx">06</span></a>
+      <a href="premium.html" class="active"><span>Premium</span><span class="idx">07</span></a>
+    </div>
+    <div class="drawer-foot">satoshi-lounge.com</div>
+  </nav>
+
+  <!-- HERO + PRICING CARD -->
+  <header class="hero">
+    <div class="ticker">★ NUR FÜR MITGLIEDER</div>
+    <h1>Premium Lounge</h1>
+    <p>Tiefer als das kostenlose Angebot — erweitertes Analysetool, Video-Mediathek, Blog und ein eigener Mitglieder-Chat.</p>
+
+    <div class="price-card">
+      <div class="price-toggle">
+        <button type="button" class="active" id="toggleMonthly">Monatlich</button>
+        <button type="button" id="toggleYearly">Jährlich</button>
+      </div>
+      <div class="price-display">
+        <div class="amount" id="priceAmount">4,99€ <span>/ Monat</span></div>
+      </div>
+      <div class="price-perk" id="pricePerk">🎁 inkl. gratis "Bitcoin Digital Gold" T-Shirt</div>
+      <a href="#" class="price-cta">Premium werden</a>
+      <div class="price-note">Demnächst verfügbar</div>
+    </div>
+  </header>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <h3>Das bekommst du</h3>
+
+    <div class="feature-row">
+      <div class="feature-row-head">
+        <div class="feature-num">1</div>
+        <h4>Premium Analysetool</h4>
+        <span class="feature-chevron">⌄</span>
+      </div>
+      <div class="feature-detail">
+        <p>Alles an einem Ort statt in zehn verschiedenen Tabs: Live-Chart mit Indikatoren, Liquidation Heatmap, Fed Watch Tool sowie laufende Einordnung von Politik und Makro-Lage — eine vollständige Sicht auf den Markt, ohne zwischen mehreren Anbietern wechseln zu müssen.</p>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-row-head">
+        <div class="feature-num">2</div>
+        <h4>Video-Akademie</h4>
+        <span class="feature-chevron">⌄</span>
+      </div>
+      <div class="feature-detail">
+        <p>Strukturierte Video-Reihen zu den Themen, die wirklich zählen — von Self-Custody über Steuern bis Zyklusanalyse. Verständlich erklärt, damit du nicht nur Begriffe kennst, sondern die Zusammenhänge wirklich verstehst.</p>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-row-head">
+        <div class="feature-num">3</div>
+        <h4>Blog</h4>
+        <span class="feature-chevron">⌄</span>
+      </div>
+      <div class="feature-detail">
+        <p>Regelmäßige Einblicke in meine eigene Strategie — welche Positionen ich halte, wie ich die aktuelle Marktlage einschätze und welche Entscheidungen ich treffe. Kein Fremdprodukt, sondern transparent dokumentiert aus erster Hand.</p>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-row-head">
+        <div class="feature-num">4</div>
+        <h4>Satoshi Lounge Chat</h4>
+        <span class="feature-chevron">⌄</span>
+      </div>
+      <div class="feature-detail">
+        <p>Aktive Bitcoin-only Community mit 100+ Mitgliedern — direkter Austausch mit Gleichgesinnten, ohne Ablenkung durch Altcoins oder Spekulation um kurzfristige Trends.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand"><span class="dot"></span>SATOSHI LOUNGE</div>
+          <p>Bitcoin verstehen, vergleichen und tragen — unabhängig, ehrlich, ohne Schnickschnack.</p>
+        </div>
+        <div class="footer-links">
+          <a href="impressum.html">Impressum</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+          <a href="agb.html">AGB</a>
+          <a href="widerruf.html">Widerrufsbelehrung</a>
+          <a href="versand.html">Versand &amp; Lieferung</a>
+          <a href="zahlungsarten.html">Zahlungsarten</a>
+          <a href="disclaimer.html">Disclaimer</a>
+          <a href="affiliate.html">Affiliate-Hinweis</a>
+          <a href="ueber-mich.html">Über mich</a>
+          <a href="cookies.html">Cookie-Richtlinie</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="copy">© 2026 Satoshi Lounge</div>
+        <div class="footer-warn"><span>Keine Anlageberatung!</span><span>Ab 18 Jahren</span></div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  const burger = document.getElementById('burgerBtn');
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  function toggleDrawer(open){
+    burger.classList.toggle('open', open);
+    drawer.classList.toggle('open', open);
+    overlay.classList.toggle('show', open);
+  }
+  burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
+  overlay.addEventListener('click', () => toggleDrawer(false));
+  document.querySelectorAll('.drawer-nav a').forEach(a=>{ a.addEventListener('click', () => toggleDrawer(false)); });
+
+  // ===== Preis-Umschalter Monatlich/Jährlich (rein optisch, noch keine echte Zahlung) =====
+  const btnMonthly = document.getElementById('toggleMonthly');
+  const btnYearly = document.getElementById('toggleYearly');
+  const priceAmount = document.getElementById('priceAmount');
+  const pricePerk = document.getElementById('pricePerk');
+
+  btnMonthly.addEventListener('click', () => {
+    btnMonthly.classList.add('active'); btnYearly.classList.remove('active');
+    priceAmount.innerHTML = '4,99€ <span>/ Monat</span>';
+    pricePerk.classList.remove('show');
+  });
+  btnYearly.addEventListener('click', () => {
+    btnYearly.classList.add('active'); btnMonthly.classList.remove('active');
+    priceAmount.innerHTML = '49,99€ <span>/ Jahr</span>';
+    pricePerk.classList.add('show');
+  });
+
+  // ===== Feature-Punkte aufklappbar =====
+  document.querySelectorAll('.feature-row-head').forEach(head => {
+    head.addEventListener('click', () => {
+      head.closest('.feature-row').classList.toggle('open');
+    });
+  });
+
+  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND (Gold) =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+    function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w, y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35, vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1, pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize(); makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(242,201,76,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath(); ctx.fillStyle = `rgba(242,201,76,${glow})`; ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+</script>
+
+  <!-- AUTH: Login/Registrieren Modal -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-modal">
+      <button class="auth-modal-close" id="authModalClose" aria-label="Schließen">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin" type="button">Anmelden</button>
+        <button class="auth-tab" id="authTabSignup" type="button">Registrieren</button>
+      </div>
+      <form id="authForm">
+        <div class="auth-field"><label for="authEmail">E-Mail</label><input type="email" id="authEmail" required autocomplete="email"></div>
+        <div class="auth-field"><label for="authPassword">Passwort</label><input type="password" id="authPassword" required minlength="6" autocomplete="current-password"></div>
+        <button type="submit" class="auth-submit" id="authSubmitBtn">Anmelden</button>
+        <div class="auth-msg" id="authMsg"></div>
+      </form>
+    </div>
+  </div>
+
+  <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+  <div class="profile-menu" id="profileMenu">
+    <div class="profile-menu-email" id="profileMenuEmail"></div>
+    <button type="button" id="changeAvatarBtn">Profilbild ändern</button>
+    <button type="button" class="danger" id="logoutBtn">Abmelden</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="auth-config.js"></script>
+  <script src="auth.js"></script>
+
+  <!-- COOKIE-BANNER -->
+  <div class="cookie-overlay" id="cookieOverlay">
+    <div class="cookie-banner">
+      <h3>Cookies &amp; Privatsphäre</h3>
+      <p>Wir nutzen ausschließlich technisch notwendige Speicherung (z. B. für Warenkorb und Login) — aktuell setzen wir keine Analyse- oder Marketing-Cookies ein. Mehr dazu in unserer <a href="cookies.html">Cookie-Richtlinie</a>.</p>
+      <div class="cookie-detail" id="cookieDetailBox">
+        <div class="cookie-detail-row"><div><span class="label">Warenkorb</span><span class="sub">Speichert deine ausgewählten Produkte lokal in deinem Browser</span></div><span class="tag">Notwendig</span></div>
+        <div class="cookie-detail-row"><div><span class="label">Login-Sitzung</span><span class="sub">Hält dich angemeldet (Supabase)</span></div><span class="tag">Notwendig</span></div>
+      </div>
+      <div class="cookie-btn-row">
+        <button class="cookie-btn-details" id="cookieDetailsBtn" type="button">Details</button>
+        <button class="cookie-btn-necessary" id="cookieNecessaryBtn" type="button">Nur notwendige</button>
+        <button class="cookie-btn-accept" id="cookieAcceptBtn" type="button">Alle akzeptieren</button>
+      </div>
+    </div>
+  </div>
+  <script src="cookie-consent.js"></script>
+</body>
+</html>
