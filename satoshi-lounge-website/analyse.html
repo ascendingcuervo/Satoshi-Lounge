@@ -261,20 +261,43 @@
 
   /* Tabs */
   .tabs-nav{
-    display:flex; gap:8px; padding:16px 20px; overflow-x:auto;
-    border-bottom:1px solid var(--line-soft);
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(128px, 1fr)); gap:10px;
+    padding:20px; border-bottom:1px solid var(--line-soft);
   }
   .tab-btn{
-    background:#0d0d10; border:1.5px solid var(--line); border-radius:20px; color:var(--gray);
-    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:0.85rem;
-    padding:9px 18px; cursor:pointer; white-space:nowrap; transition:.2s; flex-shrink:0;
+    background:#0d0d10; border:1.5px solid var(--line); border-radius:14px; color:var(--gray);
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.85rem;
+    padding:16px 10px; cursor:pointer; transition:.2s;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center;
   }
-  .tab-btn:hover{ color:var(--ink); border-color:var(--gray); }
+  .tab-btn .tab-ic{ font-size:1.35rem; line-height:1; }
+  .tab-btn:hover{ color:var(--ink); border-color:var(--gray); transform:translateY(-2px); }
   .tab-btn.active{ color:#0a0a0d; background:var(--tc); border-color:var(--tc); }
   .tab-btn[data-tab="chart"]{ --tc: var(--orange); }
-  .tab-btn[data-tab="portfolio"]{ --tc: var(--teal); }
-  .tab-btn[data-tab="dca"]{ --tc: var(--gold); }
-  .tab-btn[data-tab="bibliothek"]{ --tc: #e0813a; }
+  .tab-btn[data-tab="news"]{ --tc: var(--teal); }
+  .tab-btn[data-tab="liq"]{ --tc: var(--pink); }
+  .tab-btn[data-tab="feargreed"]{ --tc: var(--purple); }
+  .tab-btn[data-tab="fedwatch"]{ --tc: #4fd1ff; }
+  .tab-btn[data-tab="cycle"]{ --tc: var(--gold); }
+  .tab-btn[data-tab="portfolio"]{ --tc: #3ddc84; }
+
+  .coming-soon-card{
+    background:#0d0d10; border:1.5px dashed var(--line); border-radius:14px;
+    padding:26px 22px; color:var(--gray); font-size:0.9rem; line-height:1.6; text-align:center;
+  }
+
+  .fng-compare-table{ margin-top:22px; display:flex; flex-direction:column; gap:1px; }
+  .fng-compare-row{
+    display:grid; grid-template-columns:1.2fr 0.8fr 1fr; gap:10px; align-items:center;
+    padding:12px 14px; background:#0d0d10; border:1px solid var(--line-soft);
+  }
+  .fng-compare-row:first-child{ border-radius:10px 10px 0 0; }
+  .fng-compare-row:last-child{ border-radius:0 0 10px 10px; }
+  .fng-compare-row + .fng-compare-row{ border-top:none; }
+  .fng-compare-head{ color:var(--gray); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; font-family:'Space Mono', monospace; }
+  .fng-compare-row:not(.fng-compare-head) span:first-child{ color:var(--ink); font-weight:600; font-size:0.88rem; }
+  .fng-compare-val{ font-family:'Space Mono', monospace; font-weight:700; }
+  .fng-compare-cls{ font-size:0.8rem; color:var(--gray); }
 
   .tab-panel{ display:none; }
   .tab-panel.active{ display:block; }
@@ -629,38 +652,19 @@
 
         <!-- TABS -->
         <div class="tabs-nav">
-          <button class="tab-btn active" data-tab="chart">Chartanalyse</button>
-          <button class="tab-btn" data-tab="portfolio">Portfolio</button>
-          <button class="tab-btn" data-tab="dca">DCA-Rechner</button>
-          <button class="tab-btn" data-tab="bibliothek">Bibliothek</button>
+          <button class="tab-btn active" data-tab="chart"><span class="tab-ic">📈</span><span>Chartanalyse</span></button>
+          <button class="tab-btn" data-tab="news"><span class="tab-ic">📰</span><span>News</span></button>
+          <button class="tab-btn" data-tab="liq"><span class="tab-ic">🔥</span><span>Liquidation Heatmap</span></button>
+          <button class="tab-btn" data-tab="feargreed"><span class="tab-ic">😨</span><span>Fear &amp; Greed</span></button>
+          <button class="tab-btn" data-tab="fedwatch"><span class="tab-ic">🏦</span><span>FED Watch</span></button>
+          <button class="tab-btn" data-tab="cycle"><span class="tab-ic">⏳</span><span>Zeit &amp; Zyklus</span></button>
+          <button class="tab-btn" data-tab="portfolio"><span class="tab-ic">💼</span><span>Portfolio</span></button>
         </div>
 
         <!-- TAB: CHARTANALYSE -->
         <div class="tab-panel active" id="panel-chart">
-          <div class="tool-section s-cycle">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Zeit- &amp; Zyklusmodell</h2></div>
-            <div class="stat-grid" id="cycleStats"></div>
-            <div class="cycle-bar-wrap">
-              <div class="cycle-bar"><div class="cycle-bar-fill" id="cycleBarFill"></div></div>
-              <div class="cycle-bar-day" id="cycleBarPct">--</div>
-              <div class="cycle-bar-labels"><span id="cycleBarLeft">--</span><span id="cycleBarRight">--</span></div>
-            </div>
-          </div>
-
-          <div class="tool-section s-feargreed">
-            <div class="tool-section-head"><span class="tool-section-num">02</span><h2>Angst &amp; Gier Index</h2></div>
-            <div class="fng-wrap">
-              <div class="fng-value" id="fngValue">--</div>
-              <div class="fng-label" id="fngLabel">Lädt…</div>
-              <div class="fng-track"><div class="fng-marker" id="fngMarker"></div></div>
-              <div class="fng-scale-labels">
-                <span>Extreme Angst</span><span class="fng-lbl-mid">Angst</span><span class="fng-lbl-mid">Neutral</span><span class="fng-lbl-mid">Gier</span><span>Extreme Gier</span>
-              </div>
-            </div>
-          </div>
-
           <div class="tool-section s-overview">
-            <div class="tool-section-head"><span class="tool-section-num">03</span><h2>Chart &amp; Indikatoren</h2></div>
+            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Chart &amp; Indikatoren</h2></div>
             <div class="indicator-toggle-wrap">
               <button class="indicator-toggle-btn" id="indicatorToggleBtn">
                 <span>Indikatoren</span>
@@ -713,12 +717,64 @@
               </div>
             </div>
           </div>
+        </div>
 
+        <!-- TAB: NEWS -->
+        <div class="tab-panel" id="panel-news">
+          <div class="tool-section s-news">
+            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>News</h2></div>
+            <div class="coming-soon-card">
+              <p>Ein automatischer News-Feed zu Bitcoin und den traditionellen Märkten ist in Arbeit und kommt in Kürze.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: LIQUIDATION HEATMAP -->
+        <div class="tab-panel" id="panel-liq">
           <div class="tool-section s-liq">
-            <div class="tool-section-head"><span class="tool-section-num">04</span><h2>Liquidation Heatmap</h2></div>
+            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Liquidation Heatmap</h2></div>
             <div class="live-status" id="liqStatus" style="margin-bottom:14px;"><span class="live-dot"></span><span id="liqStatusText">Lädt…</span></div>
             <div class="liq-wrap" id="liqWrap">
               <div class="chart-loading" id="liqLoading">Lädt Heatmap…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: FEAR & GREED -->
+        <div class="tab-panel" id="panel-feargreed">
+          <div class="tool-section s-feargreed">
+            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Angst &amp; Gier Index</h2></div>
+            <div class="fng-wrap">
+              <div class="fng-value" id="fngValue">--</div>
+              <div class="fng-label" id="fngLabel">Lädt…</div>
+              <div class="fng-track"><div class="fng-marker" id="fngMarker"></div></div>
+              <div class="fng-scale-labels">
+                <span>Extreme Angst</span><span class="fng-lbl-mid">Angst</span><span class="fng-lbl-mid">Neutral</span><span class="fng-lbl-mid">Gier</span><span>Extreme Gier</span>
+              </div>
+            </div>
+            <div class="fng-compare-table" id="fngCompareTable"></div>
+          </div>
+        </div>
+
+        <!-- TAB: FED WATCH -->
+        <div class="tab-panel" id="panel-fedwatch">
+          <div class="tool-section s-fedwatch">
+            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>FED Watch</h2></div>
+            <div class="coming-soon-card">
+              <p>Eine Übersicht der Marktwahrscheinlichkeiten für Zinsentscheidungen (im Stil von CME FedWatch) ist in Arbeit und kommt in Kürze.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ZEIT & ZYKLUS -->
+        <div class="tab-panel" id="panel-cycle">
+          <div class="tool-section s-cycle">
+            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Zeit- &amp; Zyklusmodell</h2></div>
+            <div class="stat-grid" id="cycleStats"></div>
+            <div class="cycle-bar-wrap">
+              <div class="cycle-bar"><div class="cycle-bar-fill" id="cycleBarFill"></div></div>
+              <div class="cycle-bar-day" id="cycleBarPct">--</div>
+              <div class="cycle-bar-labels"><span id="cycleBarLeft">--</span><span id="cycleBarRight">--</span></div>
             </div>
           </div>
         </div>
@@ -737,29 +793,6 @@
             <div class="tax-info">
               <strong>Steuer-Hinweis (Deutschland):</strong> Bitcoin-Gewinne sind nach einer Haltefrist von einem Jahr komplett steuerfrei — unabhängig von der Höhe (§ 23 EStG). Verkaufst du innerhalb eines Jahres, greift dein persönlicher Einkommensteuersatz, sofern der Gesamtgewinn im Jahr die Freigrenze von 1.000 € übersteigt. Diese Regel wird politisch aktuell diskutiert und kann sich ändern. Das ersetzt keine individuelle Steuerberatung — bei Fragen wende dich an einen Steuerberater.
             </div>
-          </div>
-        </div>
-
-        <!-- TAB: DCA-RECHNER -->
-        <div class="tab-panel" id="panel-dca">
-          <div class="tool-section s-dca">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>DCA-Rechner</h2></div>
-            <div class="dca-card">
-              <span class="field-label">Monatlicher Betrag (USD)</span>
-              <input type="number" class="tool-input" id="dcaAmount" value="100" min="1">
-              <span class="field-label">Start-Datum</span>
-              <input type="date" class="tool-input" id="dcaStart" value="2021-01-01" min="2013-01-01">
-            </div>
-            <div id="dcaResults"></div>
-          </div>
-        </div>
-
-        <!-- TAB: BIBLIOTHEK -->
-        <div class="tab-panel" id="panel-bibliothek">
-          <div class="tool-section s-bibliothek">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Bibliothek</h2></div>
-            <div class="lib-categories" id="libCategories"></div>
-            <div id="libArticles"></div>
           </div>
         </div>
       </div>
@@ -1420,18 +1453,49 @@
       const fngValueEl = document.getElementById("fngValue");
       const fngLabelEl = document.getElementById("fngLabel");
       const fngMarkerEl = document.getElementById("fngMarker");
+      const fngTableEl = document.getElementById("fngCompareTable");
+      const labelMap = { "Extreme Fear":"Extreme Angst", "Fear":"Angst", "Neutral":"Neutral", "Greed":"Gier", "Extreme Greed":"Extreme Gier" };
       try{
-        const data = await fetchWithTimeout("https://api.alternative.me/fng/?limit=1");
-        const item = data.data[0];
+        // limit=370 reicht für "vor 1 Jahr" (Tag 365) plus etwas Puffer für die 12-Monats-Extremwerte
+        const data = await fetchWithTimeout("https://api.alternative.me/fng/?limit=370");
+        const items = data.data;
+        const item = items[0];
         const val = parseInt(item.value, 10);
-        const labelMap = { "Extreme Fear":"Extreme Angst", "Fear":"Angst", "Neutral":"Neutral", "Greed":"Gier", "Extreme Greed":"Extreme Gier" };
         fngValueEl.textContent = val;
         fngLabelEl.textContent = labelMap[item.value_classification] || item.value_classification;
         fngMarkerEl.style.left = val + "%";
+
+        if(fngTableEl){
+          const at = (daysAgo) => items[daysAgo] ? parseInt(items[daysAgo].value, 10) : null;
+          const clsAt = (daysAgo) => items[daysAgo] ? (labelMap[items[daysAgo].value_classification] || items[daysAgo].value_classification) : "--";
+          const fmtDate = (ts) => new Date(parseInt(ts,10)*1000).toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric" });
+
+          let maxItem = items[0], minItem = items[0];
+          items.forEach(it => {
+            if(parseInt(it.value,10) > parseInt(maxItem.value,10)) maxItem = it;
+            if(parseInt(it.value,10) < parseInt(minItem.value,10)) minItem = it;
+          });
+
+          const rows = [
+            { label: "Heute", val: at(0), cls: clsAt(0) },
+            { label: "Vor 7 Tagen", val: at(7), cls: clsAt(7) },
+            { label: "Vor 30 Tagen", val: at(30), cls: clsAt(30) },
+            { label: "Vor 1 Jahr", val: at(365), cls: clsAt(365) },
+          ];
+
+          fngTableEl.innerHTML =
+            '<div class="fng-compare-row fng-compare-head"><span>Zeitraum</span><span>Wert</span><span>Einstufung</span></div>' +
+            rows.map(r =>
+              '<div class="fng-compare-row"><span>' + r.label + '</span><span class="fng-compare-val">' + (r.val != null ? r.val : "--") + '</span><span class="fng-compare-cls">' + r.cls + '</span></div>'
+            ).join("") +
+            '<div class="fng-compare-row"><span>Höchster Wert (12 Mon.)</span><span class="fng-compare-val" style="color:var(--teal);">' + maxItem.value + '</span><span class="fng-compare-cls">' + fmtDate(maxItem.timestamp) + '</span></div>' +
+            '<div class="fng-compare-row"><span>Tiefster Wert (12 Mon.)</span><span class="fng-compare-val" style="color:var(--pink);">' + minItem.value + '</span><span class="fng-compare-cls">' + fmtDate(minItem.timestamp) + '</span></div>';
+        }
       }catch(e){
         fngValueEl.textContent = "50";
         fngLabelEl.textContent = "Neutral (Fallback-Wert)";
         fngMarkerEl.style.left = "50%";
+        if(fngTableEl) fngTableEl.innerHTML = '<p class="empty-note">Vergleichsdaten aktuell nicht verfügbar.</p>';
       }
     }
 
@@ -1559,7 +1623,6 @@
       renderChart();
       renderStats();
       renderPortfolio();
-      renderDCA();
     }
 
     function updateHeader(){
@@ -1917,31 +1980,6 @@
       athPctValueEl.textContent = athPct != null ? athPct.toFixed(1) + "%" : "--";
     }
 
-    const dcaAmountInput = document.getElementById("dcaAmount");
-    const dcaStartInput = document.getElementById("dcaStart");
-    const dcaResultsEl = document.getElementById("dcaResults");
-    dcaAmountInput.addEventListener("input", renderDCA);
-    dcaStartInput.addEventListener("input", renderDCA);
-    function renderDCA(){
-      const amount = parseFloat(dcaAmountInput.value) || 0;
-      const start = dcaStartInput.value;
-      const result = calcDCA(amount, start);
-      if(!result){
-        dcaResultsEl.innerHTML = '<p class="empty-note">Bitte gültigen Betrag und Startdatum angeben.</p>';
-        return;
-      }
-      dcaResultsEl.innerHTML =
-        '<div class="dca-card" style="max-width:520px;">' +
-          '<div class="result-grid">' +
-            '<div><span class="field-label">Investiert</span><span class="stat-value">' + formatUSD(result.totalInvested) + '</span></div>' +
-            '<div><span class="field-label">Heute wert</span><span class="stat-value">' + formatUSD(result.currentValue) + '</span></div>' +
-            '<div><span class="field-label">BTC gesammelt</span><span class="stat-value" style="font-size:0.95rem;">' + formatBTC(result.totalBTC) + '</span></div>' +
-            '<div><span class="field-label">Rendite</span><span class="stat-value" style="color:' + (result.profitPct >= 0 ? TEAL : PINK) + '">' + (result.profitPct >= 0 ? "+" : "") + result.profitPct.toFixed(1) + '%</span></div>' +
-          '</div>' +
-          '<div class="result-note">' + result.months + ' Monatskäufe · aus Jahres-Schlusskursen linear interpoliert — Näherung, kein Tageskurs.</div>' +
-        '</div>';
-    }
-
     const entryDateInput = document.getElementById("entryDate");
     const entryAmountInput = document.getElementById("entryAmount");
     const addEntryBtn = document.getElementById("addEntryBtn");
@@ -2001,35 +2039,6 @@
           persistEntries();
           renderPortfolio();
         });
-      });
-    }
-
-    const libCategoriesEl = document.getElementById("libCategories");
-    const libArticlesEl = document.getElementById("libArticles");
-    let libCategory = "geschichte";
-    CATEGORIES.forEach(c => {
-      const b = document.createElement("button");
-      b.className = "pill-btn" + (c.key === libCategory ? " active" : "");
-      b.style.setProperty("--pc", ORANGE);
-      b.textContent = c.label;
-      b.addEventListener("click", () => {
-        libCategory = c.key;
-        libCategoriesEl.querySelectorAll(".pill-btn").forEach(x => x.classList.remove("active"));
-        b.classList.add("active");
-        renderLibrary();
-      });
-      libCategoriesEl.appendChild(b);
-    });
-    function renderLibrary(){
-      const items = ARTICLES.filter(a => a.cat === libCategory);
-      libArticlesEl.innerHTML = items.map((a, i) =>
-        '<div class="lib-article" data-idx="' + i + '">' +
-          '<button class="lib-article-head"><span>' + a.title + '</span><span class="chev">⌄</span></button>' +
-          '<div class="lib-article-body">' + a.text + '</div>' +
-        '</div>'
-      ).join("");
-      libArticlesEl.querySelectorAll(".lib-article-head").forEach(head => {
-        head.addEventListener("click", () => { head.parentElement.classList.toggle("open"); });
       });
     }
 
@@ -2162,7 +2171,6 @@
     refreshBtn.addEventListener("click", () => { loadLive().then(loadLiquidationHeatmap); });
     renderCycle();
     loadFearGreed();
-    renderLibrary();
     renderPortfolio();
     loadLive().then(loadLiquidationHeatmap);
   }
