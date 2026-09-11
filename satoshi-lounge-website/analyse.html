@@ -286,6 +286,19 @@
     padding:26px 22px; color:var(--gray); font-size:0.9rem; line-height:1.6; text-align:center;
   }
 
+  .news-note{ color:var(--gray); font-size:0.85rem; line-height:1.6; margin-bottom:18px; }
+  .news-feeds{ display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:18px; }
+  .news-feed-card{
+    background:#0d0d10; border:1.5px solid var(--line); border-radius:14px;
+    padding:16px; overflow:hidden;
+  }
+  .news-feed-card h3{ font-size:1rem; margin-bottom:12px; }
+  .news-feed-fallback{
+    display:block; margin-top:12px; text-align:center; font-size:0.8rem;
+    color:var(--gray); text-decoration:none;
+  }
+  .news-feed-fallback:hover{ color:var(--orange); }
+
   .fng-compare-table{ margin-top:22px; display:flex; flex-direction:column; gap:1px; }
   .fng-compare-row{
     display:grid; grid-template-columns:1.2fr 0.8fr 1fr; gap:10px; align-items:center;
@@ -723,8 +736,18 @@
         <div class="tab-panel" id="panel-news">
           <div class="tool-section s-news">
             <div class="tool-section-head"><span class="tool-section-num">01</span><h2>News</h2></div>
-            <div class="coming-soon-card">
-              <p>Ein automatischer News-Feed zu Bitcoin und den traditionellen Märkten ist in Arbeit und kommt in Kürze.</p>
+            <p class="news-note">Live-Feeds von zwei ausgewählten X-Accounts. Bleibt ein Feed leer, liegt das an X's eigenem Einbett-Widget — kurz neu laden hilft meistens, oder direkt auf X nachschauen (Link unten in jeder Karte).</p>
+            <div class="news-feeds">
+              <div class="news-feed-card">
+                <h3>Watcher.Guru</h3>
+                <a class="twitter-timeline" data-theme="dark" data-height="600" data-chrome="noheader nofooter" href="https://twitter.com/WatcherGuru?ref_src=twsrc%5Etfw">Tweets by WatcherGuru</a>
+                <a class="news-feed-fallback" href="https://x.com/WatcherGuru" target="_blank" rel="noopener">Profil direkt auf X ansehen →</a>
+              </div>
+              <div class="news-feed-card">
+                <h3>The Kobeissi Letter</h3>
+                <a class="twitter-timeline" data-theme="dark" data-height="600" data-chrome="noheader nofooter" href="https://twitter.com/KobeissiLetter?ref_src=twsrc%5Etfw">Tweets by KobeissiLetter</a>
+                <a class="news-feed-fallback" href="https://x.com/KobeissiLetter" target="_blank" rel="noopener">Profil direkt auf X ansehen →</a>
+              </div>
             </div>
           </div>
         </div>
@@ -2290,6 +2313,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="auth-config.js"></script>
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
   <script src="auth.js"></script>
 
 
