@@ -293,11 +293,15 @@
     padding:16px; overflow:hidden;
   }
   .news-feed-card h3{ font-size:1rem; margin-bottom:12px; }
-  .news-feed-fallback{
-    display:block; margin-top:12px; text-align:center; font-size:0.8rem;
-    color:var(--gray); text-decoration:none;
+  /* Solange X's Widget noch nicht geladen hat, zeigt es diesen Link als Platzhalter —
+     als eigener Button gestaltet statt als nackter blauer Link. */
+  .news-feed-card a.twitter-timeline{
+    display:block; text-align:center; padding:14px; border-radius:10px;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.9rem;
+    text-decoration:none;
   }
-  .news-feed-fallback:hover{ color:var(--orange); }
+  .feed-watcherguru a.twitter-timeline{ background:var(--teal); color:#0a0a0d; }
+  .feed-kobeissi a.twitter-timeline{ background:#f2f2f2; color:#0a0a0d; }
 
   .fng-compare-table{ margin-top:22px; display:flex; flex-direction:column; gap:1px; }
   .fng-compare-row{
@@ -736,17 +740,14 @@
         <div class="tab-panel" id="panel-news">
           <div class="tool-section s-news">
             <div class="tool-section-head"><span class="tool-section-num">01</span><h2>News</h2></div>
-            <p class="news-note">Live-Feeds von zwei ausgewählten X-Accounts. Bleibt ein Feed leer, liegt das an X's eigenem Einbett-Widget — kurz neu laden hilft meistens, oder direkt auf X nachschauen (Link unten in jeder Karte).</p>
             <div class="news-feeds">
-              <div class="news-feed-card">
+              <div class="news-feed-card feed-watcherguru">
                 <h3>Watcher.Guru</h3>
                 <a class="twitter-timeline" data-theme="dark" data-height="600" data-chrome="noheader nofooter" href="https://twitter.com/WatcherGuru?ref_src=twsrc%5Etfw">Tweets by WatcherGuru</a>
-                <a class="news-feed-fallback" href="https://x.com/WatcherGuru" target="_blank" rel="noopener">Profil direkt auf X ansehen →</a>
               </div>
-              <div class="news-feed-card">
+              <div class="news-feed-card feed-kobeissi">
                 <h3>The Kobeissi Letter</h3>
                 <a class="twitter-timeline" data-theme="dark" data-height="600" data-chrome="noheader nofooter" href="https://twitter.com/KobeissiLetter?ref_src=twsrc%5Etfw">Tweets by KobeissiLetter</a>
-                <a class="news-feed-fallback" href="https://x.com/KobeissiLetter" target="_blank" rel="noopener">Profil direkt auf X ansehen →</a>
               </div>
             </div>
           </div>
@@ -1531,7 +1532,13 @@
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
         document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
         btn.classList.add("active");
-        document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+        const panel = document.getElementById("panel-" + btn.dataset.tab);
+        panel.classList.add("active");
+        // X's Widget-Skript übersieht Timelines, die beim Laden der Seite noch versteckt
+        // (display:none) waren — deshalb hier gezielt neu anstoßen, sobald der Tab sichtbar wird.
+        if(btn.dataset.tab === "news" && window.twttr && window.twttr.widgets){
+          window.twttr.widgets.load(panel);
+        }
       });
     });
 
