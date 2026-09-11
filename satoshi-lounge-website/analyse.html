@@ -285,6 +285,19 @@
     background:#0d0d10; border:1.5px dashed var(--line); border-radius:14px;
     padding:26px 22px; color:var(--gray); font-size:0.9rem; line-height:1.6; text-align:center;
   }
+  .coming-soon-card p{ margin:0; }
+
+  .fed-meetings-list{ display:flex; flex-direction:column; gap:8px; }
+  .fed-meeting-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 16px; background:#0d0d10; border:1.5px solid var(--line); border-radius:10px;
+    font-size:0.85rem;
+  }
+  .fed-meeting-row.next{ border-color:#4fd1ff; background:rgba(79,209,255,0.06); }
+  .fed-meeting-date{ color:var(--ink); font-weight:600; }
+  .fed-meeting-countdown{ font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); }
+  .fed-meeting-row.next .fed-meeting-countdown{ color:#4fd1ff; }
+  .fed-meeting-row.past{ opacity:0.45; }
 
   .news-note{ color:var(--gray); font-size:0.85rem; line-height:1.6; margin-bottom:18px; }
   .news-feeds{ display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:18px; }
@@ -784,8 +797,29 @@
         <div class="tab-panel" id="panel-fedwatch">
           <div class="tool-section s-fedwatch">
             <div class="tool-section-head"><span class="tool-section-num">01</span><h2>FED Watch</h2></div>
-            <div class="coming-soon-card">
-              <p>Eine Übersicht der Marktwahrscheinlichkeiten für Zinsentscheidungen (im Stil von CME FedWatch) ist in Arbeit und kommt in Kürze.</p>
+
+            <div class="stat-grid" style="margin-bottom:22px;">
+              <div class="stat-card">
+                <span class="stat-label">Aktueller Zielkorridor</span>
+                <span class="stat-value" id="fedRangeValue">Lädt…</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Nächste FOMC-Sitzung</span>
+                <span class="stat-value" id="fedNextMeeting">--</span>
+              </div>
+            </div>
+
+            <h3 class="tab-subhead">Leitzins-Verlauf</h3>
+            <div class="live-status" id="fedStatus" style="margin-bottom:12px;"><span class="live-dot"></span><span id="fedStatusText">Lädt…</span></div>
+            <div class="liq-wrap" id="fedChartWrap">
+              <div class="chart-loading" id="fedChartLoading">Lädt Leitzins-Historie…</div>
+            </div>
+
+            <h3 class="tab-subhead" style="margin-top:26px;">FOMC-Sitzungstermine 2026</h3>
+            <div id="fedMeetingsList" class="fed-meetings-list"></div>
+
+            <div class="coming-soon-card" style="margin-top:22px; text-align:left;">
+              <p><strong>Zur Einordnung:</strong> Die "Wahrscheinlichkeit" für eine Zinsentscheidung, wie sie z.B. das CME FedWatch Tool zeigt, wird aus kostenpflichtigen Fed-Funds-Futures-Daten berechnet — dafür gibt es keine kostenlose, legale Quelle. Hier siehst du stattdessen den echten, offiziellen Leitzins-Verlauf und die nächsten Sitzungstermine, direkt von der US-Notenbank-Datenbank (FRED) — kostenlos, automatisch aktuell. Für die reine Wahrscheinlichkeits-Zahl: <a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener" style="color:var(--gold);">CME FedWatch Tool (extern)</a>.</p>
             </div>
           </div>
         </div>
@@ -2159,6 +2193,110 @@
       { lev: 5, weight: 0.10 }, { lev: 10, weight: 0.22 }, { lev: 20, weight: 0.20 },
       { lev: 25, weight: 0.18 }, { lev: 50, weight: 0.15 }, { lev: 75, weight: 0.08 }, { lev: 100, weight: 0.07 },
     ];
+    // ---- FED Watch: echter Leitzins-Verlauf + Sitzungstermine (kostenlos, direkt von FRED) ----
+    // Offizieller FOMC-Sitzungskalender 2026 — öffentlich von federalreserve.gov, ändert sich nicht.
+    const FOMC_MEETINGS_2026 = [
+      "2026-01-27", "2026-03-17", "2026-04-28", "2026-06-16",
+      "2026-07-28", "2026-09-15", "2026-10-27", "2026-12-08",
+    ];
+
+    async function loadFedWatch(){
+      const rangeEl = document.getElementById("fedRangeValue");
+      const nextMeetingEl = document.getElementById("fedNextMeeting");
+      const statusEl = document.getElementById("fedStatus");
+      const statusTextEl = document.getElementById("fedStatusText");
+      const chartWrapEl = document.getElementById("fedChartWrap");
+      const meetingsListEl = document.getElementById("fedMeetingsList");
+
+      // Sitzungstermine + Countdown (unabhängig vom Datenabruf, läuft immer)
+      const now = Date.now();
+      const upcoming = FOMC_MEETINGS_2026.map(d => new Date(d + "T14:00:00-05:00").getTime()).filter(t => t > now);
+      const nextMeetingTs = upcoming.length ? upcoming[0] : null;
+      if(nextMeetingTs){
+        const daysLeft = Math.ceil((nextMeetingTs - now) / 86400000);
+        nextMeetingEl.textContent = new Date(nextMeetingTs).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" }) + " (in " + daysLeft + " Tagen)";
+      }else{
+        nextMeetingEl.textContent = "Kalender 2027 noch nicht veröffentlicht";
+      }
+      meetingsListEl.innerHTML = FOMC_MEETINGS_2026.map(d => {
+        const ts = new Date(d + "T14:00:00-05:00").getTime();
+        const isPast = ts < now;
+        const isNext = ts === nextMeetingTs;
+        const dateStr = new Date(ts).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" });
+        let countdown = "Vergangen";
+        if(!isPast){
+          const days = Math.ceil((ts - now) / 86400000);
+          countdown = "in " + days + " Tagen";
+        }
+        return '<div class="fed-meeting-row' + (isNext ? " next" : "") + (isPast ? " past" : "") + '">' +
+          '<span class="fed-meeting-date">' + dateStr + '</span>' +
+          '<span class="fed-meeting-countdown">' + countdown + '</span>' +
+        '</div>';
+      }).join("");
+
+      // Echte Leitzins-Daten von FRED
+      try{
+        const [upperRes, lowerRes] = await Promise.all([
+          fetchWithTimeout("/api/fred-series?id=DFEDTARU", 10000),
+          fetchWithTimeout("/api/fred-series?id=DFEDTARL", 10000),
+        ]);
+        const upperPoints = upperRes.points, lowerPoints = lowerRes.points;
+        if(!upperPoints.length || !lowerPoints.length) throw new Error("Keine Daten");
+
+        const latestUpper = upperPoints[upperPoints.length-1].value;
+        const latestLower = lowerPoints[lowerPoints.length-1].value;
+        rangeEl.textContent = latestLower.toFixed(2).replace(".", ",") + "% – " + latestUpper.toFixed(2).replace(".", ",") + "%";
+        statusEl.classList.add("is-live");
+        statusTextEl.textContent = "LIVE (Federal Reserve Economic Data / FRED)";
+
+        // Aus den täglichen Werten nur die tatsächlichen Änderungspunkte extrahieren (ergibt saubere,
+        // wenige Balken statt eines Balkens pro Tag).
+        function toSegments(points){
+          const segs = [];
+          points.forEach(p => {
+            const last = segs[segs.length-1];
+            if(!last || last.value !== p.value){ segs.push({ t: p.t, value: p.value }); }
+          });
+          return segs;
+        }
+        const upperSegs = toSegments(upperPoints);
+        const segments = upperSegs.map((seg, i) => {
+          const endT = i < upperSegs.length-1 ? upperSegs[i+1].t : Date.now();
+          const lowerAtT = lowerPoints.filter(p => p.t <= seg.t).pop();
+          return { start: seg.t, end: endT, upper: seg.value, lower: lowerAtT ? lowerAtT.value : seg.value - 0.25 };
+        }).slice(-16); // letzte ~16 Änderungen reichen für einen übersichtlichen Verlauf
+
+        const W = 900, H = 220, padL = 46, padR = 10, padT = 14, padB = 22;
+        const plotW = W - padL - padR, plotH = H - padT - padB;
+        const maxRate = Math.max(...segments.map(s => s.upper)) + 0.5;
+        const barGap = 4, barW = (plotW / segments.length) - barGap;
+        const yFor = v => padT + plotH * (1 - v/maxRate);
+
+        let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
+        for(let g=0; g<=3; g++){
+          const v = maxRate * (g/3);
+          const y = yFor(v);
+          svg += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + y.toFixed(1) + '" stroke="#1c1c1c" stroke-width="1"/>';
+          svg += '<text x="4" y="' + (y+3).toFixed(1) + '" fill="#666" font-size="9" font-family="monospace">' + v.toFixed(1) + '%</text>';
+        }
+        segments.forEach((seg, i) => {
+          const x = padL + i * (barW + barGap);
+          const yTop = yFor(seg.upper), yBase = yFor(0);
+          const isCurrent = i === segments.length - 1;
+          svg += '<rect x="' + x.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + (yBase-yTop).toFixed(1) + '" fill="' + (isCurrent ? "#4fd1ff" : ORANGE) + '" opacity="' + (isCurrent ? "0.95" : "0.55") + '"/>';
+          const yr = new Date(seg.start).getFullYear().toString().slice(2);
+          svg += '<text x="' + (x + barW/2).toFixed(1) + '" y="' + (H-8) + '" fill="#666" font-size="8" font-family="monospace" text-anchor="middle">\'' + yr + '</text>';
+        });
+        svg += '<text x="' + (W-padR) + '" y="14" fill="#4fd1ff" font-size="9" font-family="monospace" text-anchor="end">Aktueller Korridor</text>';
+        svg += '</svg>';
+        chartWrapEl.innerHTML = svg;
+      }catch(e){
+        rangeEl.textContent = "Nicht verfügbar";
+        statusTextEl.textContent = "Fallback — Daten gerade nicht abrufbar";
+        chartWrapEl.innerHTML = '<div class="chart-loading" style="display:flex;">Leitzins-Historie aktuell nicht verfügbar.</div>';
+      }
+    }
+
     async function loadLiquidationHeatmap(){
       const statusEl = document.getElementById("liqStatus");
       const statusTextEl = document.getElementById("liqStatusText");
@@ -2281,6 +2419,7 @@
     refreshBtn.addEventListener("click", () => { loadLive().then(loadLiquidationHeatmap); });
     renderCycle();
     loadFearGreed();
+    loadFedWatch();
     renderPortfolio();
     loadLive().then(loadLiquidationHeatmap);
   }
