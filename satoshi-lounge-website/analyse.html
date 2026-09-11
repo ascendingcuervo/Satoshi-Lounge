@@ -441,13 +441,14 @@
   .rsi-wrap svg{ width:100%; height:100%; display:block; }
   .indicator-note{ font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray); margin-top:-8px; margin-bottom:14px; }
   .s-liq{ --sc: var(--gold); }
-  .phase-legend{
-    display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:14px;
-    font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gray);
+  .timeframe-toggle{ display:flex; gap:8px; margin:14px 0; }
+  .tf-btn{
+    background:#0d0d10; border:1.5px solid var(--line); border-radius:20px; color:var(--gray);
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:0.82rem;
+    padding:8px 18px; cursor:pointer; transition:.2s;
   }
-  .phase-legend span{ display:flex; align-items:center; gap:7px; }
-  .phase-legend i{ width:12px; height:12px; border-radius:3px; display:inline-block; opacity:0.7; }
-  .phase-legend-note{ color:#666; }
+  .tf-btn:hover{ color:var(--ink); border-color:var(--gray); }
+  .tf-btn.active{ color:#0a0a0d; background:var(--orange); border-color:var(--orange); }
   .liq-wrap{ position:relative; height:260px; }
   .liq-wrap svg{ width:100%; height:100%; display:block; }
 
@@ -686,10 +687,9 @@
                 <div class="pill-row" id="indicatorRowOther"></div>
               </div>
             </div>
-            <div class="phase-legend">
-              <span><i style="background:var(--teal)"></i>Bullenmarkt</span>
-              <span><i style="background:var(--pink)"></i>Bärenmarkt</span>
-              <span class="phase-legend-note">Zonen nach echten historischen Bullen-/Bärenmärkten seit 2012</span>
+            <div class="timeframe-toggle" id="timeframeToggle">
+              <button type="button" class="tf-btn active" data-tf="daily">Täglich</button>
+              <button type="button" class="tf-btn" data-tf="weekly">Wöchentlich</button>
             </div>
             <div class="chart-zoom-bar">
               <span class="chart-zoom-hint">Scrollen zum Zoomen · Ziehen zum Verschieben</span>
@@ -705,6 +705,7 @@
               </div>
               <div class="rsi-wrap" id="rsiWrap" style="display:none;"></div>
               <div class="rsi-wrap" id="macdWrap" style="display:none;"></div>
+              <div class="rsi-wrap" id="m2Wrap" style="display:none;"></div>
             </div>
             <div class="stat-grid">
               <div class="stat-card">
@@ -1226,6 +1227,7 @@
       { key: "bmsb", label: "Bull Market Support Band", color: GOLD, on: false, type:"bmsb" },
       { key: "rsi", label: "RSI", color: PINK, on: true, type:"rsi" },
       { key: "macd", label: "MACD", color: "#4fd1ff", on: false, type:"macd" },
+      { key: "m2", label: "M2 (Geldmenge)", color: "#a3e635", on: false, type:"m2" },
     ];
     const CATEGORIES = [
       { key: "geschichte", label: "Geschichte" },
@@ -1388,6 +1390,9 @@
     let dailyCandles = FALLBACK_CANDLES; // gröbere Auflösung (~4 Tage/Punkt bei CoinGecko für große Zeiträume)
     let recentCandles = []; // feine Auflösung (4h/Punkt) für die letzten 60 Tage
     let midCandles = []; // Binance-Tagesauflösung für die letzten ~1.000 Tage (2,7 Jahre)
+    let chartTimeframe = "daily"; // "daily" oder "weekly" — per Umschalter wählbar
+    let dailyCandlesForChart = FALLBACK_CANDLES;
+    let weeklyCandlesForChart = [];
     let currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
     let change24h = null;
     let ath = ATH_FALLBACK;
@@ -1408,6 +1413,7 @@
     const chartWrap = document.getElementById("chartWrap");
     const rsiWrap = document.getElementById("rsiWrap");
     const macdWrap = document.getElementById("macdWrap");
+    const m2Wrap = document.getElementById("m2Wrap");
     const athValueEl = document.getElementById("athValue");
     const athPctValueEl = document.getElementById("athPctValue");
 
@@ -1512,6 +1518,32 @@
     function updateIndCount(){
       indCountEl.textContent = INDICATORS.filter(i => i.on).length;
     }
+    let m2DataCache = null, m2Fetching = false;
+    async function ensureM2Data(){
+      if(m2DataCache || m2Fetching) return;
+      m2Fetching = true;
+      try{
+        const res = await fetchWithTimeout("/api/m2-data", 10000);
+        m2DataCache = res.points;
+      }catch(e){
+        m2DataCache = [];
+      }
+      m2Fetching = false;
+      renderChart();
+    }
+    // Ordnet die (monatlichen) M2-Werte den (wöchentlichen) Chart-Kerzen zu — pro Kerze wird
+    // der zuletzt bekannte M2-Wert übernommen (Fortschreibung), bis der nächste Monatswert vorliegt.
+    // Bildet monatliche/wöchentliche Datenpunkte auf eine beliebige (Tages- oder Wochen-)Kerzenreihe ab —
+    // pro Kerze wird der zuletzt bekannte Wert übernommen (Fortschreibung), bis der nächste Punkt vorliegt.
+    function forwardFillToCandles(points, candleList){
+      if(!points || !points.length) return candleList.map(() => null);
+      let j = 0;
+      return candleList.map(c => {
+        while(j < points.length - 1 && points[j+1].t <= c.t) j++;
+        return points[j].t <= c.t ? points[j].value : null;
+      });
+    }
+
     INDICATORS.forEach(ind => {
       const b = document.createElement("button");
       b.className = "pill-btn" + (ind.on ? " active" : "");
@@ -1521,6 +1553,7 @@
         ind.on = !ind.on;
         b.classList.toggle("active", ind.on);
         updateIndCount();
+        if(ind.key === "m2" && ind.on) ensureM2Data();
         renderChart();
       });
       const target = ind.type === "ema" ? indicatorRowEma : ind.type === "sma" ? indicatorRowSma : indicatorRowOther;
@@ -1535,6 +1568,19 @@
       const open = indicatorPanel.style.display !== "none";
       indicatorPanel.style.display = open ? "none" : "block";
       indicatorToggleBtn.classList.toggle("open", !open);
+    });
+
+    document.querySelectorAll(".tf-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if(btn.dataset.tf === chartTimeframe) return;
+        chartTimeframe = btn.dataset.tf;
+        document.querySelectorAll(".tf-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        candles = chartTimeframe === "daily" ? dailyCandlesForChart : weeklyCandlesForChart;
+        viewStart = 0; viewEnd = candles.length; // beim Wechsel auf die volle neue Historie zurücksetzen
+        renderChart();
+        renderStats();
+      });
     });
 
     // Zwei Stufen feinerer, zuverlässigerer Auflösung von Binance statt CoinGecko (das bei uns wiederholt am
@@ -1591,14 +1637,18 @@
       await loadRecentCandlesFromBinance();
 
       if(!staticOk && !midCandles.length && !recentCandles.length){
-        candles = FALLBACK_CANDLES;
+        dailyCandlesForChart = FALLBACK_CANDLES;
+        weeklyCandlesForChart = resampleWeeklyOHLC(FALLBACK_CANDLES);
+        candles = chartTimeframe === "daily" ? dailyCandlesForChart : weeklyCandlesForChart;
         currentPrice = FALLBACK_CANDLES[FALLBACK_CANDLES.length-1].close;
         change24h = null;
         ath = ATH_FALLBACK;
         isLive = false;
       }else{
         const merged = mergeCandleSeriesByDay([dailyCandles, midCandles, recentCandles]);
-        candles = resampleWeeklyOHLC(merged.length ? merged : dailyCandles);
+        dailyCandlesForChart = merged.length ? merged : dailyCandles;
+        weeklyCandlesForChart = resampleWeeklyOHLC(dailyCandlesForChart);
+        candles = chartTimeframe === "daily" ? dailyCandlesForChart : weeklyCandlesForChart;
         ath = Math.max(ATH_FALLBACK, ...merged.map(function(c){ return c.high; }));
         if(merged.length) currentPrice = merged[merged.length-1].close;
         isLive = staticOk;
@@ -1796,13 +1846,21 @@
       const n = viewCandles.length;
       const slotW = plotW / n;
 
-      // Bull Market Support Band: 20-Wochen-SMA + 21-Wochen-EMA — candles sind jetzt bereits Wochenkerzen
-      // (Indikatoren werden immer über die komplette Historie berechnet, nur die Anzeige folgt dem Zoom-Fenster)
+      // Bull Market Support Band: 20-Wochen-SMA + 21-Wochen-EMA — wird IMMER auf echten Wochenkerzen
+      // berechnet (unabhängig von der gewählten Tages-/Wochenansicht) und dann auf die aktuell
+      // angezeigte Zeitachse übertragen, damit die Bedeutung ("20/21 Wochen") immer stimmt.
       let bmsbByIndex = null;
-      if(indOn("bmsb")){
-        const wSmaFull = smaSeries(fullCloses, 20);
-        const wEmaFull = emaSeries(fullCloses, 21);
-        bmsbByIndex = viewCandles.map((_, i) => ({ sma: wSmaFull[viewStart+i] ?? null, ema: wEmaFull[viewStart+i] ?? null }));
+      if(indOn("bmsb") && weeklyCandlesForChart.length){
+        const weeklyCloses = weeklyCandlesForChart.map(c => c.close);
+        const wSmaPoints = smaSeries(weeklyCloses, 20)
+          .map((v,i) => ({ t: weeklyCandlesForChart[i].t, value: v }))
+          .filter(p => p.value != null);
+        const wEmaPoints = emaSeries(weeklyCloses, 21)
+          .map((v,i) => ({ t: weeklyCandlesForChart[i].t, value: v }))
+          .filter(p => p.value != null);
+        const smaAligned = forwardFillToCandles(wSmaPoints, candles);
+        const emaAligned = forwardFillToCandles(wEmaPoints, candles);
+        bmsbByIndex = viewCandles.map((_, i) => ({ sma: smaAligned[viewStart+i] ?? null, ema: emaAligned[viewStart+i] ?? null }));
       }
 
       const activeLines = INDICATORS.filter(ind => (ind.type === "ema" || ind.type === "sma") && ind.on)
@@ -1818,7 +1876,7 @@
         bmsbByIndex.forEach(b => { if(b.sma!=null){ vMin=Math.min(vMin,b.sma); vMax=Math.max(vMax,b.sma); } if(b.ema!=null){ vMin=Math.min(vMin,b.ema); vMax=Math.max(vMax,b.ema); } });
       }
       const pad = (vMax - vMin) * 0.06 || 1;
-      vMin -= pad; vMax += pad;
+      vMin = Math.max(0, vMin - pad); vMax += pad;
       const yFor = v => padT + plotH * (1 - (v - vMin) / (vMax - vMin));
       const xFor = i => padL + slotW * i + slotW / 2;
 
@@ -1834,19 +1892,6 @@
       }
 
       let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
-
-      // Bull-/Bär-Zonen als Hintergrundflächen (rückwirkend über alle Halvings)
-      const phases = getPhases();
-      phases.forEach(ph => {
-        let x0 = null, x1 = null;
-        for(let i=0;i<n;i++){
-          if(viewCandles[i].t >= ph.start && x0 == null) x0 = xFor(i) - slotW/2;
-          if(viewCandles[i].t <= ph.end) x1 = xFor(i) + slotW/2;
-        }
-        if(x0 == null || x1 == null || x1 <= x0) return;
-        const col = ph.type === "bull" ? TEAL : PINK;
-        svg += '<rect x="' + x0.toFixed(1) + '" y="' + padT + '" width="' + (x1-x0).toFixed(1) + '" height="' + plotH + '" fill="' + col + '" opacity="0.07"/>';
-      });
 
       for(let g = 0; g <= 3; g++){
         const v = vMin + (vMax - vMin) * (g / 3);
@@ -1972,6 +2017,33 @@
         msvg += '</svg>';
         macdWrap.innerHTML = msvg;
       }else{ macdWrap.style.display = "none"; macdWrap.innerHTML = ""; }
+
+      // M2-Subplot (US-Geldmenge, monatlich — auf die Kerzen-Zeitachse fortgeschrieben)
+      if(indOn("m2") && m2DataCache && m2DataCache.length){
+        const fullM2 = forwardFillToCandles(m2DataCache, candles);
+        const m2Series = fullM2.slice(viewStart, viewEnd);
+        const gH = 70, gPadT = 8, gPadB = 4, gPlotH = gH - gPadT - gPadB;
+        let gMin = Infinity, gMax = -Infinity;
+        m2Series.forEach(v => { if(v!=null){ gMin=Math.min(gMin,v); gMax=Math.max(gMax,v); } });
+        if(!isFinite(gMin) || !isFinite(gMax)){ m2Wrap.style.display = "none"; m2Wrap.innerHTML = ""; }
+        else{
+          m2Wrap.style.display = "block";
+          const gPad = (gMax-gMin)*0.1 || 1; gMin -= gPad; gMax += gPad;
+          const gy = v => gPadT + gPlotH * (1 - (v-gMin)/(gMax-gMin));
+          let gsvg = '<svg viewBox="0 0 ' + W + ' ' + gH + '" preserveAspectRatio="none">';
+          let gd = "", started = false;
+          m2Series.forEach((v, i) => {
+            if(v == null){ started = false; return; }
+            const x = xFor(i), y = gy(v);
+            gd += (started ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+            started = true;
+          });
+          gsvg += '<path d="' + gd.trim() + '" fill="none" stroke="#a3e635" stroke-width="1.5"/>';
+          gsvg += '<text x="' + (W-padR) + '" y="12" fill="#a3e635" font-size="9" font-family="monospace" text-anchor="end">M2 (Mrd. USD)</text>';
+          gsvg += '</svg>';
+          m2Wrap.innerHTML = gsvg;
+        }
+      }else{ m2Wrap.style.display = "none"; m2Wrap.innerHTML = ""; }
     }
 
     function renderStats(){
