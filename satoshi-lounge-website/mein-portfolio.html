@@ -129,6 +129,65 @@
     border-radius:30px; transition:.2s;
   }
   .home-return a:hover{ color:var(--gold); border-color:var(--gold); }
+  .coming-soon-card{
+    background:#0d0d10; border:1.5px dashed var(--line); border-radius:14px;
+    padding:26px 22px; color:var(--gray); font-size:0.9rem; line-height:1.6; text-align:center;
+  }
+  .coming-soon-card p{ margin:0; }
+
+  .live-status{ display:flex; align-items:center; gap:8px; font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:16px; }
+  .coin-table{ display:flex; flex-direction:column; border:1.5px solid var(--line); border-radius:16px; overflow:hidden; margin-bottom:8px; }
+  .coin-row{
+    display:grid; grid-template-columns:2fr 1fr 1fr auto; align-items:center; gap:10px;
+    padding:16px 20px; background:#0d0d10; text-decoration:none; color:var(--ink); transition:.2s;
+  }
+  .coin-row + .coin-row{ border-top:1px solid var(--line-soft); }
+  a.coin-row:hover{ background:#141410; }
+  .coin-row-head{ font-family:'Space Mono', monospace; font-size:0.7rem; color:var(--gray); text-transform:uppercase; letter-spacing:0.04em; }
+  .coin-name-cell{ display:flex; align-items:center; gap:12px; }
+  .coin-name-cell img{ width:32px; height:32px; border-radius:50%; }
+  .coin-name-cell .nm{ font-weight:700; font-size:0.95rem; }
+  .coin-name-cell .sym{ color:var(--gray); font-size:0.75rem; font-family:'Space Mono', monospace; }
+  .coin-price{ font-family:'Space Mono', monospace; font-weight:700; }
+  .coin-change.up{ color:var(--gold); }
+  .coin-change.down{ color:#ff6b6b; }
+  .logo-fallback{
+    width:32px; height:32px; border-radius:50%; background:var(--bg-alt); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; color:var(--gray); flex-shrink:0;
+  }
+  .empty-note{ color:var(--gray); font-size:0.88rem; }
+  .remove-btn{
+    background:transparent; border:1px solid var(--line); color:var(--gray); border-radius:8px;
+    width:28px; height:28px; cursor:pointer; font-size:0.9rem; line-height:1; transition:.2s;
+  }
+  .remove-btn:hover{ border-color:#ff6b6b; color:#ff6b6b; }
+
+  .add-section{ background:#0d0d10; border:1.5px solid var(--line); border-radius:16px; padding:20px; }
+  .add-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+  .add-tab{
+    background:transparent; border:1.5px solid var(--line); border-radius:20px; color:var(--gray);
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:0.82rem; padding:8px 16px; cursor:pointer; transition:.2s;
+  }
+  .add-tab.active{ color:#0a0a0d; background:var(--gold); border-color:var(--gold); }
+  .search-input{
+    width:100%; background:#050505; border:1.5px solid var(--line); border-radius:10px;
+    color:var(--ink); font-size:0.9rem; padding:12px 14px;
+  }
+  .search-input:focus{ outline:none; border-color:var(--gold); }
+  .search-results{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+  .search-result-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px; background:#050505; border-radius:8px; border:1px solid var(--line-soft);
+  }
+  .search-result-info{ display:flex; align-items:center; gap:10px; font-size:0.88rem; }
+  .search-result-info img{ width:24px; height:24px; border-radius:50%; }
+  .search-add-btn{
+    background:var(--gold); color:#0a0a0d; border:none; border-radius:8px; padding:7px 14px;
+    font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .search-add-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .limit-note{ margin-top:10px; font-size:0.8rem; color:var(--gray); min-height:1em; }
+  .limit-note.error{ color:#ff6b6b; }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -157,24 +216,42 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <header class="hero">
-    <h1>Premium-Analysen</h1>
-    <p>Gründliche Analysen zu Bitcoin und ein direkter Einblick in mein eigenes Cuervo-Portfolio.</p>
+  <header class="hero" style="padding-bottom:10px;">
+    <h1>Mein Portfolio</h1>
+    <p>Stell dir dein eigenes Krypto- und Aktien-Portfolio zusammen — bis zu 5 Kryptowährungen und 10 Aktien, mit Live-Kursen, News und Terminen.</p>
   </header>
 
   <main>
-    <div class="choice-grid">
-      <a href="bitcoin-analyse.html" class="choice-card">
-        <div class="ic">📈</div>
-        <h3>Bitcoin Analyse</h3>
-        <p>Regelmäßige, tiefgehende Einordnung von Chart, Zyklus und Marktlage.</p>
-      </a>
-      <a href="mein-portfolio.html" class="choice-card">
-        <div class="ic">💼</div>
-        <h3>Mein Portfolio</h3>
-        <p>Stell dir dein eigenes Krypto- und Aktien-Portfolio zusammen.</p>
-      </a>
+    <div id="loggedOutNote" class="coming-soon-card" style="display:none;">
+      <p>Bitte melde dich an, um dir dein eigenes Portfolio anzulegen.</p>
     </div>
+
+    <div id="portfolioApp" style="display:none;">
+      <div class="add-section">
+        <div class="add-tabs">
+          <button type="button" class="add-tab active" data-type="crypto">Krypto hinzufügen</button>
+          <button type="button" class="add-tab" data-type="stock">Aktie hinzufügen</button>
+        </div>
+        <div class="search-row">
+          <input type="text" id="assetSearchInput" class="search-input" placeholder="Suchen, z.B. Bitcoin oder Apple...">
+        </div>
+        <div id="searchResults" class="search-results"></div>
+        <p class="limit-note" id="limitNote"></p>
+      </div>
+
+      <h2 class="news-heading" style="margin-top:36px;">Krypto (<span id="cryptoCount">0</span>/5)</h2>
+      <div class="coin-table" id="cryptoTable">
+        <div class="coin-row coin-row-head"><span>Coin</span><span>Preis</span><span>24h</span><span></span></div>
+        <div class="coin-row"><span class="empty-note">Noch keine Kryptowährung hinzugefügt.</span></div>
+      </div>
+
+      <h2 class="news-heading" style="margin-top:32px;">Aktien (<span id="stockCount">0</span>/10)</h2>
+      <div class="coin-table" id="stockTable">
+        <div class="coin-row coin-row-head"><span>Aktie</span><span>Preis</span><span>24h</span><span></span></div>
+        <div class="coin-row"><span class="empty-note">Noch keine Aktie hinzugefügt.</span></div>
+      </div>
+    </div>
+
     <div class="home-return">
       <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
@@ -297,6 +374,175 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
+
+  <script>
+  // ===== Mein Portfolio: Login-Check, Suche, Hinzufügen, Tabellen, Entfernen =====
+  // (läuft erst hier, NACH dem Supabase-SDK + auth-config.js weiter oben — sonst wäre "supabase" noch undefiniert)
+  const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let currentSession = null;
+  let activeSearchType = 'crypto';
+  let searchDebounce = null;
+  let portfolioItems = { crypto: [], stock: [] };
+
+  async function apiCall(path, options){
+    options = options || {};
+    const headers = Object.assign({ 'Authorization': 'Bearer ' + currentSession.access_token, 'Content-Type': 'application/json' }, options.headers || {});
+    const res = await fetch(path, Object.assign({}, options, { headers }));
+    return res.json();
+  }
+
+  function rowHtml(item, link, logo, price, chg, curPrefix){
+    const chgOk = typeof chg === 'number' && !isNaN(chg);
+    const chgStr = chgOk ? (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%' : '—';
+    const logoHtml = logo ? '<img src="' + logo + '" alt="">' : '<span class="logo-fallback">' + item.symbol.slice(0,2).toUpperCase() + '</span>';
+    return '<div class="coin-row">' +
+      '<a href="' + link + '" style="display:contents;color:inherit;text-decoration:none;">' +
+        '<span class="coin-name-cell">' + logoHtml + '<span><span class="nm">' + item.display_name + '</span><br><span class="sym">' + item.symbol.toUpperCase() + '</span></span></span>' +
+        '<span class="coin-price">' + (price != null ? curPrefix + price : 'n/v') + '</span>' +
+        '<span class="coin-change ' + (chgOk && chg >= 0 ? 'up' : chgOk ? 'down' : '') + '">' + chgStr + '</span>' +
+      '</a>' +
+      '<button type="button" class="remove-btn" data-type="' + item.asset_type + '" data-symbol="' + item.symbol + '" title="Entfernen">×</button>' +
+    '</div>';
+  }
+
+  async function renderTable(type){
+    const items = portfolioItems[type];
+    const tableEl = document.getElementById(type === 'crypto' ? 'cryptoTable' : 'stockTable');
+    const headHtml = type === 'crypto'
+      ? '<div class="coin-row coin-row-head"><span>Coin</span><span>Preis</span><span>24h</span><span></span></div>'
+      : '<div class="coin-row coin-row-head"><span>Aktie</span><span>Preis</span><span>24h</span><span></span></div>';
+
+    if(!items.length){
+      tableEl.innerHTML = headHtml + '<div class="coin-row"><span class="empty-note">Noch nichts hinzugefügt.</span><span></span><span></span><span></span></div>';
+      return;
+    }
+
+    try{
+      let rows = '';
+      if(type === 'crypto'){
+        const ids = items.map(i => i.symbol).join(',');
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + encodeURIComponent(ids));
+        const data = await res.json();
+        const byId = {};
+        (data || []).forEach(d => { byId[d.id] = d; });
+        rows = items.map(item => {
+          const d = byId[item.symbol];
+          const link = 'position.html?type=crypto&symbol=' + encodeURIComponent(item.symbol) + '&name=' + encodeURIComponent(item.display_name);
+          if(!d) return rowHtml(item, link, null, null, null, '$');
+          const price = d.current_price.toLocaleString('de-DE', { minimumFractionDigits: d.current_price < 1 ? 4 : 2, maximumFractionDigits: d.current_price < 1 ? 4 : 2 });
+          return rowHtml(item, link, d.image, price, d.price_change_percentage_24h, '$');
+        }).join('');
+      }else{
+        const symbols = items.map(i => i.symbol).join(',');
+        const res = await fetch('/api/stock-table?symbols=' + encodeURIComponent(symbols));
+        const data = await res.json();
+        const bySymbol = {};
+        (data.stocks || []).forEach(d => { bySymbol[d.symbol] = d; });
+        rows = items.map(item => {
+          const d = bySymbol[item.symbol];
+          const link = 'position.html?type=stock&symbol=' + encodeURIComponent(item.symbol) + '&name=' + encodeURIComponent(item.display_name);
+          if(!d || !d.ok) return rowHtml(item, link, null, null, null, '$');
+          const price = d.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          return rowHtml(item, link, d.logo, price, d.changePercent, d.currency === 'USD' ? '$' : d.currency + ' ');
+        }).join('');
+      }
+      tableEl.innerHTML = headHtml + rows;
+      tableEl.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => removeItem(btn.dataset.type, btn.dataset.symbol));
+      });
+    }catch(e){
+      tableEl.innerHTML = headHtml + '<div class="coin-row"><span class="empty-note">Kurse aktuell nicht verfügbar.</span><span></span><span></span><span></span></div>';
+    }
+  }
+
+  async function loadPortfolio(){
+    const data = await apiCall('/api/portfolio');
+    const items = data.items || [];
+    portfolioItems.crypto = items.filter(i => i.asset_type === 'crypto');
+    portfolioItems.stock = items.filter(i => i.asset_type === 'stock');
+    document.getElementById('cryptoCount').textContent = portfolioItems.crypto.length;
+    document.getElementById('stockCount').textContent = portfolioItems.stock.length;
+    renderTable('crypto');
+    renderTable('stock');
+  }
+
+  async function removeItem(assetType, symbol){
+    await apiCall('/api/portfolio', { method: 'DELETE', body: JSON.stringify({ asset_type: assetType, symbol: symbol }) });
+    await loadPortfolio();
+  }
+
+  async function addItem(assetType, symbol, displayName, btnEl){
+    const limitNote = document.getElementById('limitNote');
+    limitNote.textContent = ''; limitNote.classList.remove('error');
+    if(btnEl) btnEl.disabled = true;
+    const result = await apiCall('/api/portfolio', { method: 'POST', body: JSON.stringify({ asset_type: assetType, symbol: symbol, display_name: displayName }) });
+    if(result.error){
+      limitNote.textContent = result.error;
+      limitNote.classList.add('error');
+      if(btnEl) btnEl.disabled = false;
+      return;
+    }
+    document.getElementById('assetSearchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+    await loadPortfolio();
+  }
+
+  document.querySelectorAll('.add-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeSearchType = tab.dataset.type;
+      document.getElementById('assetSearchInput').value = '';
+      document.getElementById('searchResults').innerHTML = '';
+      document.getElementById('assetSearchInput').placeholder = activeSearchType === 'crypto' ? 'Suchen, z.B. Bitcoin...' : 'Suchen, z.B. Apple...';
+    });
+  });
+
+  document.getElementById('assetSearchInput').addEventListener('input', (e) => {
+    clearTimeout(searchDebounce);
+    const q = e.target.value.trim();
+    const resultsEl = document.getElementById('searchResults');
+    if(q.length < 2){ resultsEl.innerHTML = ''; return; }
+    searchDebounce = setTimeout(async () => {
+      try{
+        const res = await fetch('/api/search-assets?type=' + activeSearchType + '&q=' + encodeURIComponent(q));
+        const data = await res.json();
+        const results = data.results || [];
+        const currentCount = portfolioItems[activeSearchType].length;
+        const limit = activeSearchType === 'crypto' ? 5 : 10;
+        const alreadyAdded = new Set(portfolioItems[activeSearchType].map(i => i.symbol));
+        if(!results.length){ resultsEl.innerHTML = '<p class="empty-note">Keine Treffer.</p>'; return; }
+        resultsEl.innerHTML = results.map(r => {
+          const isAdded = alreadyAdded.has(r.id);
+          const atLimit = currentCount >= limit;
+          const logoHtml = r.logo ? '<img src="' + r.logo + '" alt="">' : '';
+          return '<div class="search-result-row">' +
+            '<span class="search-result-info">' + logoHtml + '<span>' + r.name + ' <span style="color:var(--gray);">(' + r.symbol + ')</span></span></span>' +
+            '<button type="button" class="search-add-btn" data-id="' + r.id + '" data-name="' + r.name.replace(/"/g, '&quot;') + '" ' + (isAdded || atLimit ? 'disabled' : '') + '>' +
+              (isAdded ? 'Bereits drin' : atLimit ? 'Limit erreicht' : '+ Hinzufügen') +
+            '</button>' +
+          '</div>';
+        }).join('');
+        resultsEl.querySelectorAll('.search-add-btn').forEach(btn => {
+          btn.addEventListener('click', () => addItem(activeSearchType, btn.dataset.id, btn.dataset.name, btn));
+        });
+      }catch(e){
+        resultsEl.innerHTML = '<p class="empty-note">Suche aktuell nicht verfügbar.</p>';
+      }
+    }, 400);
+  });
+
+  (async function initPortfolio(){
+    const { data } = await sbClient.auth.getSession();
+    currentSession = data.session;
+    if(!currentSession){
+      document.getElementById('loggedOutNote').style.display = 'block';
+      return;
+    }
+    document.getElementById('portfolioApp').style.display = 'block';
+    await loadPortfolio();
+  })();
+  </script>
 
   <div class="cookie-overlay" id="cookieOverlay">
     <div class="cookie-banner">
