@@ -94,7 +94,6 @@
     .brand .dot{ width:6px; height:6px; }
     .login-btn{ padding:8px 14px; font-size:0.78rem; }
     .topbar{ padding:16px 16px; }
-    .topbar .brand{ display:none; }
   }
 
   main{ max-width:1000px; margin:0 auto; padding:20px 24px 100px; }
@@ -140,8 +139,13 @@
   .news-item .news-meta{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray); }
   .attribution{ font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); margin-bottom:26px; }
   .empty-note{ color:var(--gray); font-size:0.88rem; }
-  .analysis-back{ display:inline-block; color:var(--gray); text-decoration:none; font-size:0.85rem; }
-  .analysis-back:hover{ color:var(--gold); }
+  .analysis-back{
+    display:inline-flex; align-items:center; gap:8px; margin-top:20px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .analysis-back:hover{ color:var(--gold); border-color:var(--gold); }
 
   .home-return{ display:flex; justify-content:center; margin-top:30px; }
   .home-return a{
@@ -180,7 +184,6 @@
   </nav>
 
   <header class="hero" style="padding-bottom:10px;">
-    <div class="crumb"><a href="premium-bereich.html">Premium Lounge</a> / <a href="premium-analysen.html">Premium-Analysen</a> / <a href="cuervo-portfolio.html">Cuervo Portfolio</a> / <a href="cuervo-krypto.html">Krypto</a> / Ethereum</div>
   </header>
 
   <main>
