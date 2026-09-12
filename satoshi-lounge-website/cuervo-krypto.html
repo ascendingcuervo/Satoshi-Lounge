@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cuervo Portfolio — Satoshi Lounge</title>
+<title>Krypto Portfolio — Satoshi Lounge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -107,10 +107,6 @@
   .choice-card .ic{ font-size:2.4rem; margin-bottom:16px; }
   .choice-card h3{ font-size:1.3rem; margin-bottom:10px; }
   .choice-card p{ color:var(--gray); font-size:0.9rem; line-height:1.6; }
-  .choice-card .soon-tag{
-    display:inline-block; margin-top:16px; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray);
-    border:1px dashed var(--line); border-radius:8px; padding:9px 14px;
-  }
 
   footer{ border-top:1px solid var(--line-soft); padding:60px 24px 30px; }
   .footer-inner{ max-width:1180px; margin:0 auto; }
@@ -125,6 +121,25 @@
   .footer-warn{ display:flex; gap:14px; }
   .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(242,201,76,0.08); padding:6px 12px; border-radius:20px; }
   @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
+
+  .live-status{ display:flex; align-items:center; gap:8px; font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:16px; }
+  .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold); animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .coin-table{ display:flex; flex-direction:column; border:1.5px solid var(--line); border-radius:16px; overflow:hidden; }
+  .coin-row{
+    display:grid; grid-template-columns:2fr 1fr 1fr; align-items:center; gap:10px;
+    padding:16px 20px; background:#0d0d10; text-decoration:none; color:var(--ink); transition:.2s;
+  }
+  .coin-row + .coin-row{ border-top:1px solid var(--line-soft); }
+  a.coin-row:hover{ background:#141410; }
+  .coin-row-head{ font-family:'Space Mono', monospace; font-size:0.7rem; color:var(--gray); text-transform:uppercase; letter-spacing:0.04em; }
+  .coin-name-cell{ display:flex; align-items:center; gap:12px; }
+  .coin-name-cell img{ width:32px; height:32px; border-radius:50%; }
+  .coin-name-cell .nm{ font-weight:700; font-size:0.95rem; }
+  .coin-name-cell .sym{ color:var(--gray); font-size:0.75rem; font-family:'Space Mono', monospace; }
+  .coin-price{ font-family:'Space Mono', monospace; font-weight:700; }
+  .coin-change.up{ color:var(--gold); }
+  .coin-change.down{ color:#ff6b6b; }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -153,24 +168,17 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <header class="hero">
-    <div class="crumb"><a href="premium-bereich.html">Premium Lounge</a> / <a href="premium-analysen.html">Premium-Analysen</a> / Cuervo Portfolio</div>
-    <h1>Cuervo Portfolio</h1>
-    <p>Ein direkter, transparenter Einblick in mein eigenes Portfolio — aufgeteilt nach Krypto und Aktien.</p>
+  <header class="hero" style="padding-bottom:20px;">
+    <div class="crumb"><a href="premium-bereich.html">Premium Lounge</a> / <a href="premium-analysen.html">Premium-Analysen</a> / <a href="cuervo-portfolio.html">Cuervo Portfolio</a> / Krypto</div>
+    <h1>Krypto Portfolio</h1>
+    <p>Meine aktuellen Krypto-Positionen — Kurse aktualisieren sich automatisch. Auf einen Coin klicken für Kurs &amp; News.</p>
   </header>
 
   <main>
-    <div class="choice-grid">
-      <a href="cuervo-krypto.html" class="choice-card">
-        <div class="ic">🪙</div>
-        <h3>Krypto</h3>
-        <p>Meine aktuellen Krypto-Positionen und Gewichtung.</p>
-      </a>
-      <div class="choice-card" style="cursor:default;">
-        <div class="ic">📊</div>
-        <h3>Aktien</h3>
-        <p>Meine aktuellen Aktien-Positionen und Gewichtung.</p>
-        <span class="soon-tag">Inhalt folgt</span>
+    <div class="live-status" id="tableStatus"><span class="live-dot"></span><span id="tableStatusText">Lädt Live-Kurse…</span></div>
+    <div class="coin-table" id="coinTable">
+      <div class="coin-row coin-row-head">
+        <span>Coin</span><span>Preis</span><span>24h</span>
       </div>
     </div>
   </main>
@@ -218,6 +226,47 @@
   burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
   overlay.addEventListener('click', () => toggleDrawer(false));
   document.querySelectorAll('.drawer-nav a').forEach(a=>{ a.addEventListener('click', () => toggleDrawer(false)); });
+
+
+  // ===== Krypto Portfolio: Live-Kurse laden (CoinGecko, kostenlos, kein Key) =====
+  const COINS = [
+    { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', page: 'krypto-bitcoin.html' },
+    { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', page: 'krypto-ethereum.html' },
+    { id: 'solana', symbol: 'SOL', name: 'Solana', page: 'krypto-solana.html' },
+    { id: 'ripple', symbol: 'XRP', name: 'XRP', page: 'krypto-xrp.html' },
+    { id: 'kaspa', symbol: 'KAS', name: 'Kaspa', page: 'krypto-kaspa.html' },
+    { id: 'binancecoin', symbol: 'BNB', name: 'BNB', page: 'krypto-bnb.html' },
+  ];
+  (async function loadCoinTable(){
+    const tableEl = document.getElementById('coinTable');
+    const statusTextEl = document.getElementById('tableStatusText');
+    try{
+      const ids = COINS.map(c => c.id).join(',');
+      const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=' + ids);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const byId = {};
+      data.forEach(d => { byId[d.id] = d; });
+
+      const rowsHtml = COINS.map(c => {
+        const d = byId[c.id];
+        if(!d) return '';
+        const price = d.current_price.toLocaleString('de-DE', { minimumFractionDigits: d.current_price < 1 ? 4 : 2, maximumFractionDigits: d.current_price < 1 ? 4 : 2 });
+        const chg = d.price_change_percentage_24h;
+        const chgStr = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+        return '<a class="coin-row" href="' + c.page + '">' +
+          '<span class="coin-name-cell"><img src="' + d.image + '" alt="' + c.name + '"><span><span class="nm">' + c.name + '</span><br><span class="sym">' + c.symbol + '</span></span></span>' +
+          '<span class="coin-price">$' + price + '</span>' +
+          '<span class="coin-change ' + (chg >= 0 ? 'up' : 'down') + '">' + chgStr + '</span>' +
+        '</a>';
+      }).join('');
+
+      tableEl.innerHTML = '<div class="coin-row coin-row-head"><span>Coin</span><span>Preis</span><span>24h</span></div>' + rowsHtml;
+      statusTextEl.textContent = 'LIVE (CoinGecko)';
+    }catch(e){
+      statusTextEl.textContent = 'Kurse aktuell nicht verfügbar';
+    }
+  })();
 
   (function(){
     const canvas = document.getElementById('nodesCanvas');
