@@ -466,7 +466,7 @@
 
   .chart-wrap{ position:relative; height:280px; margin-bottom:6px; }
   .chart-wrap svg{ width:100%; height:100%; display:block; }
-  .chart-zoom-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .chart-zoom-bar{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-bottom:8px; }
   .chart-zoom-hint{ font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); }
   .chart-zoom-btns{ display:flex; gap:6px; }
   .chart-zoom-btns button{
@@ -741,7 +741,6 @@
               <button type="button" class="tf-btn" data-tf="weekly">Wöchentlich</button>
             </div>
             <div class="chart-zoom-bar">
-              <span class="chart-zoom-hint">Mausrad / 2 Finger zum Zoomen · Ziehen zum Verschieben</span>
               <div class="chart-zoom-btns">
                 <button type="button" id="zoomResetBtn" title="Zoom zurücksetzen">⟲</button>
               </div>
@@ -1840,6 +1839,15 @@
     }
 
     // ---- Chart Zoom & Pan ----
+    // Bündelt Zeichenaufrufe auf maximal einen pro Bildschirm-Frame — verhindert Ruckeln, wenn
+    // Mausrad/Touch-Events schneller feuern als der Chart neu gezeichnet werden kann.
+    let renderScheduled = false;
+    function scheduleRender(){
+      if(renderScheduled) return;
+      renderScheduled = true;
+      requestAnimationFrame(() => { renderScheduled = false; renderChart(); });
+    }
+
     function zoomAt(factor, centerFrac){
       const total = candles.length;
       const curEnd = viewEnd == null ? total : viewEnd;
@@ -1852,7 +1860,7 @@
       if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
       viewStart = Math.round(Math.max(0, newStart));
       viewEnd = Math.round(newEnd);
-      renderChart();
+      scheduleRender();
     }
     function panByCandles(deltaCandles){
       const total = candles.length;
@@ -1900,7 +1908,7 @@
       if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
       viewStart = Math.round(Math.max(0, newStart));
       viewEnd = Math.round(newEnd);
-      renderChart();
+      scheduleRender();
     });
     window.addEventListener("mouseup", () => { isDragging = false; chartZoomArea.classList.remove("dragging"); });
 
@@ -1923,7 +1931,7 @@
         if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
         viewStart = Math.round(Math.max(0, newStart));
         viewEnd = Math.round(newEnd);
-        renderChart();
+        scheduleRender();
       }else if(e.touches.length === 2 && pinchStartDist){
         e.preventDefault();
         const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
@@ -1938,7 +1946,7 @@
         if(newEnd > total){ newStart -= (newEnd - total); newEnd = total; }
         viewStart = Math.round(Math.max(0, newStart));
         viewEnd = Math.round(newEnd);
-        renderChart();
+        scheduleRender();
       }
     }, { passive:false });
     chartZoomArea.addEventListener("touchend", (e) => {
