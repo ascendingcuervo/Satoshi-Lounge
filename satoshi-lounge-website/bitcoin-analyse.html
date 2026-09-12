@@ -3,22 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Premium Bereich — Satoshi Lounge</title>
+<title>Bitcoin Analyse — Satoshi Lounge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#000000;
-    --bg-alt:#0d0d0d;
-    --surface:#111111;
-    --ink:#F7F6F3;
-    --gray:#9b9aa4;
-    --line: rgba(242,201,76,0.16);
-    --line-soft: rgba(242,201,76,0.10);
-    --orange:#f2c94c;
-    --orange-deep:#ffdd7a;
-    --gold:#f2c94c;
+    --bg:#000000; --bg-alt:#0d0d0d; --surface:#111111; --ink:#F7F6F3; --gray:#9b9aa4;
+    --line: rgba(242,201,76,0.16); --line-soft: rgba(242,201,76,0.10);
+    --orange:#f2c94c; --orange-deep:#ffdd7a; --gold:#f2c94c;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -28,7 +21,6 @@
   h1,h2,h3,.display{ font-family:'Space Grotesk', sans-serif; }
   .mono{ font-family:'Space Mono', monospace; }
 
-  /* ===== TOP BAR ===== */
   .topbar{
     position:fixed; top:0; left:0; right:0; z-index:100;
     display:flex; align-items:center; justify-content:space-between;
@@ -53,7 +45,6 @@
   }
   .login-btn:hover{ background:var(--orange-deep); transform:translateY(-1px); }
 
-  /* ===== DRAWER ===== */
   .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.5); opacity:0; pointer-events:none; transition:.35s; z-index:150; }
   .overlay.show{ opacity:1; pointer-events:auto; }
   .drawer{
@@ -81,10 +72,7 @@
   .drawer-brand-text{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:0.92rem; letter-spacing:0.04em; color:var(--ink); }
   .drawer-foot{ margin-top:auto; padding:20px 32px 0; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); border-top:1px solid var(--line-soft); }
 
-  /* ===== HERO / WELCOME ===== */
-  .hero{
-    padding:150px 24px 40px; text-align:center; position:relative;
-  }
+  .hero{ padding:150px 24px 40px; text-align:center; position:relative; }
   .hero::before{
     content:""; position:absolute; inset:0;
     background:
@@ -92,12 +80,12 @@
       radial-gradient(circle at 85% 15%, rgba(242,201,76,0.09), transparent 45%);
     z-index:0;
   }
-  .preview-badge{
+  .crumb{
     display:inline-flex; align-items:center; gap:8px; position:relative; z-index:1;
-    font-family:'Space Mono', monospace; font-size:0.75rem; color:var(--gold);
-    border:1.5px solid var(--gold); background:rgba(242,201,76,0.08); padding:7px 16px; border-radius:30px;
-    margin-bottom:20px;
+    font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:20px;
   }
+  .crumb a{ color:var(--gray); text-decoration:none; }
+  .crumb a:hover{ color:var(--gold); }
   .hero h1{ font-size:clamp(2rem, 5vw, 3rem); color:var(--gold); position:relative; z-index:1; }
   .hero p{ margin-top:14px; color:var(--gray); max-width:56ch; margin-left:auto; margin-right:auto; font-size:1rem; line-height:1.6; position:relative; z-index:1; }
 
@@ -109,30 +97,17 @@
     .topbar .brand{ display:none; }
   }
 
-  /* ===== MEMBER GRID ===== */
-  main{ max-width:1100px; margin:0 auto; padding:20px 24px 100px; }
-  .member-grid{
-    display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;
+  main{ max-width:1000px; margin:0 auto; padding:20px 24px 100px; }
+  .choice-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:22px; }
+  .choice-card{
+    background:#0d0d10; border:1.5px solid var(--line); border-radius:20px; padding:40px 30px;
+    text-align:center; text-decoration:none; color:var(--ink); transition:.2s; display:block;
   }
-  .member-card{
-    background:#0d0d10; border:1.5px solid var(--line); border-radius:18px; padding:28px 24px;
-    display:flex; flex-direction:column; transition:.2s;
-  }
-  .member-card:hover{ border-color:var(--gold); transform:translateY(-3px); }
-  .member-card .ic{ font-size:1.8rem; margin-bottom:14px; }
-  .member-card h3{ font-size:1.15rem; margin-bottom:8px; }
-  .member-card p{ color:var(--gray); font-size:0.88rem; line-height:1.6; flex:1; margin-bottom:18px; }
-  .member-card a{
-    display:inline-block; text-align:center; padding:11px; border-radius:10px;
-    background:var(--gold); color:#0a0a0d; font-weight:700; font-size:0.85rem; text-decoration:none; transition:.2s;
-  }
-  .member-card a:hover{ background:var(--orange-deep); }
-  .member-card .soon-tag{
-    display:inline-block; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray);
-    border:1px dashed var(--line); border-radius:8px; padding:9px; text-align:center;
-  }
+  .choice-card:hover{ border-color:var(--gold); transform:translateY(-4px); box-shadow:0 10px 40px rgba(242,201,76,0.1); }
+  .choice-card .ic{ font-size:2.4rem; margin-bottom:16px; }
+  .choice-card h3{ font-size:1.3rem; margin-bottom:10px; }
+  .choice-card p{ color:var(--gray); font-size:0.9rem; line-height:1.6; }
 
-  /* ===== FOOTER ===== */
   footer{ border-top:1px solid var(--line-soft); padding:60px 24px 30px; }
   .footer-inner{ max-width:1180px; margin:0 auto; }
   .footer-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:40px; flex-wrap:wrap; margin-bottom:40px; }
@@ -146,6 +121,16 @@
   .footer-warn{ display:flex; gap:14px; }
   .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(242,201,76,0.08); padding:6px 12px; border-radius:20px; }
   @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
+
+  .analysis-article{ max-width:720px; margin:0 auto; }
+  .analysis-meta{ font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:10px; }
+  .analysis-title{ font-size:clamp(1.6rem, 4vw, 2.2rem); color:var(--gold); margin-bottom:14px; }
+  .analysis-lead{ color:var(--gray); font-size:1rem; line-height:1.7; margin-bottom:36px; }
+  .analysis-section{ margin-bottom:30px; }
+  .analysis-section h2{ font-size:1.15rem; margin-bottom:10px; color:var(--ink); }
+  .analysis-section p{ color:var(--gray); font-size:0.92rem; line-height:1.75; }
+  .analysis-back{ display:inline-block; margin-top:20px; color:var(--gray); text-decoration:none; font-size:0.85rem; }
+  .analysis-back:hover{ color:var(--gold); }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -153,14 +138,12 @@
 <body>
 <canvas id="nodesCanvas"></canvas>
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <button class="burger" id="burgerBtn" aria-label="Menü"><span></span><span></span><span></span></button>
     <div class="brand"><span class="dot"></span>PREMIUM LOUNGE</div>
     <div id="authArea"><a href="#" class="login-btn" id="authBtn">Anmelden</a></div>
   </div>
 
-  <!-- DRAWER -->
   <div class="overlay" id="overlay"></div>
   <nav class="drawer" id="drawer">
     <div class="drawer-brand"><span class="drawer-brand-badge">₿</span><span class="drawer-brand-text">SATOSHI LOUNGE</span></div>
@@ -176,44 +159,40 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <!-- HERO -->
-  <header class="hero">
-    <div class="preview-badge">🔓 Vorschau-Zugang aktiv</div>
-    <h1>Willkommen in der Premium Lounge</h1>
-    <p>Schön, dass du dabei bist. Hier hast du Zugriff auf alles, was deine Mitgliedschaft ausmacht — von vertieften Analysen bis zum direkten Austausch in der Community.</p>
+  <header class="hero" style="padding-bottom:10px;">
+    <div class="crumb"><a href="premium-bereich.html">Premium Lounge</a> / <a href="premium-analysen.html">Premium-Analysen</a> / Bitcoin Analyse</div>
   </header>
 
-  <!-- MEMBER GRID -->
   <main>
-    <div class="member-grid">
-      <div class="member-card">
-        <div class="ic">📊</div>
-        <h3>Premium-Analysen</h3>
-        <p>Gründliche Analysen zu Bitcoin sowie Einblicke in mein eigenes Cuervo-Portfolio.</p>
-        <a href="premium-analysen.html">Ansehen</a>
+    <article class="analysis-article">
+      <div class="analysis-meta">12. September 2026 · Musterbeitrag</div>
+      <h1 class="analysis-title">Wo steht Bitcoin aktuell im Zyklus?</h1>
+      <p class="analysis-lead">Ein Blick auf Chart, Marktphase und die wichtigsten Faktoren, die gerade den Ton angeben — so könnte eine typische Ausgabe der Premium-Analysen aussehen.</p>
+
+      <div class="analysis-section">
+        <h2>Markt-Überblick</h2>
+        <p>Hier würde eine kurze Einordnung stehen, wo der Bitcoin-Preis aktuell steht, wie sich die letzten Wochen entwickelt haben und was im Vergleich zum breiteren Markt auffällt.</p>
       </div>
-      <div class="member-card">
-        <div class="ic">🎬</div>
-        <h3>Video-Akademie</h3>
-        <p>Strukturierte Video-Reihen zu Self-Custody, Steuern, Zyklusanalyse und mehr.</p>
-        <span class="soon-tag">Inhalt folgt</span>
+
+      <div class="analysis-section">
+        <h2>Charttechnische Einordnung</h2>
+        <p>Hier folgt die technische Sicht — relevante Unterstützungs- und Widerstandszonen, der Blick auf gleitende Durchschnitte und was die Indikatoren gerade andeuten.</p>
       </div>
-      <div class="member-card">
-        <div class="ic">📝</div>
-        <h3>Blog</h3>
-        <p>Regelmäßige Einblicke in meine eigene Strategie und aktuelle Markteinschätzung.</p>
-        <span class="soon-tag">Inhalt folgt</span>
+
+      <div class="analysis-section">
+        <h2>Makro-Faktoren</h2>
+        <p>Hier würden Einflüsse von außen eingeordnet — Zinsentscheidungen, Liquidität am Markt, oder generelle Risikostimmung, die den Bitcoin-Preis mitbewegen.</p>
       </div>
-      <div class="member-card">
-        <div class="ic">💬</div>
-        <h3>Satoshi Lounge Chat</h3>
-        <p>Aktive Bitcoin-only Community mit 100+ Mitgliedern — direkter Austausch mit Gleichgesinnten.</p>
-        <span class="soon-tag">Inhalt folgt</span>
+
+      <div class="analysis-section">
+        <h2>Fazit</h2>
+        <p>Eine kurze, persönliche Einschätzung zum Abschluss — worauf ich in der kommenden Zeit besonders achte.</p>
       </div>
-    </div>
+
+      <a href="premium-analysen.html" class="analysis-back">← Zurück zu Premium-Analysen</a>
+    </article>
   </main>
 
-  <!-- FOOTER -->
   <footer>
     <div class="footer-inner">
       <div class="footer-top">
@@ -242,8 +221,6 @@
   </footer>
 
 <script>
-  // Leichte Zugangs-Prüfung — noch KEINE echte Absicherung, nur damit man nicht ohne Code/Kauf
-  // direkt auf dieser Seite landet. Wird ersetzt, sobald die echte Stripe-Abo-Anbindung kommt.
   if(localStorage.getItem('sl_premium_preview') !== 'true'){
     window.location.href = 'premium.html';
   }
@@ -260,7 +237,6 @@
   overlay.addEventListener('click', () => toggleDrawer(false));
   document.querySelectorAll('.drawer-nav a').forEach(a=>{ a.addEventListener('click', () => toggleDrawer(false)); });
 
-  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND (Gold) =====
   (function(){
     const canvas = document.getElementById('nodesCanvas');
     const ctx = canvas.getContext('2d');
@@ -308,7 +284,6 @@
   })();
 </script>
 
-  <!-- AUTH: Login/Registrieren Modal -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-modal">
       <button class="auth-modal-close" id="authModalClose" aria-label="Schließen">&times;</button>
@@ -336,7 +311,6 @@
   <script src="auth-config.js"></script>
   <script src="auth.js"></script>
 
-  <!-- COOKIE-BANNER -->
   <div class="cookie-overlay" id="cookieOverlay">
     <div class="cookie-banner">
       <h3>Cookies &amp; Privatsphäre</h3>
