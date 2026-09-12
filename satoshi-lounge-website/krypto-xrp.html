@@ -271,16 +271,16 @@
     }
 
     try{
-      const newsRes = await fetch('https://min-api.cryptocompare.com/data/v2/news/?categories=' + coinSymbol + '&lang=EN');
+      const newsRes = await fetch('/api/coin-news?symbol=' + coinSymbol);
       const newsData = await newsRes.json();
-      const items = (newsData.Data || []).slice(0, 8);
+      const items = newsData.items || [];
       const newsEl = document.getElementById('coinNews');
       if(!items.length){ newsEl.innerHTML = '<p class="empty-note">Aktuell keine News gefunden.</p>'; return; }
       newsEl.innerHTML = items.map(n => {
-        const date = new Date(n.published_on * 1000).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+        const date = new Date(n.publishedOn * 1000).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
         return '<a class="news-item" href="' + n.url + '" target="_blank" rel="noopener">' +
           '<div class="news-title">' + n.title + '</div>' +
-          '<div class="news-meta">' + n.source_info.name + ' · ' + date + '</div>' +
+          '<div class="news-meta">' + n.source + ' · ' + date + '</div>' +
         '</a>';
       }).join('');
     }catch(e){
