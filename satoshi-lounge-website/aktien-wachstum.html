@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cuervo Portfolio — Satoshi Lounge</title>
+<title>Wachstum Aktien — Satoshi Lounge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -106,10 +106,6 @@
   .choice-card .ic{ font-size:2.4rem; margin-bottom:16px; }
   .choice-card h3{ font-size:1.3rem; margin-bottom:10px; }
   .choice-card p{ color:var(--gray); font-size:0.9rem; line-height:1.6; }
-  .choice-card .soon-tag{
-    display:inline-block; margin-top:16px; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray);
-    border:1px dashed var(--line); border-radius:8px; padding:9px 14px;
-  }
 
   footer{ border-top:1px solid var(--line-soft); padding:60px 24px 30px; }
   .footer-inner{ max-width:1180px; margin:0 auto; }
@@ -124,6 +120,29 @@
   .footer-warn{ display:flex; gap:14px; }
   .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(242,201,76,0.08); padding:6px 12px; border-radius:20px; }
   @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
+
+  .live-status{ display:flex; align-items:center; gap:8px; font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:16px; }
+  .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold); animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .coin-table{ display:flex; flex-direction:column; border:1.5px solid var(--line); border-radius:16px; overflow:hidden; }
+  .coin-row{
+    display:grid; grid-template-columns:2fr 1fr 1fr; align-items:center; gap:10px;
+    padding:16px 20px; background:#0d0d10; text-decoration:none; color:var(--ink); transition:.2s;
+  }
+  .coin-row + .coin-row{ border-top:1px solid var(--line-soft); }
+  a.coin-row:hover{ background:#141410; }
+  .coin-row-head{ font-family:'Space Mono', monospace; font-size:0.7rem; color:var(--gray); text-transform:uppercase; letter-spacing:0.04em; }
+  .coin-name-cell{ display:flex; align-items:center; gap:12px; }
+  .coin-name-cell img{ width:32px; height:32px; border-radius:50%; }
+  .logo-fallback{
+    width:32px; height:32px; border-radius:50%; background:var(--bg-alt); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; color:var(--gray); flex-shrink:0;
+  }
+  .coin-name-cell .nm{ font-weight:700; font-size:0.95rem; }
+  .coin-name-cell .sym{ color:var(--gray); font-size:0.75rem; font-family:'Space Mono', monospace; }
+  .coin-price{ font-family:'Space Mono', monospace; font-weight:700; }
+  .coin-change.up{ color:var(--gold); }
+  .coin-change.down{ color:#ff6b6b; }
 
   .analysis-back{
     display:inline-flex; align-items:center; gap:8px; margin-top:20px;
@@ -168,25 +187,19 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <header class="hero">
-    <h1>Cuervo Portfolio</h1>
-    <p>Ein direkter, transparenter Einblick in mein eigenes Portfolio — aufgeteilt nach Krypto und Aktien.</p>
+  <header class="hero" style="padding-bottom:20px;">
+    <h1>Wachstum Aktien</h1>
+    <p>Meine aktuellen Wachstumsaktien — Kurse aktualisieren sich automatisch. Auf eine Aktie klicken für Kurs, News &amp; nächsten Earnings-Termin.</p>
   </header>
 
   <main>
-    <div class="choice-grid">
-      <a href="cuervo-krypto.html" class="choice-card">
-        <div class="ic">🪙</div>
-        <h3>Krypto</h3>
-        <p>Meine aktuellen Krypto-Positionen und Gewichtung.</p>
-      </a>
-      <a href="cuervo-aktien.html" class="choice-card">
-        <div class="ic">📊</div>
-        <h3>Aktien</h3>
-        <p>Meine aktuellen Aktien-Positionen und Gewichtung.</p>
-      </a>
+    <div class="live-status" id="tableStatus"><span class="live-dot"></span><span id="tableStatusText">Lädt Live-Kurse…</span></div>
+    <div class="coin-table" id="coinTable">
+      <div class="coin-row coin-row-head">
+        <span>Aktie</span><span>Preis</span><span>24h</span>
+      </div>
     </div>
-    <a href="premium-analysen.html" class="analysis-back">← Zurück zu Premium-Analysen</a>
+    <a href="cuervo-aktien.html" class="analysis-back">← Zurück zu Aktien Portfolio</a>
     <div class="home-return">
       <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
@@ -235,6 +248,54 @@
   burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
   overlay.addEventListener('click', () => toggleDrawer(false));
   document.querySelectorAll('.drawer-nav a').forEach(a=>{ a.addEventListener('click', () => toggleDrawer(false)); });
+
+
+  // ===== Wachstum Aktien: Live-Kurse laden (Finnhub) =====
+  const STOCKS = [
+    { symbol: 'AMZN', name: 'Amazon.com', page: 'aktie-amzn.html' },
+    { symbol: 'META', name: 'Meta Platforms', page: 'aktie-meta.html' },
+    { symbol: 'MSFT', name: 'Microsoft', page: 'aktie-msft.html' },
+    { symbol: 'RACE', name: 'Ferrari N.V.', page: 'aktie-race.html' },
+    { symbol: 'MA', name: 'Mastercard', page: 'aktie-ma.html' },
+    { symbol: 'NFLX', name: 'Netflix', page: 'aktie-nflx.html' },
+    { symbol: 'NOW', name: 'ServiceNow', page: 'aktie-now.html' },
+    { symbol: '1810.HK', name: 'Xiaomi Corp', page: 'aktie-1810hk.html' },
+    { symbol: 'RHM.DE', name: 'Rheinmetall AG', page: 'aktie-rhmde.html' },
+    { symbol: 'ASML', name: 'ASML Holding', page: 'aktie-asml.html' },
+  ];
+  (async function loadStockTable(){
+    const tableEl = document.getElementById('coinTable');
+    const statusTextEl = document.getElementById('tableStatusText');
+    try{
+      const symbols = STOCKS.map(s => s.symbol).join(',');
+      const res = await fetch('/api/stock-table?symbols=' + encodeURIComponent(symbols));
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const bySymbol = {};
+      (data.stocks || []).forEach(d => { bySymbol[d.symbol] = d; });
+
+      const rowsHtml = STOCKS.map(s => {
+        const d = bySymbol[s.symbol];
+        if(!d || !d.ok){
+          return '<div class="coin-row"><span class="coin-name-cell"><span><span class="nm">' + s.name + '</span><br><span class="sym">' + s.symbol + ' · nicht verfügbar</span></span></span><span></span><span></span></div>';
+        }
+        const price = d.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const chg = d.changePercent;
+        const chgStr = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+        const logoHtml = d.logo ? '<img src="' + d.logo + '" alt="' + d.name + '">' : '<span class="logo-fallback">' + s.symbol.slice(0,2) + '</span>';
+        return '<a class="coin-row" href="' + s.page + '">' +
+          '<span class="coin-name-cell">' + logoHtml + '<span><span class="nm">' + d.name + '</span><br><span class="sym">' + s.symbol + '</span></span></span>' +
+          '<span class="coin-price">' + (d.currency === 'USD' ? '$' : d.currency + ' ') + price + '</span>' +
+          '<span class="coin-change ' + (chg >= 0 ? 'up' : 'down') + '">' + chgStr + '</span>' +
+        '</a>';
+      }).join('');
+
+      tableEl.innerHTML = '<div class="coin-row coin-row-head"><span>Aktie</span><span>Preis</span><span>24h</span></div>' + rowsHtml;
+      statusTextEl.textContent = 'LIVE (Finnhub)';
+    }catch(e){
+      statusTextEl.textContent = 'Kurse aktuell nicht verfügbar';
+    }
+  })();
 
   (function(){
     const canvas = document.getElementById('nodesCanvas');

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cuervo Portfolio — Satoshi Lounge</title>
+<title>Deutsche Telekom — Satoshi Lounge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -106,10 +106,6 @@
   .choice-card .ic{ font-size:2.4rem; margin-bottom:16px; }
   .choice-card h3{ font-size:1.3rem; margin-bottom:10px; }
   .choice-card p{ color:var(--gray); font-size:0.9rem; line-height:1.6; }
-  .choice-card .soon-tag{
-    display:inline-block; margin-top:16px; font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray);
-    border:1px dashed var(--line); border-radius:8px; padding:9px 14px;
-  }
 
   footer{ border-top:1px solid var(--line-soft); padding:60px 24px 30px; }
   .footer-inner{ max-width:1180px; margin:0 auto; }
@@ -125,6 +121,24 @@
   .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(242,201,76,0.08); padding:6px 12px; border-radius:20px; }
   @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
 
+  .coin-head{ display:flex; align-items:center; gap:20px; margin-bottom:40px; margin-top:20px; }
+  .coin-head-logo img{ width:64px; height:64px; border-radius:50%; }
+  .coin-head h1{ font-size:1.6rem; color:var(--ink); margin-bottom:4px; }
+  .coin-head-price{ font-family:'Space Mono', monospace; font-weight:700; font-size:1.5rem; color:var(--gold); }
+  .coin-head-change{ font-family:'Space Mono', monospace; font-size:0.9rem; margin-top:2px; }
+  .coin-head-change.up{ color:var(--gold); }
+  .coin-head-change.down{ color:#ff6b6b; }
+  .news-heading{ font-size:1.1rem; margin-bottom:16px; }
+  .coin-news-list{ display:flex; flex-direction:column; gap:12px; margin-bottom:10px; }
+  .news-item{
+    display:block; background:#0d0d10; border:1.5px solid var(--line); border-radius:12px;
+    padding:16px 18px; text-decoration:none; color:var(--ink); transition:.2s;
+  }
+  .news-item:hover{ border-color:var(--gold); }
+  .news-item .news-title{ font-size:0.92rem; font-weight:600; margin-bottom:6px; line-height:1.4; }
+  .news-item .news-meta{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--gray); }
+  .attribution{ font-family:'Space Mono', monospace; font-size:0.68rem; color:var(--gray); margin-bottom:26px; }
+  .empty-note{ color:var(--gray); font-size:0.88rem; }
   .analysis-back{
     display:inline-flex; align-items:center; gap:8px; margin-top:20px;
     font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
@@ -132,6 +146,7 @@
     border-radius:30px; transition:.2s;
   }
   .analysis-back:hover{ color:var(--gold); border-color:var(--gold); }
+
   .home-return{ display:flex; justify-content:center; margin-top:30px; }
   .home-return a{
     display:inline-flex; align-items:center; gap:8px;
@@ -140,6 +155,12 @@
     border-radius:30px; transition:.2s;
   }
   .home-return a:hover{ color:var(--gold); border-color:var(--gold); }
+
+  .event-box{ background:#f4f4f4; border-radius:14px; padding:18px 20px; margin-bottom:30px; text-align:center; }
+  .event-label{ display:block; font-family:'Space Mono', monospace; font-size:0.72rem; color:#666; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em; }
+  .event-countdown{ font-family:'Space Mono', monospace; font-weight:700; font-size:2rem; color:#0a0a0d; }
+  .event-countdown small{ display:block; font-size:0.6rem; color:#666; font-weight:500; text-transform:uppercase; margin-top:2px; }
+  .event-date{ margin-top:8px; font-family:'Space Mono', monospace; font-size:0.76rem; color:#666; }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -168,25 +189,32 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <header class="hero">
-    <h1>Cuervo Portfolio</h1>
-    <p>Ein direkter, transparenter Einblick in mein eigenes Portfolio — aufgeteilt nach Krypto und Aktien.</p>
+  <header class="hero" style="padding-bottom:10px;">
   </header>
 
   <main>
-    <div class="choice-grid">
-      <a href="cuervo-krypto.html" class="choice-card">
-        <div class="ic">🪙</div>
-        <h3>Krypto</h3>
-        <p>Meine aktuellen Krypto-Positionen und Gewichtung.</p>
-      </a>
-      <a href="cuervo-aktien.html" class="choice-card">
-        <div class="ic">📊</div>
-        <h3>Aktien</h3>
-        <p>Meine aktuellen Aktien-Positionen und Gewichtung.</p>
-      </a>
+    <div class="coin-head" id="coinHead">
+      <div class="coin-head-logo"><img id="coinLogo" src="" alt="Deutsche Telekom"></div>
+      <div>
+        <h1 id="coinName">Deutsche Telekom</h1>
+        <div class="coin-head-price" id="coinPrice">Lädt…</div>
+        <div class="coin-head-change" id="coinChange"></div>
+      </div>
     </div>
-    <a href="premium-analysen.html" class="analysis-back">← Zurück zu Premium-Analysen</a>
+
+    <div class="event-box" id="eventBox" style="display:none;">
+      <span class="event-label" id="eventLabel"></span>
+      <div class="event-countdown"><span id="evDays">--</span><small>Tage</small></div>
+      <div class="event-date" id="eventDate"></div>
+    </div>
+
+    <h2 class="news-heading">Aktuelle News</h2>
+    <div id="coinNews" class="coin-news-list">
+      <p class="empty-note">Lädt News…</p>
+    </div>
+    <p class="attribution">Kursdaten &amp; News: Finnhub</p>
+
+    <a href="aktien-dividenden.html" class="analysis-back">← Zurück zur Übersicht</a>
     <div class="home-return">
       <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
@@ -235,6 +263,57 @@
   burger.addEventListener('click', () => toggleDrawer(!drawer.classList.contains('open')));
   overlay.addEventListener('click', () => toggleDrawer(false));
   document.querySelectorAll('.drawer-nav a').forEach(a=>{ a.addEventListener('click', () => toggleDrawer(false)); });
+
+
+  // ===== Live-Preis + Termin + News (Finnhub) für Deutsche Telekom =====
+  (async function loadStockDetail(){
+    const symbol = 'DTE.DE';
+    const category = 'dividend';
+    try{
+      const res = await fetch('/api/stock-detail?symbol=' + encodeURIComponent(symbol) + '&category=' + category);
+      const d = await res.json();
+      if(d.ok){
+        if(d.logo) document.getElementById('coinLogo').src = d.logo;
+        const priceStr = d.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('coinPrice').textContent = (d.currency === 'USD' ? '$' : d.currency + ' ') + priceStr;
+        const chg = d.changePercent;
+        const chEl = document.getElementById('coinChange');
+        chEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '% (24h)';
+        chEl.classList.add(chg >= 0 ? 'up' : 'down');
+
+        if(d.nextEvent){
+          const evBox = document.getElementById('eventBox');
+          const evDate = new Date(d.nextEvent.date + 'T00:00:00');
+          const days = Math.max(0, Math.ceil((evDate.getTime() - Date.now()) / 86400000));
+          document.getElementById('eventLabel').textContent = d.nextEvent.type === 'earnings' ? 'Nächste Quartalszahlen' : 'Nächste Dividendenzahlung';
+          document.getElementById('evDays').textContent = days;
+          document.getElementById('eventDate').textContent = evDate.toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' });
+          evBox.style.display = 'block';
+        }
+      }else{
+        document.getElementById('coinPrice').textContent = 'Kurs aktuell nicht verfügbar';
+      }
+    }catch(e){
+      document.getElementById('coinPrice').textContent = 'Kurs aktuell nicht verfügbar';
+    }
+
+    try{
+      const newsRes = await fetch('/api/stock-news?symbol=' + encodeURIComponent(symbol));
+      const newsData = await newsRes.json();
+      const items = newsData.items || [];
+      const newsEl = document.getElementById('coinNews');
+      if(!items.length){ newsEl.innerHTML = '<p class="empty-note">Aktuell keine News gefunden.</p>'; return; }
+      newsEl.innerHTML = items.map(n => {
+        const date = new Date(n.publishedOn * 1000).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+        return '<a class="news-item" href="' + n.url + '" target="_blank" rel="noopener">' +
+          '<div class="news-title">' + n.title + '</div>' +
+          '<div class="news-meta">' + n.source + ' · ' + date + '</div>' +
+        '</a>';
+      }).join('');
+    }catch(e){
+      document.getElementById('coinNews').innerHTML = '<p class="empty-note">News aktuell nicht verfügbar.</p>';
+    }
+  })();
 
   (function(){
     const canvas = document.getElementById('nodesCanvas');

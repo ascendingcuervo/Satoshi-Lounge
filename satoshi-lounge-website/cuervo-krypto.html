@@ -140,6 +140,13 @@
   .coin-change.up{ color:var(--gold); }
   .coin-change.down{ color:#ff6b6b; }
 
+  .analysis-back{
+    display:inline-flex; align-items:center; gap:8px; margin-top:20px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .analysis-back:hover{ color:var(--gold); border-color:var(--gold); }
   .home-return{ display:flex; justify-content:center; margin-top:30px; }
   .home-return a{
     display:inline-flex; align-items:center; gap:8px;
@@ -188,6 +195,7 @@
         <span>Coin</span><span>Preis</span><span>24h</span>
       </div>
     </div>
+    <a href="cuervo-portfolio.html" class="analysis-back">← Zurück zu Cuervo Portfolio</a>
     <div class="home-return">
       <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
