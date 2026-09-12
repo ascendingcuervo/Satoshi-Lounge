@@ -1520,12 +1520,15 @@
       const phasePct = Math.min(100, Math.max(0, (phaseDay/phaseLen)*100));
       const phaseStartLabel = new Date(current.start).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" });
 
+      const avgBull = Math.round(avgPhaseLen("bull"));
+      const avgBear = Math.round(avgPhaseLen("bear"));
+
       document.getElementById("cycleStats").innerHTML =
         '<div class="stat-card"><span class="stat-label">Bitcoin-Alter</span><span class="stat-value">' + ageYears + ' Jahre</span><span class="stat-sub">' + ageDays.toLocaleString("de-DE") + ' Tage seit dem Genesis Block</span></div>' +
         '<div class="stat-card"><span class="stat-label">Seit letztem Halving</span><span class="stat-value">' + sinceHalving.toLocaleString("de-DE") + ' Tage</span><span class="stat-sub">20. April 2024</span></div>' +
         '<div class="stat-card"><span class="stat-label">Aktuelle Marktphase</span><span class="stat-value" style="color:' + (phase==="Bullenmarkt"?TEAL:PINK) + '">' + phase + '</span><span class="stat-sub">Seit ' + phaseStartLabel + ' · Tag ' + phaseDay + '</span></div>' +
         '<div class="stat-card"><span class="stat-label">Nächstes Halving</span><span class="stat-value">' + toNextHalving.toLocaleString("de-DE") + ' Tage</span><span class="stat-sub">Geschätzt: ' + nextHalvingLabel + '</span></div>' +
-        '<div class="stat-card wide"><span class="stat-label">Modell (Richtwert)</span><span class="stat-value" style="font-size:0.95rem;">1064 / 384 Tage</span><span class="stat-sub">Ø-Bulle 1064 Tage, Ø-Bär 384 Tage</span></div>';
+        '<div class="stat-card wide"><span class="stat-label">Modell (Richtwert)</span><span class="stat-value" style="font-size:0.95rem;">' + avgBull + ' / ' + avgBear + ' Tage</span><span class="stat-sub">Ø-Bulle ' + avgBull + ' Tage, Ø-Bär ' + avgBear + ' Tage</span></div>';
 
       document.getElementById("cycleBarFill").style.width = phasePct + "%";
       document.getElementById("cycleBarPct").textContent = "Tag " + phaseDay + " von ø " + phaseLen;
@@ -1815,8 +1818,26 @@
     }
     function getCurrentPhase(){
       const now = Date.now();
-      const found = PHASES_HISTORY.find(ph => now >= ph.start && (ph.end == null || now <= ph.end));
-      return found || PHASES_HISTORY[PHASES_HISTORY.length-1];
+      // Historische (abgeschlossene) Phasen zuerst prüfen — die bleiben echte Vergangenheit.
+      const closedPhases = PHASES_HISTORY.slice(0, -1);
+      const foundHistoric = closedPhases.find(ph => now >= ph.start && now <= ph.end);
+      if(foundHistoric) return foundHistoric;
+
+      // Ab dem bekannten Start des aktuellen Bärenmarkts läuft es rein mechanisch nach den
+      // historischen Durchschnittslängen weiter — abwechselnd Bär/Bulle, ohne Enddatum-Limit.
+      // So springt die Einstufung von selbst um, ohne dass hier je wieder etwas von Hand
+      // nachgetragen werden muss.
+      const anchor = PHASES_HISTORY[PHASES_HISTORY.length - 1];
+      let cursor = anchor.start;
+      let type = anchor.type;
+      for(let i = 0; i < 200; i++){ // Sicherheitsgrenze gegen eine Endlosschleife
+        const lenDays = avgPhaseLen(type);
+        const end = cursor + lenDays * 86400000;
+        if(now < end) return { start: cursor, end: null, type: type };
+        cursor = end;
+        type = type === "bull" ? "bear" : "bull";
+      }
+      return { start: cursor, end: null, type: type };
     }
 
     // ---- Chart Zoom & Pan ----
