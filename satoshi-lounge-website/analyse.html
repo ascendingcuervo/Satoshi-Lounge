@@ -741,11 +741,9 @@
               <button type="button" class="tf-btn" data-tf="weekly">Wöchentlich</button>
             </div>
             <div class="chart-zoom-bar">
-              <span class="chart-zoom-hint">Scrollen zum Zoomen · Ziehen zum Verschieben</span>
+              <span class="chart-zoom-hint">Mausrad / 2 Finger zum Zoomen · Ziehen zum Verschieben</span>
               <div class="chart-zoom-btns">
-                <button type="button" id="zoomOutBtn" title="Rauszoomen">−</button>
                 <button type="button" id="zoomResetBtn" title="Zoom zurücksetzen">⟲</button>
-                <button type="button" id="zoomInBtn" title="Reinzoomen">+</button>
               </div>
             </div>
             <div class="chart-zoom-area" id="chartZoomArea">
@@ -1305,6 +1303,7 @@
       { key: "sma100", label: "SMA 100", color: ORANGE, on: false, type:"sma", period:100 },
       { key: "sma150", label: "SMA 150", color: "#c9760f", on: false, type:"sma", period:150 },
       { key: "bmsb", label: "Bull Market Support Band", color: GOLD, on: false, type:"bmsb" },
+      { key: "wma50", label: "WMA 50 (Weekly)", color: "#ff9d5c", on: false, type:"wma50" },
       { key: "rsi", label: "RSI", color: PINK, on: true, type:"rsi" },
       { key: "macd", label: "MACD", color: "#4fd1ff", on: false, type:"macd" },
       { key: "m2", label: "M2 (Geldmenge)", color: "#a3e635", on: false, type:"m2" },
@@ -1674,7 +1673,7 @@
         document.querySelectorAll(".tf-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         candles = chartTimeframe === "daily" ? dailyCandlesForChart : weeklyCandlesForChart;
-        viewStart = 0; viewEnd = candles.length; // beim Wechsel auf die volle neue Historie zurücksetzen
+        setDefaultView(); // beim Wechsel auf sinnvollen Standard-Ausschnitt zurücksetzen (nicht komplette Historie)
         renderChart();
         renderStats();
       });
@@ -1765,7 +1764,7 @@
       }catch(e){ /* Binance nicht erreichbar — bleibt beim bisherigen Preis */ }
       const cl = document.getElementById("chartLoading");
       if(cl) cl.style.display = "none";
-      viewStart = 0; viewEnd = candles.length; // Zoom auf frische Daten zurücksetzen
+      setDefaultView(); // sinnvoller Standard-Ausschnitt statt komplette Historie auf einmal (Performance)
       updateHeader();
       renderChart();
       renderStats();
@@ -1867,7 +1866,15 @@
       viewEnd = Math.round(newEnd);
       renderChart();
     }
-    function resetZoom(){ viewStart = 0; viewEnd = candles.length; renderChart(); }
+    // Sinnvoller Standard-Zoom statt der kompletten Historie auf einmal (Performance + Übersicht) —
+    // ca. 1 Jahr im Tages-, ca. 3 Jahre im Wochenmodus. Rein- und rauszoomen bleibt jederzeit möglich.
+    function defaultViewLen(){ return chartTimeframe === "daily" ? 365 : 156; }
+    function setDefaultView(){
+      const len = Math.min(candles.length, defaultViewLen());
+      viewStart = Math.max(0, candles.length - len);
+      viewEnd = candles.length;
+    }
+    function resetZoom(){ setDefaultView(); renderChart(); }
 
     const chartZoomArea = document.getElementById("chartZoomArea");
     chartZoomArea.addEventListener("wheel", (e) => {
@@ -1938,8 +1945,6 @@
       if(e.touches.length === 0){ touchStartX = null; pinchStartDist = null; }
     });
     chartZoomArea.addEventListener("dblclick", resetZoom);
-    document.getElementById("zoomInBtn").addEventListener("click", () => zoomAt(0.8, 0.5));
-    document.getElementById("zoomOutBtn").addEventListener("click", () => zoomAt(1.25, 0.5));
     document.getElementById("zoomResetBtn").addEventListener("click", resetZoom);
 
     function renderChart(){
@@ -1978,6 +1983,18 @@
         bmsbByIndex = viewCandles.map((_, i) => ({ sma: smaAligned[viewStart+i] ?? null, ema: emaAligned[viewStart+i] ?? null }));
       }
 
+      // WMA 50 (Weekly): 50-Wochen-SMA — genau wie BMSB immer auf echten Wochenkerzen berechnet,
+      // unabhängig von der gewählten Tages-/Wochenansicht, damit "50 Wochen" immer stimmt.
+      let wma50Series = null;
+      if(indOn("wma50") && weeklyCandlesForChart.length){
+        const weeklyCloses = weeklyCandlesForChart.map(c => c.close);
+        const wmaPoints = smaSeries(weeklyCloses, 50)
+          .map((v,i) => ({ t: weeklyCandlesForChart[i].t, value: v }))
+          .filter(p => p.value != null);
+        const wmaAligned = forwardFillToCandles(wmaPoints, candles);
+        wma50Series = viewCandles.map((_, i) => wmaAligned[viewStart+i] ?? null);
+      }
+
       const activeLines = INDICATORS.filter(ind => (ind.type === "ema" || ind.type === "sma") && ind.on)
         .map(ind => {
           const fullSeries = ind.type === "ema" ? emaSeries(fullCloses, ind.period) : smaSeries(fullCloses, ind.period);
@@ -1987,6 +2004,7 @@
       let vMin = Infinity, vMax = -Infinity;
       viewCandles.forEach(c => { vMin = Math.min(vMin, c.low); vMax = Math.max(vMax, c.high); });
       activeLines.forEach(l => l.series.forEach(v => { if(v != null){ vMin = Math.min(vMin, v); vMax = Math.max(vMax, v); } }));
+      if(wma50Series) wma50Series.forEach(v => { if(v != null){ vMin = Math.min(vMin, v); vMax = Math.max(vMax, v); } });
       if(bmsbByIndex){
         bmsbByIndex.forEach(b => { if(b.sma!=null){ vMin=Math.min(vMin,b.sma); vMax=Math.max(vMax,b.sma); } if(b.ema!=null){ vMin=Math.min(vMin,b.ema); vMax=Math.max(vMax,b.ema); } });
       }
@@ -2071,6 +2089,10 @@
       activeLines.forEach(l => {
         svg += '<path d="' + pathFor(l.series) + '" fill="none" stroke="' + l.ind.color + '" stroke-width="1.5"/>';
       });
+
+      if(wma50Series){
+        svg += '<path d="' + pathFor(wma50Series) + '" fill="none" stroke="#ff9d5c" stroke-width="1.8"/>';
+      }
 
       if(m2Series){
         let m2d = "", started = false;
