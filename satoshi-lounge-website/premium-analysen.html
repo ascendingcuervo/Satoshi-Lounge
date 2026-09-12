@@ -81,7 +81,7 @@
     z-index:0;
   }
   .crumb{
-    display:inline-flex; align-items:center; gap:8px; position:relative; z-index:1;
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:6px 8px; position:relative; z-index:1;
     font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:20px;
   }
   .crumb a{ color:var(--gray); text-decoration:none; }
@@ -121,6 +121,15 @@
   .footer-warn{ display:flex; gap:14px; }
   .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(242,201,76,0.08); padding:6px 12px; border-radius:20px; }
   @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
+
+  .home-return{ display:flex; justify-content:center; margin-top:30px; }
+  .home-return a{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .home-return a:hover{ color:var(--gold); border-color:var(--gold); }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -167,6 +176,9 @@
         <h3>Cuervo Portfolio</h3>
         <p>Ein direkter Blick in mein eigenes Krypto- und Aktien-Portfolio.</p>
       </a>
+    </div>
+    <div class="home-return">
+      <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
   </main>
 

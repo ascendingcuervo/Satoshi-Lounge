@@ -81,7 +81,7 @@
     z-index:0;
   }
   .crumb{
-    display:inline-flex; align-items:center; gap:8px; position:relative; z-index:1;
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:6px 8px; position:relative; z-index:1;
     font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:20px;
   }
   .crumb a{ color:var(--gray); text-decoration:none; }
@@ -122,7 +122,7 @@
   .footer-warn span{ font-family:'Space Mono', monospace; font-size:0.72rem; color:var(--orange-deep); border:1.5px solid var(--orange); background:rgba(242,201,76,0.08); padding:6px 12px; border-radius:20px; }
   @media(max-width:600px){ .footer-links{ grid-template-columns:repeat(2, auto); } .footer-warn{ justify-content:flex-start; } }
 
-  .coin-head{ display:flex; align-items:center; gap:20px; margin-bottom:40px; }
+  .coin-head{ display:flex; align-items:center; gap:20px; margin-bottom:40px; margin-top:20px; }
   .coin-head-logo img{ width:64px; height:64px; border-radius:50%; }
   .coin-head h1{ font-size:1.6rem; color:var(--ink); margin-bottom:4px; }
   .coin-head-price{ font-family:'Space Mono', monospace; font-weight:700; font-size:1.5rem; color:var(--gold); }
@@ -142,6 +142,15 @@
   .empty-note{ color:var(--gray); font-size:0.88rem; }
   .analysis-back{ display:inline-block; color:var(--gray); text-decoration:none; font-size:0.85rem; }
   .analysis-back:hover{ color:var(--gold); }
+
+  .home-return{ display:flex; justify-content:center; margin-top:30px; }
+  .home-return a{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .home-return a:hover{ color:var(--gold); border-color:var(--gold); }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -170,24 +179,29 @@
     <div class="drawer-foot">satoshi-lounge.com</div>
   </nav>
 
-  <header class="hero">
-    <div class="crumb"><a href="premium-bereich.html">Premium Lounge</a> / Premium-Analysen</div>
-    <h1>Premium-Analysen</h1>
-    <p>Gründliche Analysen zu Bitcoin und ein direkter Einblick in mein eigenes Cuervo-Portfolio.</p>
+  <header class="hero" style="padding-bottom:10px;">
+    <div class="crumb"><a href="premium-bereich.html">Premium Lounge</a> / <a href="premium-analysen.html">Premium-Analysen</a> / <a href="cuervo-portfolio.html">Cuervo Portfolio</a> / <a href="cuervo-krypto.html">Krypto</a> / BNB</div>
   </header>
 
   <main>
-    <div class="choice-grid">
-      <a href="bitcoin-analyse.html" class="choice-card">
-        <div class="ic">📈</div>
-        <h3>Bitcoin Analyse</h3>
-        <p>Regelmäßige, tiefgehende Einordnung von Chart, Zyklus und Marktlage.</p>
-      </a>
-      <a href="cuervo-portfolio.html" class="choice-card">
-        <div class="ic">💼</div>
-        <h3>Cuervo Portfolio</h3>
-        <p>Ein direkter Blick in mein eigenes Krypto- und Aktien-Portfolio.</p>
-      </a>
+    <div class="coin-head" id="coinHead">
+      <div class="coin-head-logo"><img id="coinLogo" src="" alt="BNB"></div>
+      <div>
+        <h1 id="coinName">BNB</h1>
+        <div class="coin-head-price" id="coinPrice">Lädt…</div>
+        <div class="coin-head-change" id="coinChange"></div>
+      </div>
+    </div>
+
+    <h2 class="news-heading">Aktuelle News</h2>
+    <div id="coinNews" class="coin-news-list">
+      <p class="empty-note">Lädt News…</p>
+    </div>
+    <p class="attribution">Powered by CryptoCompare</p>
+
+    <a href="cuervo-krypto.html" class="analysis-back">← Zurück zur Übersicht</a>
+    <div class="home-return">
+      <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
   </main>
 

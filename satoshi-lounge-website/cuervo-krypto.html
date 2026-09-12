@@ -81,7 +81,7 @@
     z-index:0;
   }
   .crumb{
-    display:inline-flex; align-items:center; gap:8px; position:relative; z-index:1;
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:6px 8px; position:relative; z-index:1;
     font-family:'Space Mono', monospace; font-size:0.78rem; color:var(--gray); margin-bottom:20px;
   }
   .crumb a{ color:var(--gray); text-decoration:none; }
@@ -140,6 +140,15 @@
   .coin-price{ font-family:'Space Mono', monospace; font-weight:700; }
   .coin-change.up{ color:var(--gold); }
   .coin-change.down{ color:#ff6b6b; }
+
+  .home-return{ display:flex; justify-content:center; margin-top:30px; }
+  .home-return a{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Space Mono', monospace; font-size:0.8rem; color:var(--gray);
+    text-decoration:none; border:1.5px solid var(--line); padding:9px 18px;
+    border-radius:30px; transition:.2s;
+  }
+  .home-return a:hover{ color:var(--gold); border-color:var(--gold); }
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
@@ -180,6 +189,9 @@
       <div class="coin-row coin-row-head">
         <span>Coin</span><span>Preis</span><span>24h</span>
       </div>
+    </div>
+    <div class="home-return">
+      <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
   </main>
 
