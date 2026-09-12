@@ -287,6 +287,19 @@
   }
   .coming-soon-card p{ margin:0; }
 
+  .fed-countdown-box{
+    display:flex; gap:8px; margin-top:12px; background:#f4f4f4; border-radius:12px; padding:12px 10px;
+  }
+  .fed-countdown-unit{
+    flex:1; text-align:center; display:flex; flex-direction:column; align-items:center;
+  }
+  .fed-countdown-unit span{
+    font-family:'Space Mono', monospace; font-weight:700; font-size:1.3rem; color:#0a0a0d;
+  }
+  .fed-countdown-unit small{
+    font-size:0.62rem; color:#666; text-transform:uppercase; letter-spacing:0.03em; margin-top:2px;
+  }
+
   .fed-meetings-list{ display:flex; flex-direction:column; gap:8px; }
   .fed-meeting-row{
     display:flex; justify-content:space-between; align-items:center;
@@ -812,6 +825,12 @@
               <div class="stat-card">
                 <span class="stat-label">Nächste FOMC-Sitzung</span>
                 <span class="stat-value" id="fedNextMeeting">--</span>
+                <div class="fed-countdown-box" id="fedCountdownBox">
+                  <div class="fed-countdown-unit"><span id="cdDays">--</span><small>Tage</small></div>
+                  <div class="fed-countdown-unit"><span id="cdHours">--</span><small>Std</small></div>
+                  <div class="fed-countdown-unit"><span id="cdMins">--</span><small>Min</small></div>
+                  <div class="fed-countdown-unit"><span id="cdSecs">--</span><small>Sek</small></div>
+                </div>
               </div>
             </div>
 
@@ -1565,6 +1584,15 @@
       }
     }
 
+    function loadNewsWidgets(panel, attemptsLeft){
+      if(window.twttr && window.twttr.widgets){
+        window.twttr.widgets.load(panel);
+      }else if(attemptsLeft > 0){
+        // X's Skript lädt asynchron — falls es beim Klick noch nicht fertig ist, kurz erneut versuchen.
+        setTimeout(() => loadNewsWidgets(panel, attemptsLeft - 1), 500);
+      }
+    }
+
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -1574,8 +1602,8 @@
         panel.classList.add("active");
         // X's Widget-Skript übersieht Timelines, die beim Laden der Seite noch versteckt
         // (display:none) waren — deshalb hier gezielt neu anstoßen, sobald der Tab sichtbar wird.
-        if(btn.dataset.tab === "news" && window.twttr && window.twttr.widgets){
-          window.twttr.widgets.load(panel);
+        if(btn.dataset.tab === "news"){
+          loadNewsWidgets(panel, 10); // bis zu 10x alle 0,5s neu versuchen (5 Sekunden gesamt)
         }
       });
     });
@@ -2204,39 +2232,63 @@
       "2026-07-28", "2026-09-15", "2026-10-27", "2026-12-08",
     ];
 
+    function renderFedMeetings(){
+      const nextMeetingEl = document.getElementById("fedNextMeeting");
+      const meetingsListEl = document.getElementById("fedMeetingsList");
+      const countdownBox = document.getElementById("fedCountdownBox");
+      const cdDays = document.getElementById("cdDays"), cdHours = document.getElementById("cdHours");
+      const cdMins = document.getElementById("cdMins"), cdSecs = document.getElementById("cdSecs");
+
+      const now = Date.now();
+      const meetingTimes = FOMC_MEETINGS_2026.map(d => new Date(d + "T14:00:00-05:00").getTime());
+      const upcoming = meetingTimes.filter(t => t > now);
+      const nextMeetingTs = upcoming.length ? upcoming[0] : null;
+
+      if(nextMeetingTs){
+        nextMeetingEl.textContent = new Date(nextMeetingTs).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" });
+        const diff = nextMeetingTs - now;
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        cdDays.textContent = days; cdHours.textContent = String(hours).padStart(2,"0");
+        cdMins.textContent = String(mins).padStart(2,"0"); cdSecs.textContent = String(secs).padStart(2,"0");
+        countdownBox.style.display = "flex";
+      }else{
+        nextMeetingEl.textContent = "Kalender 2027 noch nicht veröffentlicht";
+        countdownBox.style.display = "none";
+      }
+
+      // Nur die Liste neu aufbauen, wenn sich seit dem letzten Tick tatsächlich etwas geändert hat
+      // (z.B. ein Termin ist gerade "vergangen" geworden) — spart unnötiges Re-Rendering jede Sekunde.
+      const stateKey = nextMeetingTs + "|" + meetingTimes.filter(t => t < now).length;
+      if(meetingsListEl.dataset.stateKey !== stateKey){
+        meetingsListEl.dataset.stateKey = stateKey;
+        meetingsListEl.innerHTML = FOMC_MEETINGS_2026.map(d => {
+          const ts = new Date(d + "T14:00:00-05:00").getTime();
+          const isPast = ts < now;
+          const isNext = ts === nextMeetingTs;
+          const dateStr = new Date(ts).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" });
+          let countdown = "Vergangen";
+          if(!isPast){
+            const days = Math.ceil((ts - now) / 86400000);
+            countdown = "in " + days + " Tagen";
+          }
+          return '<div class="fed-meeting-row' + (isNext ? " next" : "") + (isPast ? " past" : "") + '">' +
+            '<span class="fed-meeting-date">' + dateStr + '</span>' +
+            '<span class="fed-meeting-countdown">' + countdown + '</span>' +
+          '</div>';
+        }).join("");
+      }
+    }
+    renderFedMeetings();
+    setInterval(renderFedMeetings, 1000); // echter, tickender Countdown
+
     async function loadFedWatch(){
       const rangeEl = document.getElementById("fedRangeValue");
-      const nextMeetingEl = document.getElementById("fedNextMeeting");
       const statusEl = document.getElementById("fedStatus");
       const statusTextEl = document.getElementById("fedStatusText");
       const chartWrapEl = document.getElementById("fedChartWrap");
-      const meetingsListEl = document.getElementById("fedMeetingsList");
-
-      // Sitzungstermine + Countdown (unabhängig vom Datenabruf, läuft immer)
-      const now = Date.now();
-      const upcoming = FOMC_MEETINGS_2026.map(d => new Date(d + "T14:00:00-05:00").getTime()).filter(t => t > now);
-      const nextMeetingTs = upcoming.length ? upcoming[0] : null;
-      if(nextMeetingTs){
-        const daysLeft = Math.ceil((nextMeetingTs - now) / 86400000);
-        nextMeetingEl.textContent = new Date(nextMeetingTs).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" }) + " (in " + daysLeft + " Tagen)";
-      }else{
-        nextMeetingEl.textContent = "Kalender 2027 noch nicht veröffentlicht";
-      }
-      meetingsListEl.innerHTML = FOMC_MEETINGS_2026.map(d => {
-        const ts = new Date(d + "T14:00:00-05:00").getTime();
-        const isPast = ts < now;
-        const isNext = ts === nextMeetingTs;
-        const dateStr = new Date(ts).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" });
-        let countdown = "Vergangen";
-        if(!isPast){
-          const days = Math.ceil((ts - now) / 86400000);
-          countdown = "in " + days + " Tagen";
-        }
-        return '<div class="fed-meeting-row' + (isNext ? " next" : "") + (isPast ? " past" : "") + '">' +
-          '<span class="fed-meeting-date">' + dateStr + '</span>' +
-          '<span class="fed-meeting-countdown">' + countdown + '</span>' +
-        '</div>';
-      }).join("");
 
       // Echte Leitzins-Daten von FRED
       try{
