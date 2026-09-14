@@ -247,13 +247,26 @@
 
   /* ===== TOOL SHELL ===== */
   .tool-shell{
-    background:var(--bg-alt); border:1.5px solid var(--line); border-radius:20px;
+    background:transparent; border:1.5px solid var(--line); border-radius:20px;
     overflow:hidden; position:relative;
   }
   .tool-shell::before{
-    content:""; position:absolute; top:0; left:0; right:0; height:2px;
+    content:""; position:absolute; top:0; left:0; right:0; height:2px; z-index:3;
     background:linear-gradient(90deg, transparent, var(--purple) 50%, transparent);
   }
+  /* 3D-Erde als Hintergrund im Premium Chart-Tool — liegt hinter allen Inhalten,
+     aber vor dem allgemeinen Node-Netzwerk-Hintergrund der Seite. */
+  #earthCanvasWrap{
+    position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 20%, rgba(40,20,70,0.35), transparent 60%);
+  }
+  #earthCanvasWrap canvas{ display:block; width:100%; height:100%; }
+  .tool-topline, .tabs-nav, .tool-section, .disclaimer-note{ position:relative; z-index:2; }
+  /* Panels bekommen einen leicht transparenten, entkoppelten Kartenhintergrund,
+     damit Text über der Erde lesbar bleibt, ohne die Erde komplett zu verdecken. */
+  .tool-topline{ background:rgba(8,8,10,0.55); backdrop-filter:blur(6px); }
+  .tabs-nav{ background:rgba(8,8,10,0.35); backdrop-filter:blur(6px); }
+  .s-overview{ background:rgba(8,8,10,0.4); backdrop-filter:blur(4px); border-radius:16px; padding:22px; margin:10px; }
   .tool-topline{
     display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
     padding:22px 26px; border-bottom:1px solid var(--line-soft);
@@ -613,6 +626,7 @@
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
 <body>
 
@@ -671,51 +685,10 @@
   <!-- PAGE -->
   <main class="page">
 
-    <!-- GATE -->
-    <section class="gate-section" id="gateSection">
-      <div class="gate-anim">
-        <canvas id="gateCanvas"></canvas>
-        <div class="btc-coin">
-          <div class="ping-ring r1"></div>
-          <div class="ping-ring r2"></div>
-          <div class="ping-ring r3"></div>
-          <span>₿</span>
-        </div>
-      </div>
-      <span class="eyebrow">Kapitel 02</span>
-      <h1>Das Bitcoin-<span class="accent">Analysetool</span></h1>
-      <p class="gate-lead">Nur Bitcoin — kein Rauschen durch tausende Altcoins. Basiert auf einem eigenen Zeit- und Datenmodell.</p>
-      <button class="join-btn" id="joinBtn">Mitglied werden</button>
-      <div class="gate-sub">Kostenloser Zugang — einmal klicken und loslegen</div>
-    </section>
-
     <!-- TOOL -->
-    <section id="toolSectionWrap" style="display:none;">
+    <section id="toolSectionWrap">
       <div class="tool-shell">
-        <div class="tool-topline">
-          <div>
-            <span class="price-label">BTC / USD</span>
-            <div class="price-row">
-              <span class="price-value" id="priceValue">--</span>
-              <span class="price-change" id="priceChange" style="display:none;"></span>
-            </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:14px;">
-            <div class="live-status" id="liveStatus"><span class="live-dot"></span><span id="liveStatusText">Lädt…</span></div>
-            <button class="refresh-btn" id="refreshBtn" title="Aktualisieren">↻</button>
-          </div>
-        </div>
-
-        <!-- TABS -->
-        <div class="tabs-nav">
-          <button class="tab-btn active" data-tab="chart"><span class="tab-ic">📈</span><span>Chartanalyse</span></button>
-          <button class="tab-btn" data-tab="news"><span class="tab-ic">📰</span><span>News</span></button>
-          <button class="tab-btn" data-tab="liq"><span class="tab-ic">🔥</span><span>Liquidation Heatmap</span></button>
-          <button class="tab-btn" data-tab="feargreed"><span class="tab-ic">😨</span><span>Fear &amp; Greed</span></button>
-          <button class="tab-btn" data-tab="fedwatch"><span class="tab-ic">🏦</span><span>FED Watch</span></button>
-          <button class="tab-btn" data-tab="cycle"><span class="tab-ic">⏳</span><span>Zeit &amp; Zyklus</span></button>
-          <button class="tab-btn" data-tab="portfolio"><span class="tab-ic">💼</span><span>Portfolio</span></button>
-        </div>
+        <div id="earthCanvasWrap"></div>
 
         <!-- TAB: CHARTANALYSE -->
         <div class="tab-panel active" id="panel-chart">
@@ -772,114 +745,6 @@
           </div>
         </div>
 
-        <!-- TAB: NEWS -->
-        <div class="tab-panel" id="panel-news">
-          <div class="tool-section s-news">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>News</h2></div>
-            <div class="news-feeds">
-              <div class="news-feed-card feed-watcherguru">
-                <h3>Watcher.Guru</h3>
-                <a class="twitter-timeline" data-theme="dark" data-height="600" data-chrome="noheader nofooter" href="https://twitter.com/WatcherGuru?ref_src=twsrc%5Etfw">Tweets by WatcherGuru</a>
-              </div>
-              <div class="news-feed-card feed-kobeissi">
-                <h3>The Kobeissi Letter</h3>
-                <a class="twitter-timeline" data-theme="dark" data-height="600" data-chrome="noheader nofooter" href="https://twitter.com/KobeissiLetter?ref_src=twsrc%5Etfw">Tweets by KobeissiLetter</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: LIQUIDATION HEATMAP -->
-        <div class="tab-panel" id="panel-liq">
-          <div class="tool-section s-liq">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Liquidation Heatmap</h2></div>
-            <div class="live-status" id="liqStatus" style="margin-bottom:14px;"><span class="live-dot"></span><span id="liqStatusText">Lädt…</span></div>
-            <div class="liq-wrap" id="liqWrap">
-              <div class="chart-loading" id="liqLoading">Lädt Heatmap…</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: FEAR & GREED -->
-        <div class="tab-panel" id="panel-feargreed">
-          <div class="tool-section s-feargreed">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Angst &amp; Gier Index</h2></div>
-            <div class="fng-wrap">
-              <div class="fng-value" id="fngValue">--</div>
-              <div class="fng-label" id="fngLabel">Lädt…</div>
-              <div class="fng-track"><div class="fng-marker" id="fngMarker"></div></div>
-              <div class="fng-scale-labels">
-                <span>Extreme Angst</span><span class="fng-lbl-mid">Angst</span><span class="fng-lbl-mid">Neutral</span><span class="fng-lbl-mid">Gier</span><span>Extreme Gier</span>
-              </div>
-            </div>
-            <div class="fng-compare-table" id="fngCompareTable"></div>
-          </div>
-        </div>
-
-        <!-- TAB: FED WATCH -->
-        <div class="tab-panel" id="panel-fedwatch">
-          <div class="tool-section s-fedwatch">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>FED Watch</h2></div>
-
-            <div class="stat-grid" style="margin-bottom:22px;">
-              <div class="stat-card">
-                <span class="stat-label">Aktueller Zielkorridor</span>
-                <span class="stat-value" id="fedRangeValue">Lädt…</span>
-              </div>
-              <div class="stat-card">
-                <span class="stat-label">Nächste FOMC-Sitzung</span>
-                <span class="stat-value" id="fedNextMeeting">--</span>
-                <div class="fed-countdown-box" id="fedCountdownBox">
-                  <div class="fed-countdown-unit"><span id="cdDays">--</span><small>Tage</small></div>
-                  <div class="fed-countdown-unit"><span id="cdHours">--</span><small>Std</small></div>
-                  <div class="fed-countdown-unit"><span id="cdMins">--</span><small>Min</small></div>
-                  <div class="fed-countdown-unit"><span id="cdSecs">--</span><small>Sek</small></div>
-                </div>
-              </div>
-            </div>
-
-            <h3 class="tab-subhead">Leitzins-Verlauf</h3>
-            <div class="live-status" id="fedStatus" style="margin-bottom:12px;"><span class="live-dot"></span><span id="fedStatusText">Lädt…</span></div>
-            <div class="liq-wrap" id="fedChartWrap">
-              <div class="chart-loading" id="fedChartLoading">Lädt Leitzins-Historie…</div>
-            </div>
-
-            <h3 class="tab-subhead" style="margin-top:26px;">FOMC-Sitzungstermine 2026</h3>
-            <div id="fedMeetingsList" class="fed-meetings-list"></div>
-
-            <a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener" class="external-btn" style="display:inline-block; margin-top:22px;">CME FedWatch Tool (extern)</a>
-          </div>
-        </div>
-
-        <!-- TAB: ZEIT & ZYKLUS -->
-        <div class="tab-panel" id="panel-cycle">
-          <div class="tool-section s-cycle">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Zeit- &amp; Zyklusmodell</h2></div>
-            <div class="stat-grid" id="cycleStats"></div>
-            <div class="cycle-bar-wrap">
-              <div class="cycle-bar"><div class="cycle-bar-fill" id="cycleBarFill"></div></div>
-              <div class="cycle-bar-day" id="cycleBarPct">--</div>
-              <div class="cycle-bar-labels"><span id="cycleBarLeft">--</span><span id="cycleBarRight">--</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: PORTFOLIO -->
-        <div class="tab-panel" id="panel-portfolio">
-          <div class="tool-section s-portfolio">
-            <div class="tool-section-head"><span class="tool-section-num">01</span><h2>Portfolio &amp; Steuer-Hilfe</h2></div>
-            <div class="stat-grid" id="portfolioSummary" style="margin-bottom:20px;"></div>
-            <div class="add-row">
-              <input type="date" class="tool-input" id="entryDate">
-              <input type="number" class="tool-input" id="entryAmount" placeholder="USD" min="1">
-              <button class="add-btn" id="addEntryBtn">+</button>
-            </div>
-            <div id="portfolioList"></div>
-            <div class="tax-info">
-              <strong>Steuer-Hinweis (Deutschland):</strong> Bitcoin-Gewinne sind nach einer Haltefrist von einem Jahr komplett steuerfrei — unabhängig von der Höhe (§ 23 EStG). Verkaufst du innerhalb eines Jahres, greift dein persönlicher Einkommensteuersatz, sofern der Gesamtgewinn im Jahr die Freigrenze von 1.000 € übersteigt. Diese Regel wird politisch aktuell diskutiert und kann sich ändern. Das ersetzt keine individuelle Steuerberatung — bei Fragen wende dich an einen Steuerberater.
-            </div>
-          </div>
-        </div>
       </div>
 
       <p class="disclaimer-note">Keine Anlageberatung und keine Steuerberatung — alle Daten und Berechnungen dienen ausschließlich Informationszwecken.</p>
@@ -1063,52 +928,104 @@
     setTimeout(endIntro, 5600);
   })();
 
-  // ===== GATE: AUFSTEIGENDE PARTIKEL UM DIE BITCOIN-MÜNZE =====
-  (function(){
-    const canvas = document.getElementById('gateCanvas');
-    const ctx = canvas.getContext('2d');
-    let w, h, particles;
+  // ===== 3D-ERDE IM HINTERGRUND (Three.js) =====
+  // Läuft hinter dem gesamten transparenten Chart-Bereich, nicht nur als Deko oben.
+  // Texturen: offizielle Three.js-Beispiel-Assets (Tag + Nacht-Lichter).
+  function initEarthBackground(){
+    const wrap = document.getElementById('earthCanvasWrap');
+    if(!wrap || typeof THREE === 'undefined') return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+    camera.position.set(0, 0, 8);
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    wrap.appendChild(renderer.domElement);
+
+    // Sternenhimmel
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 900;
+    const starPos = new Float32Array(starCount * 3);
+    for(let i = 0; i < starCount; i++){
+      const r = 60 + Math.random() * 140;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+      starPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+      starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+      starPos[i*3+2] = r * Math.cos(phi);
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.75 });
+    scene.add(new THREE.Points(starGeo, starMat));
+
+    // Erde: Tag-Textur (beleuchtet) + Nacht-Lichter (emissive) auf derselben Kugel
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    const dayTex = loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+    const nightTex = loader.load('https://threejs.org/examples/textures/planets/earth_lights_2048.png');
+    const specTex = loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+
+    const earthGeo = new THREE.SphereGeometry(2.6, 64, 64);
+    const earthMat = new THREE.MeshPhongMaterial({
+      map: dayTex,
+      specularMap: specTex,
+      specular: new THREE.Color(0x333333),
+      shininess: 6,
+      emissiveMap: nightTex,
+      emissive: new THREE.Color(0xffffff),
+      emissiveIntensity: 1.0
+    });
+    // Nacht-Lichter nur auf der unbeleuchteten Seite zeigen (nicht auf der Tagseite mit-aufhellen)
+    earthMat.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <emissivemap_fragment>',
+        `
+        #ifdef USE_EMISSIVEMAP
+          vec4 emissiveColor = texture2D( emissiveMap, vEmissiveMapUv );
+          float sunFacing = clamp(dot(normalize(vNormal), normalize(directionalLights[0].direction)), 0.0, 1.0);
+          emissiveColor.rgb *= (1.0 - smoothstep(0.0, 0.35, sunFacing));
+          totalEmissiveRadiance *= emissiveColor.rgb;
+        #endif
+        `
+      );
+    };
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    earth.position.set(1.6, 0.4, -2);
+    scene.add(earth);
+
+    const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+    sun.position.set(-5, 2, 4);
+    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x1a1a2e, 0.9));
+
     function resize(){
-      const rect = canvas.parentElement.getBoundingClientRect();
-      w = canvas.width = rect.width; h = canvas.height = rect.height;
+      const w = wrap.clientWidth || 1, h = wrap.clientHeight || 1;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
     }
-    function spawn(){
-      return {
-        x: w/2 + (Math.random()-0.5)*w*0.8,
-        y: h + Math.random()*40,
-        vy: 0.4 + Math.random()*0.8,
-        vx: (Math.random()-0.5)*0.3,
-        r: Math.random()*2 + 0.8,
-        life: 0, maxLife: 200 + Math.random()*160
-      };
-    }
-    particles = Array.from({length: 34}, spawn);
     resize();
     window.addEventListener('resize', resize);
-    function step(){
-      ctx.clearRect(0,0,w,h);
-      particles.forEach((p, i) => {
-        p.x += p.vx; p.y -= p.vy; p.life++;
-        const fade = 1 - p.life/p.maxLife;
-        if(fade <= 0 || p.y < -10){ particles[i] = spawn(); return; }
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(247,147,26,${Math.max(0,fade*0.75)})`;
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fill();
-      });
-      requestAnimationFrame(step);
-    }
-    step();
-  })();
+    if(window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
 
-  // ===== GATE FREISCHALTEN =====
-  document.getElementById('joinBtn').addEventListener('click', () => {
-    document.getElementById('gateSection').style.display = 'none';
-    const toolWrap = document.getElementById('toolSectionWrap');
-    toolWrap.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    initTool();
-  });
+    let running = true;
+    document.addEventListener('visibilitychange', () => { running = !document.hidden; });
+
+    function animate(){
+      requestAnimationFrame(animate);
+      if(!running) return;
+      earth.rotation.y += 0.0009;
+      renderer.render(scene, camera);
+    }
+    animate();
+  }
+
+  // ===== TOOL DIREKT INITIALISIEREN =====
+  // Keine separate "Mitglied werden"-Gate-Seite mehr — der Login-Schutz läuft
+  // über #chartLoginGate (siehe checkChartAccess weiter unten).
+  initTool();
+  initEarthBackground();
 
   // ===== BITCOIN ANALYSETOOL =====
   let toolInitialized = false;
@@ -1514,6 +1431,7 @@
       return days.reduce((a,b)=>a+b, 0) / days.length;
     }
     function renderCycle(){
+      if(!document.getElementById("cycleStats")) return; // Panel im Premium Chart aktuell nicht eingebunden
       const now = Date.now();
       const ageDays = Math.floor((now - GENESIS)/86400000);
       const ageYears = (ageDays/365.25).toFixed(1);
@@ -1553,6 +1471,7 @@
       const fngLabelEl = document.getElementById("fngLabel");
       const fngMarkerEl = document.getElementById("fngMarker");
       const fngTableEl = document.getElementById("fngCompareTable");
+      if(!fngValueEl) return; // Panel im Premium Chart aktuell nicht eingebunden
       const labelMap = { "Extreme Fear":"Extreme Angst", "Fear":"Angst", "Neutral":"Neutral", "Greed":"Gier", "Extreme Greed":"Extreme Gier" };
       try{
         // limit=370 reicht für "vor 1 Jahr" (Tag 365) plus etwas Puffer für die 12-Monats-Extremwerte
@@ -1788,15 +1707,19 @@
     }
 
     function updateHeader(){
-      priceValueEl.textContent = formatUSD(currentPrice);
+      // Die Preis-Kopfzeile wurde aus dem Premium Chart entfernt (Vollbild-Layout) —
+      // diese Elemente existieren hier nicht mehr, daher überall optional verkettet.
+      if(priceValueEl) priceValueEl.textContent = formatUSD(currentPrice);
       if(change24h != null){
         const up = change24h >= 0;
-        priceChangeEl.style.display = "inline-block";
-        priceChangeEl.className = "price-change " + (up ? "up" : "down");
-        priceChangeEl.textContent = (up ? "+" : "") + change24h.toFixed(2) + "%";
-      }else{ priceChangeEl.style.display = "none"; }
-      liveStatusEl.classList.toggle("is-live", isLive);
-      liveStatusTextEl.textContent = isLive ? "LIVE" : "Fallback-Daten";
+        if(priceChangeEl){
+          priceChangeEl.style.display = "inline-block";
+          priceChangeEl.className = "price-change " + (up ? "up" : "down");
+          priceChangeEl.textContent = (up ? "+" : "") + change24h.toFixed(2) + "%";
+        }
+      }else if(priceChangeEl){ priceChangeEl.style.display = "none"; }
+      if(liveStatusEl) liveStatusEl.classList.toggle("is-live", isLive);
+      if(liveStatusTextEl) liveStatusTextEl.textContent = isLive ? "LIVE" : "Fallback-Daten";
     }
 
     // Rohdaten (4-Tage- oder Tageskerzen von CoinGecko) zu echten Wochenkerzen zusammenfassen —
@@ -2233,21 +2156,26 @@
     const portfolioListEl = document.getElementById("portfolioList");
     const portfolioSummaryEl = document.getElementById("portfolioSummary");
 
-    addEntryBtn.addEventListener("click", () => {
-      const date = entryDateInput.value, amount = parseFloat(entryAmountInput.value);
-      if(!date || !amount || amount <= 0) return;
-      entries.push({ id: Date.now(), date, amount });
-      entries.sort((a,b) => a.date.localeCompare(b.date));
-      persistEntries();
-      entryDateInput.value = ""; entryAmountInput.value = "";
-      renderPortfolio();
-    });
+    // Portfolio-Tab ist im Premium Chart (Vollbild) aktuell nicht eingebunden —
+    // Button existiert hier nicht, daher abgesichert.
+    if(addEntryBtn){
+      addEntryBtn.addEventListener("click", () => {
+        const date = entryDateInput.value, amount = parseFloat(entryAmountInput.value);
+        if(!date || !amount || amount <= 0) return;
+        entries.push({ id: Date.now(), date, amount });
+        entries.sort((a,b) => a.date.localeCompare(b.date));
+        persistEntries();
+        entryDateInput.value = ""; entryAmountInput.value = "";
+        renderPortfolio();
+      });
+    }
 
     function daysHeld(dateStr){
       return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
     }
 
     function renderPortfolio(){
+      if(!portfolioListEl) return; // Panel im Premium Chart aktuell nicht eingebunden
       let invested = 0, btc = 0, freeBtc = 0, freeValue = 0, pendingBtc = 0, pendingValue = 0;
       entries.forEach(e => {
         const entryTs = new Date(e.date).getTime();
@@ -2360,6 +2288,7 @@
       const statusEl = document.getElementById("fedStatus");
       const statusTextEl = document.getElementById("fedStatusText");
       const chartWrapEl = document.getElementById("fedChartWrap");
+      if(!rangeEl) return; // Panel im Premium Chart aktuell nicht eingebunden
 
       // Echte Leitzins-Daten von FRED
       try{
@@ -2428,6 +2357,7 @@
       const statusEl = document.getElementById("liqStatus");
       const statusTextEl = document.getElementById("liqStatusText");
       const liqWrap = document.getElementById("liqWrap");
+      if(!liqWrap) return; // Panel im Premium Chart aktuell nicht eingebunden
       let openInterestUsd = null, longShare = 0.5, shortShare = 0.5, liqLive = false;
       let liqPrice = currentPrice;
       try{
@@ -2543,12 +2473,9 @@
       liqWrap.innerHTML = svg;
     }
 
-    refreshBtn.addEventListener("click", () => { loadLive().then(loadLiquidationHeatmap); });
-    renderCycle();
-    loadFearGreed();
-    loadFedWatch();
-    renderPortfolio();
-    loadLive().then(loadLiquidationHeatmap);
+    // Preis-Kopfzeile mit Refresh-Button ist im Vollbild-Layout nicht mehr vorhanden.
+    if(refreshBtn) refreshBtn.addEventListener("click", () => { loadLive(); });
+    loadLive();
   }
 </script>
 
