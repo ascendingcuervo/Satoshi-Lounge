@@ -31,9 +31,9 @@
     font-family:'Inter', sans-serif;
     overflow-x:hidden;
   }
-  #nodesCanvas{
+  #earthCanvas{
     position:fixed; top:0; left:0; width:100vw; height:100vh;
-    z-index:0; pointer-events:none; display:block;
+    z-index:0; pointer-events:none; display:block; background:#000;
   }
   .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
   h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
@@ -247,26 +247,9 @@
 
   /* ===== TOOL SHELL ===== */
   .tool-shell{
-    background:transparent; border:1.5px solid var(--line); border-radius:20px;
-    overflow:hidden; position:relative;
+    background:transparent; border:none; border-radius:0;
+    overflow:visible; position:relative;
   }
-  .tool-shell::before{
-    content:""; position:absolute; top:0; left:0; right:0; height:2px; z-index:3;
-    background:linear-gradient(90deg, transparent, var(--purple) 50%, transparent);
-  }
-  /* 3D-Erde als Hintergrund im Premium Chart-Tool — liegt hinter allen Inhalten,
-     aber vor dem allgemeinen Node-Netzwerk-Hintergrund der Seite. */
-  #earthCanvasWrap{
-    position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none;
-    background:radial-gradient(ellipse at 50% 20%, rgba(40,20,70,0.35), transparent 60%);
-  }
-  #earthCanvasWrap canvas{ display:block; width:100%; height:100%; }
-  .tool-topline, .tabs-nav, .tool-section, .disclaimer-note{ position:relative; z-index:2; }
-  /* Panels bekommen einen leicht transparenten, entkoppelten Kartenhintergrund,
-     damit Text über der Erde lesbar bleibt, ohne die Erde komplett zu verdecken. */
-  .tool-topline{ background:rgba(8,8,10,0.55); backdrop-filter:blur(6px); }
-  .tabs-nav{ background:rgba(8,8,10,0.35); backdrop-filter:blur(6px); }
-  .s-overview{ background:rgba(8,8,10,0.4); backdrop-filter:blur(4px); border-radius:16px; padding:22px; margin:10px; }
   .tool-topline{
     display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
     padding:22px 26px; border-bottom:1px solid var(--line-soft);
@@ -626,7 +609,6 @@
 </style>
 <link rel="stylesheet" href="auth.css">
 <link rel="stylesheet" href="cookie-consent.css">
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
 <body>
 
@@ -646,7 +628,7 @@
     <button class="intro-skip" id="introSkip">Skip →</button>
   </div>
 
-  <canvas id="nodesCanvas"></canvas>
+  <canvas id="earthCanvas"></canvas>
 
   <!-- TOP BAR -->
   <div class="topbar">
@@ -688,7 +670,6 @@
     <!-- TOOL -->
     <section id="toolSectionWrap">
       <div class="tool-shell">
-        <div id="earthCanvasWrap"></div>
 
         <!-- TAB: CHARTANALYSE -->
         <div class="tab-panel active" id="panel-chart">
@@ -786,6 +767,7 @@
     </div>
   </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
   const burger = document.getElementById('burgerBtn');
   const drawer = document.getElementById('drawer');
@@ -801,52 +783,83 @@
     a.addEventListener('click', () => toggleDrawer(false));
   });
 
-  // ===== ANIMIERTES BITCOIN-NODE-NETZWERK IM HINTERGRUND =====
+  // ===== 3D-ERDE ALS HINTERGRUND (Three.js) — Tag-/Nachtseite, Sternenhimmel, sehr langsame Drehung =====
   (function(){
-    const canvas = document.getElementById('nodesCanvas');
-    const ctx = canvas.getContext('2d');
-    let w, h, nodes;
-    const isMobile = window.matchMedia('(max-width: 700px)').matches;
-    const COUNT = isMobile ? 45 : 110;
-    const LINK_DIST = isMobile ? 110 : 150;
-    function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-    function makeNodes(){
-      nodes = Array.from({length: COUNT}, () => ({
-        x: Math.random()*w, y: Math.random()*h,
-        vx: (Math.random()-0.5)*0.35, vy: (Math.random()-0.5)*0.35,
-        r: Math.random()*1.6 + 1.1, pulse: Math.random()*Math.PI*2
-      }));
+    const canvas = document.getElementById('earthCanvas');
+    if(!window.THREE || !canvas) return; // sollte Three.js nicht laden, bleibt einfach der schwarze Hintergrund
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(2.6, 0.6, 3.4);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // Handy-Performance im Blick behalten
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Sternenhimmel: viele kleine Punkte weit im Hintergrund verteilt
+    const starGeo = new THREE.BufferGeometry();
+    const STAR_COUNT = 3500;
+    const starPositions = new Float32Array(STAR_COUNT * 3);
+    for(let i = 0; i < STAR_COUNT; i++){
+      const r = 60 + Math.random() * 140;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+      starPositions[i*3]     = r * Math.sin(phi) * Math.cos(theta);
+      starPositions[i*3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      starPositions[i*3 + 2] = r * Math.cos(phi);
     }
-    resize(); makeNodes();
-    window.addEventListener('resize', () => { resize(); });
-    function step(){
-      ctx.clearRect(0,0,w,h);
-      for(const n of nodes){
-        n.x += n.vx; n.y += n.vy; n.pulse += 0.02;
-        if(n.x < 0 || n.x > w) n.vx *= -1;
-        if(n.y < 0 || n.y > h) n.vy *= -1;
-      }
-      for(let i=0; i<nodes.length; i++){
-        for(let j=i+1; j<nodes.length; j++){
-          const a = nodes[i], b = nodes[j];
-          const dx = a.x-b.x, dy = a.y-b.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          if(dist < LINK_DIST){
-            const alpha = (1 - dist/LINK_DIST) * 0.35;
-            ctx.strokeStyle = `rgba(247,147,26,${alpha})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-          }
-        }
-      }
-      for(const n of nodes){
-        const glow = 0.55 + Math.sin(n.pulse)*0.25;
-        ctx.beginPath(); ctx.fillStyle = `rgba(247,147,26,${glow})`;
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
-      }
-      requestAnimationFrame(step);
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, sizeAttenuation: true, transparent: true, opacity: 0.8 });
+    scene.add(new THREE.Points(starGeo, starMat));
+
+    // Erde: Tages-Textur (Karte) + Nacht-Textur (Stadtlichter, als "emissive" — leuchtet unabhängig vom Sonnenlicht)
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
+    const dayTexture = loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+    const nightTexture = loader.load('https://threejs.org/examples/textures/planets/earth_lights_2048.png');
+    const specularTexture = loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+
+    const earthGeo = new THREE.SphereGeometry(1.35, 64, 64);
+    const earthMat = new THREE.MeshPhongMaterial({
+      map: dayTexture,
+      specularMap: specularTexture,
+      specular: new THREE.Color(0x333333),
+      shininess: 6,
+      emissiveMap: nightTexture,
+      emissive: new THREE.Color(0xffffff),
+      emissiveIntensity: 1.15,
+    });
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    earth.rotation.z = 23.4 * Math.PI / 180; // echte Erdachsen-Neigung
+    scene.add(earth);
+
+    // Dezenter Atmosphären-Schimmer: eine etwas größere, halbtransparente Kugel von innen beleuchtet
+    const atmoGeo = new THREE.SphereGeometry(1.4, 64, 64);
+    const atmoMat = new THREE.MeshBasicMaterial({ color: 0x4fa8ff, transparent: true, opacity: 0.08, side: THREE.BackSide });
+    scene.add(new THREE.Mesh(atmoGeo, atmoMat));
+
+    // "Sonne": gerichtetes Licht erzeugt die Tag-/Nachtgrenze auf der Erde
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    sunLight.position.set(5, 1.5, 2);
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0x223344, 0.35)); // schwaches Blau, damit die Nachtseite nicht komplett schwarz wirkt
+
+    function resize(){
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    step();
+    window.addEventListener('resize', resize);
+
+    // Ganz, ganz langsame Drehung — eine volle Umdrehung dauert real mehrere Stunden.
+    const ROTATION_SPEED = 0.00003;
+    function animate(){
+      earth.rotation.y += ROTATION_SPEED;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
   })();
 
   // ===== INTRO-ANIMATION: UNIVERSUM, BLITZ, ROTIERENDE ERDE, JAHRESZÄHLER =====
@@ -928,104 +941,8 @@
     setTimeout(endIntro, 5600);
   })();
 
-  // ===== 3D-ERDE IM HINTERGRUND (Three.js) =====
-  // Läuft hinter dem gesamten transparenten Chart-Bereich, nicht nur als Deko oben.
-  // Texturen: offizielle Three.js-Beispiel-Assets (Tag + Nacht-Lichter).
-  function initEarthBackground(){
-    const wrap = document.getElementById('earthCanvasWrap');
-    if(!wrap || typeof THREE === 'undefined') return;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    camera.position.set(0, 0, 8);
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    wrap.appendChild(renderer.domElement);
-
-    // Sternenhimmel
-    const starGeo = new THREE.BufferGeometry();
-    const starCount = 900;
-    const starPos = new Float32Array(starCount * 3);
-    for(let i = 0; i < starCount; i++){
-      const r = 60 + Math.random() * 140;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos((Math.random() * 2) - 1);
-      starPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      starPos[i*3+2] = r * Math.cos(phi);
-    }
-    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.75 });
-    scene.add(new THREE.Points(starGeo, starMat));
-
-    // Erde: Tag-Textur (beleuchtet) + Nacht-Lichter (emissive) auf derselben Kugel
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
-    const dayTex = loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
-    const nightTex = loader.load('https://threejs.org/examples/textures/planets/earth_lights_2048.png');
-    const specTex = loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
-
-    const earthGeo = new THREE.SphereGeometry(2.6, 64, 64);
-    const earthMat = new THREE.MeshPhongMaterial({
-      map: dayTex,
-      specularMap: specTex,
-      specular: new THREE.Color(0x333333),
-      shininess: 6,
-      emissiveMap: nightTex,
-      emissive: new THREE.Color(0xffffff),
-      emissiveIntensity: 1.0
-    });
-    // Nacht-Lichter nur auf der unbeleuchteten Seite zeigen (nicht auf der Tagseite mit-aufhellen)
-    earthMat.onBeforeCompile = (shader) => {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <emissivemap_fragment>',
-        `
-        #ifdef USE_EMISSIVEMAP
-          vec4 emissiveColor = texture2D( emissiveMap, vEmissiveMapUv );
-          float sunFacing = clamp(dot(normalize(vNormal), normalize(directionalLights[0].direction)), 0.0, 1.0);
-          emissiveColor.rgb *= (1.0 - smoothstep(0.0, 0.35, sunFacing));
-          totalEmissiveRadiance *= emissiveColor.rgb;
-        #endif
-        `
-      );
-    };
-    const earth = new THREE.Mesh(earthGeo, earthMat);
-    earth.position.set(1.6, 0.4, -2);
-    scene.add(earth);
-
-    const sun = new THREE.DirectionalLight(0xffffff, 1.6);
-    sun.position.set(-5, 2, 4);
-    scene.add(sun);
-    scene.add(new THREE.AmbientLight(0x1a1a2e, 0.9));
-
-    function resize(){
-      const w = wrap.clientWidth || 1, h = wrap.clientHeight || 1;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    resize();
-    window.addEventListener('resize', resize);
-    if(window.ResizeObserver) new ResizeObserver(resize).observe(wrap);
-
-    let running = true;
-    document.addEventListener('visibilitychange', () => { running = !document.hidden; });
-
-    function animate(){
-      requestAnimationFrame(animate);
-      if(!running) return;
-      earth.rotation.y += 0.0009;
-      renderer.render(scene, camera);
-    }
-    animate();
-  }
-
-  // ===== TOOL DIREKT INITIALISIEREN =====
-  // Keine separate "Mitglied werden"-Gate-Seite mehr — der Login-Schutz läuft
-  // über #chartLoginGate (siehe checkChartAccess weiter unten).
+  // ===== BITCOIN ANALYSETOOL DIREKT INITIALISIEREN (kein "Mitglied werden"-Gate mehr — echter Login gilt bereits) =====
   initTool();
-  initEarthBackground();
 
   // ===== BITCOIN ANALYSETOOL =====
   let toolInitialized = false;
@@ -1431,7 +1348,6 @@
       return days.reduce((a,b)=>a+b, 0) / days.length;
     }
     function renderCycle(){
-      if(!document.getElementById("cycleStats")) return; // Panel im Premium Chart aktuell nicht eingebunden
       const now = Date.now();
       const ageDays = Math.floor((now - GENESIS)/86400000);
       const ageYears = (ageDays/365.25).toFixed(1);
@@ -1471,7 +1387,6 @@
       const fngLabelEl = document.getElementById("fngLabel");
       const fngMarkerEl = document.getElementById("fngMarker");
       const fngTableEl = document.getElementById("fngCompareTable");
-      if(!fngValueEl) return; // Panel im Premium Chart aktuell nicht eingebunden
       const labelMap = { "Extreme Fear":"Extreme Angst", "Fear":"Angst", "Neutral":"Neutral", "Greed":"Gier", "Extreme Greed":"Extreme Gier" };
       try{
         // limit=370 reicht für "vor 1 Jahr" (Tag 365) plus etwas Puffer für die 12-Monats-Extremwerte
@@ -1707,19 +1622,16 @@
     }
 
     function updateHeader(){
-      // Die Preis-Kopfzeile wurde aus dem Premium Chart entfernt (Vollbild-Layout) —
-      // diese Elemente existieren hier nicht mehr, daher überall optional verkettet.
-      if(priceValueEl) priceValueEl.textContent = formatUSD(currentPrice);
+      if(!priceValueEl) return; // Preis-Kopfzeile gibt es im Premium-Vollbild-Layout nicht mehr
+      priceValueEl.textContent = formatUSD(currentPrice);
       if(change24h != null){
         const up = change24h >= 0;
-        if(priceChangeEl){
-          priceChangeEl.style.display = "inline-block";
-          priceChangeEl.className = "price-change " + (up ? "up" : "down");
-          priceChangeEl.textContent = (up ? "+" : "") + change24h.toFixed(2) + "%";
-        }
-      }else if(priceChangeEl){ priceChangeEl.style.display = "none"; }
-      if(liveStatusEl) liveStatusEl.classList.toggle("is-live", isLive);
-      if(liveStatusTextEl) liveStatusTextEl.textContent = isLive ? "LIVE" : "Fallback-Daten";
+        priceChangeEl.style.display = "inline-block";
+        priceChangeEl.className = "price-change " + (up ? "up" : "down");
+        priceChangeEl.textContent = (up ? "+" : "") + change24h.toFixed(2) + "%";
+      }else{ priceChangeEl.style.display = "none"; }
+      liveStatusEl.classList.toggle("is-live", isLive);
+      liveStatusTextEl.textContent = isLive ? "LIVE" : "Fallback-Daten";
     }
 
     // Rohdaten (4-Tage- oder Tageskerzen von CoinGecko) zu echten Wochenkerzen zusammenfassen —
@@ -2156,26 +2068,22 @@
     const portfolioListEl = document.getElementById("portfolioList");
     const portfolioSummaryEl = document.getElementById("portfolioSummary");
 
-    // Portfolio-Tab ist im Premium Chart (Vollbild) aktuell nicht eingebunden —
-    // Button existiert hier nicht, daher abgesichert.
-    if(addEntryBtn){
-      addEntryBtn.addEventListener("click", () => {
-        const date = entryDateInput.value, amount = parseFloat(entryAmountInput.value);
-        if(!date || !amount || amount <= 0) return;
-        entries.push({ id: Date.now(), date, amount });
-        entries.sort((a,b) => a.date.localeCompare(b.date));
-        persistEntries();
-        entryDateInput.value = ""; entryAmountInput.value = "";
-        renderPortfolio();
-      });
-    }
+    if(addEntryBtn) addEntryBtn.addEventListener("click", () => {
+      const date = entryDateInput.value, amount = parseFloat(entryAmountInput.value);
+      if(!date || !amount || amount <= 0) return;
+      entries.push({ id: Date.now(), date, amount });
+      entries.sort((a,b) => a.date.localeCompare(b.date));
+      persistEntries();
+      entryDateInput.value = ""; entryAmountInput.value = "";
+      renderPortfolio();
+    });
 
     function daysHeld(dateStr){
       return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
     }
 
     function renderPortfolio(){
-      if(!portfolioListEl) return; // Panel im Premium Chart aktuell nicht eingebunden
+      if(!portfolioSummaryEl) return; // Portfolio-Tab gibt es im Premium-Vollbild-Layout nicht mehr
       let invested = 0, btc = 0, freeBtc = 0, freeValue = 0, pendingBtc = 0, pendingValue = 0;
       entries.forEach(e => {
         const entryTs = new Date(e.date).getTime();
@@ -2233,6 +2141,7 @@
 
     function renderFedMeetings(){
       const nextMeetingEl = document.getElementById("fedNextMeeting");
+      if(!nextMeetingEl) return; // FED-Watch-Tab gibt es im Premium-Vollbild-Layout nicht mehr
       const meetingsListEl = document.getElementById("fedMeetingsList");
       const countdownBox = document.getElementById("fedCountdownBox");
       const cdDays = document.getElementById("cdDays"), cdHours = document.getElementById("cdHours");
@@ -2288,7 +2197,6 @@
       const statusEl = document.getElementById("fedStatus");
       const statusTextEl = document.getElementById("fedStatusText");
       const chartWrapEl = document.getElementById("fedChartWrap");
-      if(!rangeEl) return; // Panel im Premium Chart aktuell nicht eingebunden
 
       // Echte Leitzins-Daten von FRED
       try{
@@ -2357,7 +2265,6 @@
       const statusEl = document.getElementById("liqStatus");
       const statusTextEl = document.getElementById("liqStatusText");
       const liqWrap = document.getElementById("liqWrap");
-      if(!liqWrap) return; // Panel im Premium Chart aktuell nicht eingebunden
       let openInterestUsd = null, longShare = 0.5, shortShare = 0.5, liqLive = false;
       let liqPrice = currentPrice;
       try{
@@ -2473,7 +2380,6 @@
       liqWrap.innerHTML = svg;
     }
 
-    // Preis-Kopfzeile mit Refresh-Button ist im Vollbild-Layout nicht mehr vorhanden.
     if(refreshBtn) refreshBtn.addEventListener("click", () => { loadLive(); });
     loadLive();
   }
