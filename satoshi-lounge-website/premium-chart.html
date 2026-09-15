@@ -34,7 +34,22 @@
   #earthVideo{
     position:fixed; top:0; left:0; width:100vw; height:100vh;
     object-fit:cover; z-index:0; pointer-events:none; display:block; background:#000;
+    opacity:1; transition:opacity 1s ease;
   }
+  #nodesCanvas{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    z-index:0; pointer-events:none; display:block;
+    opacity:0; transition:opacity 1s ease;
+  }
+  body.showNodes #earthVideo{ opacity:0; }
+  body.showNodes #nodesCanvas{ opacity:1; }
+
+  .scroll-section{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    opacity:0; transform:translateY(28px);
+    transition:opacity .8s ease, transform .8s ease;
+  }
+  .scroll-section.in-view{ opacity:1; transform:translateY(0); }
   .topbar, .page, footer, .drawer, .overlay{ position:relative; z-index:1; }
   h1,h2,h3{ font-family:'Space Grotesk', sans-serif; }
   .mono{ font-family:'Space Mono', monospace; }
@@ -461,12 +476,6 @@
   .premium-sidebar.collapsed .draw-tool-list,
   .premium-sidebar.collapsed .sidebar-head{ display:none; }
   .sidebar-head{ margin-bottom:2px; }
-  .sidebar-collapsed-label{
-    display:none; writing-mode:vertical-rl; transform:rotate(180deg);
-    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:0.8rem; letter-spacing:0.04em;
-    color:var(--gold); margin-top:14px; white-space:nowrap;
-  }
-  .premium-sidebar.collapsed .sidebar-collapsed-label{ display:block; }
   .sidebar-collapse-btn{
     position:absolute; top:50%; right:-16px; transform:translateY(-50%);
     display:flex; align-items:center; justify-content:center;
@@ -543,7 +552,7 @@
     padding:12px 22px; cursor:pointer; text-decoration:none; transition:.2s;
   }
   .external-btn:hover{ border-color:var(--gold); color:var(--gold); }
-  .liq-wrap{ position:relative; height:260px; }
+  .liq-wrap{ position:relative; height:min(60vh, 760px); }
   .liq-wrap svg{ width:100%; height:100%; display:block; }
 
   /* DCA / inputs */
@@ -664,6 +673,7 @@
   <video id="earthVideo" autoplay muted loop playsinline preload="auto" poster="images/premium.png">
     <source src="earth-background.mp4" type="video/mp4">
   </video>
+  <canvas id="nodesCanvas"></canvas>
 
   <!-- TOP BAR -->
   <div class="topbar">
@@ -703,7 +713,7 @@
   <main class="page">
 
     <!-- TOOL -->
-    <section id="toolSectionWrap">
+    <section class="scroll-section" id="toolSectionWrap">
       <div class="tool-shell">
 
         <!-- TAB: CHARTANALYSE -->
@@ -716,7 +726,6 @@
                 <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Ein-/Ausklappen">
                   <span class="arrow">‹</span>
                 </button>
-                <span class="sidebar-collapsed-label">Indikatoren &amp; Tools</span>
                 <div class="tool-section-head sidebar-head"><span class="tool-section-num">01</span><h2>Chart &amp; Indikatoren</h2></div>
                 <div class="sidebar-block">
                   <span class="sidebar-block-label">Gleitende Durchschnitte (EMA)</span>
@@ -780,6 +789,75 @@
       <p class="disclaimer-note">Keine Anlageberatung und keine Steuerberatung — alle Daten und Berechnungen dienen ausschließlich Informationszwecken.</p>
     </section>
 
+    <!-- ABSCHNITT 2: LIQUIDATION HEATMAP -->
+    <section class="scroll-section" id="sectionHeatmap">
+      <div class="tool-shell">
+        <div class="tool-section s-liq">
+          <div class="tool-section-head"><span class="tool-section-num">02</span><h2>Liquidation Heatmap</h2></div>
+          <div class="live-status" id="liqStatus" style="margin-bottom:14px;"><span class="live-dot"></span><span id="liqStatusText">Lädt…</span></div>
+          <div class="liq-wrap" id="liqWrap">
+            <div class="chart-loading" id="liqLoading">Lädt Heatmap…</div>
+          </div>
+        </div>
+      </div>
+      <p class="disclaimer-note">Geschätztes Modell auf Basis echter Live-Daten (Open Interest, Long/Short-Verhältnis) — keine exakten Liquidationspreise, da diese nicht öffentlich einsehbar sind.</p>
+    </section>
+
+    <!-- ABSCHNITT 3: FEAR & GREED -->
+    <section class="scroll-section" id="sectionFearGreed">
+      <div class="tool-shell">
+        <div class="tool-section s-feargreed">
+          <div class="tool-section-head"><span class="tool-section-num">03</span><h2>Angst &amp; Gier Index</h2></div>
+          <div class="fng-wrap">
+            <div class="fng-value" id="fngValue">--</div>
+            <div class="fng-label" id="fngLabel">Lädt…</div>
+            <div class="fng-track"><div class="fng-marker" id="fngMarker"></div></div>
+            <div class="fng-scale-labels">
+              <span>Extreme Angst</span><span class="fng-lbl-mid">Angst</span><span class="fng-lbl-mid">Neutral</span><span class="fng-lbl-mid">Gier</span><span>Extreme Gier</span>
+            </div>
+          </div>
+          <div class="fng-compare-table" id="fngCompareTable"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSCHNITT 4: FED WATCH -->
+    <section class="scroll-section" id="sectionFedWatch">
+      <div class="tool-shell">
+        <div class="tool-section s-fedwatch">
+          <div class="tool-section-head"><span class="tool-section-num">04</span><h2>FED Watch</h2></div>
+
+          <div class="stat-grid" style="margin-bottom:22px;">
+            <div class="stat-card">
+              <span class="stat-label">Aktueller Zielkorridor</span>
+              <span class="stat-value" id="fedRangeValue">Lädt…</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Nächste FOMC-Sitzung</span>
+              <span class="stat-value" id="fedNextMeeting">--</span>
+              <div class="fed-countdown-box" id="fedCountdownBox">
+                <div class="fed-countdown-unit"><span id="cdDays">--</span><small>Tage</small></div>
+                <div class="fed-countdown-unit"><span id="cdHours">--</span><small>Std</small></div>
+                <div class="fed-countdown-unit"><span id="cdMins">--</span><small>Min</small></div>
+                <div class="fed-countdown-unit"><span id="cdSecs">--</span><small>Sek</small></div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="tab-subhead">Leitzins-Verlauf</h3>
+          <div class="live-status" id="fedStatus" style="margin-bottom:12px;"><span class="live-dot"></span><span id="fedStatusText">Lädt…</span></div>
+          <div class="liq-wrap" id="fedChartWrap">
+            <div class="chart-loading" id="fedChartLoading">Lädt Leitzins-Historie…</div>
+          </div>
+
+          <h3 class="tab-subhead" style="margin-top:26px;">FOMC-Sitzungstermine 2026</h3>
+          <div id="fedMeetingsList" class="fed-meetings-list"></div>
+
+          <a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener" class="external-btn" style="display:inline-block; margin-top:22px;">CME FedWatch Tool (extern)</a>
+        </div>
+      </div>
+    </section>
+
     <div class="home-return">
       <a href="premium-bereich.html">Zur Premium-Startseite →</a>
     </div>
@@ -831,6 +909,72 @@
     a.addEventListener('click', () => toggleDrawer(false));
   });
 
+  // ===== Node-Netzwerk-Hintergrund für die Liquidation-Heatmap-Sektion (Gold) =====
+  (function(){
+    const canvas = document.getElementById('nodesCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, nodes;
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+    const COUNT = isMobile ? 45 : 110;
+    const LINK_DIST = isMobile ? 110 : 150;
+    function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    function makeNodes(){
+      nodes = Array.from({length: COUNT}, () => ({
+        x: Math.random()*w, y: Math.random()*h,
+        vx: (Math.random()-0.5)*0.35, vy: (Math.random()-0.5)*0.35,
+        r: Math.random()*1.6 + 1.1, pulse: Math.random()*Math.PI*2
+      }));
+    }
+    resize(); makeNodes();
+    window.addEventListener('resize', () => { resize(); });
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const n of nodes){
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.02;
+        if(n.x < 0 || n.x > w) n.vx *= -1;
+        if(n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for(let i=0; i<nodes.length; i++){
+        for(let j=i+1; j<nodes.length; j++){
+          const a = nodes[i], b = nodes[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if(dist < LINK_DIST){
+            const alpha = (1 - dist/LINK_DIST) * 0.35;
+            ctx.strokeStyle = `rgba(242,201,76,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for(const n of nodes){
+        const glow = 0.55 + Math.sin(n.pulse)*0.25;
+        ctx.beginPath(); ctx.fillStyle = `rgba(242,201,76,${glow})`;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    step();
+  })();
+
+  // ===== Scroll-Übergänge: Abschnitte sanft einblenden + Hintergrund zwischen Video (Chart) und
+  // Node-Netzwerk (Heatmap, Fear & Greed, FED Watch) überblenden, je nach sichtbarem Abschnitt =====
+  (function(){
+    const sections = document.querySelectorAll('.scroll-section');
+    if(!sections.length || !window.IntersectionObserver) return;
+    const chartSection = document.getElementById('toolSectionWrap');
+    const visible = new Set();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        entry.target.classList.toggle('in-view', entry.isIntersecting);
+        if(entry.isIntersecting) visible.add(entry.target); else visible.delete(entry.target);
+      });
+      // Sobald der Chart-Abschnitt NICHT mehr im Blickfeld ist, auf Node-Hintergrund wechseln
+      // (deckt Heatmap, Fear & Greed und FED Watch gleichermaßen ab)
+      document.body.classList.toggle('showNodes', visible.size > 0 && !visible.has(chartSection));
+    }, { threshold: 0.45 });
+    sections.forEach(s => observer.observe(s));
+  })();
 
   // ===== BITCOIN ANALYSETOOL DIREKT INITIALISIEREN (kein "Mitglied werden"-Gate mehr — echter Login gilt bereits) =====
   // Hinweis: der eigentliche Aufruf steht ganz am Ende dieses Scripts (initTool selbst braucht Variablen,
@@ -2277,8 +2421,10 @@
       liqWrap.innerHTML = svg;
     }
 
-    if(refreshBtn) refreshBtn.addEventListener("click", () => { loadLive(); });
-    loadLive();
+    if(refreshBtn) refreshBtn.addEventListener("click", () => { loadLive().then(loadLiquidationHeatmap); });
+    loadLive().then(loadLiquidationHeatmap);
+    loadFearGreed();
+    loadFedWatch();
   }
 
   initTool(); // jetzt sicher, da alle benötigten Variablen oben bereits deklariert sind
