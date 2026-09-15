@@ -2279,8 +2279,10 @@
     // ---- FED Watch: echter Leitzins-Verlauf + Sitzungstermine (kostenlos, direkt von FRED) ----
     // Offizieller FOMC-Sitzungskalender 2026 — öffentlich von federalreserve.gov, ändert sich nicht.
     const FOMC_MEETINGS_2026 = [
-      "2026-01-27", "2026-03-17", "2026-04-28", "2026-06-16",
-      "2026-07-28", "2026-09-15", "2026-10-27", "2026-12-08",
+      // Zweitägige Sitzungen — hier steht bewusst der ZWEITE Tag (= tatsächlicher Zinsentscheid),
+      // nicht der erste Sitzungstag.
+      "2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
+      "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09",
     ];
 
     function renderFedMeetings(){
